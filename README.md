@@ -81,6 +81,26 @@ number there is.** Before believing a null, make the instrument say one.
   able to read otherwise.
 - Coexistence is still not solved on any substrate here.
 
+## Reproducing
+
+No dependencies, no build. Node 18+.
+
+```bash
+git clone https://github.com/weiscadence/void && cd void
+node reinvent-canary.js     # the detector's positive control: fires 12/12
+node openend-activity.js    # open-endedness activity measure
+```
+
+Every `.js` here runs standalone from a fresh clone. The `.html` worlds open
+directly in a browser — no server.
+
+## Related
+
+- **[receipts](https://github.com/weiscadence/receipts)** — the tamper-evident claim
+  log this research is dogfooded against. Its point is the same one this repo keeps
+  running into: a claim is only worth something if it was fixed *before* the outcome,
+  and a measurement is only worth something if its instrument could have said otherwise.
+
 ## Layout
 
 - `SYNTHESIS.md` — the single document: what each substrate is, the chain of failures, the theorem
