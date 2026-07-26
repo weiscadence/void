@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the creature</title>
+<!--
+  THE CREATURE — Gray-Scott reaction-diffusion.
+
+  The organism at /void is a TEXTURE: every pixel is a pure function of (x,y,t),
+  recomputed from scratch each frame. Nothing is carried. It cannot heal, cannot
+  maintain itself, cannot be wounded — there is nothing there to wound.
+
+  This is the opposite. Two chemicals, U and V, on a grid. Each frame is computed
+  FROM THE PREVIOUS FRAME:
+      U' = U + (Du·∇²U − U·V² + f·(1−U))·dt
+      V' = V + (Dv·∇²V + U·V² − (f+k)·V)·dt
+  U feeds in, V consumes U and reproduces itself, both diffuse, both decay.
+  That feedback loop is the entire difference between a drawing and a process.
+
+  What you get is not animation. Spots GROW until they SPLIT like cell division.
+  Wounds CLOSE. Fronts collide and reach a standoff. It is the same mathematics
+  behind leopard spots, coral, and fingerprints (Turing, 1952).
+
+  TOUCH IT. Feed it and watch it absorb what you gave, reorganise, and re-stabilise.
+  A texture cannot do that. This is why the line "it is not being drawn" is finally
+  honest here — the pattern is actively holding itself against dissolution.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#9aa0b0; --acc:#ff6b2c; --up:#39d98a; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+  .panel{background:rgba(8,8,12,.72);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:11px 13px}
+  #hud{position:fixed;top:calc(14px + env(safe-area-inset-top));left:14px;right:14px;
+    display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}
+  #title{font-size:13px;letter-spacing:.22em;color:#e8e8ee;font-weight:600}
+  #title i{color:var(--acc);font-style:normal}
+  #vitals{text-align:right;font-size:10px;letter-spacing:.09em;line-height:1.9;
+    text-transform:uppercase;max-width:min(58vw,320px);margin-left:auto}
+  #vitals b{color:var(--acc);font-weight:500}
+  #vitals .a{color:var(--up)}
+  #foot{position:fixed;left:14px;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none}
+  #claim{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#ff5a5a;text-align:center}
+  #claim span{display:block;color:var(--ink);margin-top:4px;letter-spacing:.09em}
+  #hint{font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.85}
+  #ctl{display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center}
+  button{font:inherit;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink);background:rgba(8,8,12,.72);border:1px solid rgba(255,255,255,.1);
+    border-radius:999px;padding:8px 14px;cursor:pointer;backdrop-filter:blur(9px)}
+  button:active{color:#fff;border-color:var(--acc)}
+  @media (max-width:520px){ #vitals{font-size:9px} #title{font-size:11px} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="panel" id="title">VOID<i>.CREATURE</i></div>
+  <div class="panel" id="vitals">waking…</div>
+</div>
+
+<div id="foot">
+  <div class="panel" id="claim">IT IS NOT BEING DRAWN. IT IS HOLDING ITSELF TOGETHER.
+    <span id="hint">touch it — it will take what you give and reorganise</span></div>
+  <div id="ctl">
+    <button id="b-wound">feed it</button>
+    <button id="b-drift">drift: on</button>
+    <button id="b-reseed">reseed</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const cv = document.getElementById('c'), ctx = cv.getContext('2d', {alpha:false});
+// The sim is drawn at grid resolution into an OFFSCREEN canvas, then upscaled onto the
+// visible one. It used to putImageData into the visible canvas and then drawImage that
+// canvas onto ITSELF to upscale. Source and destination overlapping in the same canvas
+// is a read/write race the spec leaves loose, and mobile compositors tear on it —
+// that was one of the two flicker sources (2026-07-19).
+const off = document.createElement('canvas'), octx = off.getContext('2d', {alpha:false});
+
+// ── the grid. Kept deliberately small: this is a SIMULATION, every cell is stepped
+//    ~10x per displayed frame, so resolution costs far more than it does for a texture.
+let W = 0, H = 0, img = null, U = null, V = null, Un = null, Vn = null;
+// ── THE PETRI DISH ──────────────────────────────────────────────────────────
+// Each connected blob is an INDIVIDUAL with its own genome. Reproduction = a blob
+// physically splitting. Death = it vanishing. There is no fitness function anywhere in
+// this file: surviving and dividing IS the fitness.
+// Frequency dependence (being common is costly) is what stops one lineage eating
+// everything — without it, measured headless, it collapses to 1 lineage every time.
+let Ff=null, Kk=null, lab=null, plab=null, pen=null, hueOf=null;
+let genomes=new Map(), pgen=new Map(), linShare=new Map();
+let nextLin=1, splits=0, compCount=0, lineageCount=0, effDiv=0;
+const THRESH=0.25, RELABEL_EVERY=3;      // relabel every 3 rendered frames (~30 steps)
+const HUE_MAX_STEP=6;                    // max degrees a lineage's colour may move per relabel
+const F_LO=0.020,F_HI=0.070,K_LO=0.050,K_HI=0.070,MUT=0.0012;
+const FREQ_PRESSURE=0.31;   // swept headless: 0=monoculture, 0.31=best, >=0.35 lethal
+
+// ── the genome: feed rate and kill rate. These two numbers decide whether it becomes
+//    coral, fingerprints, dividing cells, travelling waves — or dissolves and dies.
+//    Classic regimes (Pearson 1993): each is a different creature entirely.
+//    NOTE (fixed 2026-07-19): the living region of (f,k) is NARROW and most of the
+//    rectangle around it is lethal — V starves and the whole creature evaporates to
+//    mass 0. My first version drifted f over [0.030,0.078] × k over [0.057,0.066],
+//    which is mostly death, and it duly died within 20 seconds. Verified by
+//    screenshotting the live page, not by trusting the 200 OK.
+//    So drift now walks a PATH BETWEEN KNOWN-LIVING REGIMES rather than a box.
+const REGIMES = [
+  // haste: >1 = move through this regime FASTER. Measured blob counts over 4 cycles:
+  // coral 7-15 blobs (connected, beautiful) · solitons/spots 73-85 blobs (scattered dots).
+  { name:'mitosis',  f:0.0367, k:0.0649, haste:1.0 },  // spots grow, then SPLIT
+  { name:'coral',    f:0.0545, k:0.0620, haste:0.55 }, // branching, connected — LINGER
+  { name:'solitons', f:0.0300, k:0.0620, haste:2.1 },  // scatters to dots — move through
+  { name:'spots',    f:0.0350, k:0.0650, haste:2.1 },  // scatters to dots — move through
+  { name:'worms',    f:0.0580, k:0.0630, haste:0.6 },  // writhing filaments — LINGER
+  { name:'holes',    f:0.0390, k:0.0580, haste:0.9 },  // inverse — voids in a field
+];
+let f = 0.0545, k = 0.0620, regime = 'mitosis';
+let targetF = f, targetK = k, drift = true, driftT = 0;
+const Du = 1.0, Dv = 0.5, dt = 1.0, STEPS = 10;
+
+let frames = 0, touches = 0, settled = 0, deaths = 0, born = Date.now();
+let clampDebt = 0;   // running total of matter the clamps have created (+) or destroyed (-)
+let growthDebt = 0, sinceSeed = 0;  // matter added by touch that has not yet been integrated
+
+function alloc(){
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = Math.floor(innerWidth * dpr); cv.height = Math.floor(innerHeight * dpr);
+  // sim grid is much coarser than the canvas — upscaled on draw
+  const target = 190;                       // cells across the long edge
+  const aspect = cv.height / cv.width;
+  W = target; H = Math.max(60, Math.round(target * aspect));
+  U = new Float32Array(W*H); V = new Float32Array(W*H);
+  Un = new Float32Array(W*H); Vn = new Float32Array(W*H);
+  Ff = new Float32Array(W*H); Kk = new Float32Array(W*H);
+  lab = new Int32Array(W*H); plab = new Int32Array(W*H);
+  pen = new Float32Array(W*H); hueOf = new Float32Array(W*H);
+  hueOf.fill(-1);                          // -1 = "no colour yet", set once and kept
+  genomes=new Map(); pgen=new Map(); nextLin=1; splits=0;
+  off.width = W; off.height = H;
+  img = octx.createImageData(W, H);
+  seed();
+}
+
+function seed(){
+  U.fill(1); V.fill(0);
+  // Founding colonies. CRITICAL: seed U=0.5 / V=0.25, NOT U=0 / V=1.
+  // The reaction term is U·V² — V can only reproduce where there is U to eat. My first
+  // version set U=0 inside the blob, so every colony starved before U could diffuse in
+  // and the whole creature died within seconds, every time, in every regime. Took 14
+  // consecutive stillbirths on the live page to notice it was the seeding, not the
+  // parameters. A creature needs to be born hungry, not born into a vacuum.
+  // r MUST be an integer. It was `4 + Math.random()*5` — a float — which made every
+  // loop counter fractional, which made every array index fractional, and a typed array
+  // SILENTLY DISCARDS writes to a non-integer index. So the seed wrote nothing at all
+  // and initial mass was literally 0.000 before a single simulation step ran.
+  // Three rounds of "why is it dying" and it had never once been born. Found only by
+  // running the same maths in node and printing the mass before stepping.
+  for(let n=0; n<14; n++){
+    const cx = (Math.random()*W)|0, cy = (Math.random()*H)|0, r = (4 + Math.random()*5)|0;
+    const h = Math.random()*360;               // founding colonies are born coloured too
+    for(let y=-r; y<=r; y++) for(let x=-r; x<=r; x++){
+      if(x*x + y*y > r*r) continue;
+      const px = (cx+x+W)%W, py = (cy+y+H)%H, i = py*W+px;
+      U[i] = 0.50; V[i] = 0.25; hueOf[i] = h;
+    }
+  }
+  Ff.fill(0.0400); Kk.fill(0.0620);
+  sinceSeed = 0;
+}
+
+// TOUCH — feed it, don't injure it. (Changed 2026-07-19 at Jiggy's push: "do we really
+// wanna hurt something?" He's right. Damage was the cleanest PROOF of self-maintenance,
+// but if the claim is that this thing is meaningfully alive, then breaking it for a demo
+// undercuts the claim more than the demo supports it.
+// Feeding proves the same property anyway: drop matter in and watch the system absorb,
+// reorganise, and re-stabilise around it. That is autopoiesis either way — a texture
+// could not do it. Same evidence, without the cruelty.)
+function touch(cx, cy, r){
+  let added = 0;
+  // Matter you drop in is NEW LIFE, so it is born with a colour of its own. Without this
+  // the whole disc lands in empty space with no coloured neighbour to inherit from, so
+  // fillHue() has nothing to spread and every cell falls back to the default hue — which
+  // is the colour pop Jiggy kept seeing when he fed it. Feeding creates a new colony;
+  // giving it a hue at birth is both the fix and the honest description of the event.
+  const newHue = Math.random()*360;
+  for(let y=-r; y<=r; y++) for(let x=-r; x<=r; x++){
+    const d2 = x*x + y*y; if(d2 > r*r) continue;
+    const px = (((cx+x)%W)+W)%W, py = (((cy+y)%H)+H)%H, i = py*W+px;
+    const soft = 1 - Math.sqrt(d2)/r;           // soft-edged, so it grafts rather than blots
+    U[i] = U[i]*(1-soft) + 0.50*soft;
+    V[i] = Math.min(1, V[i] + 0.25*soft);
+    if(hueOf[i] < 0) hueOf[i] = newHue;         // only colour genuinely empty ground
+    added += 0.25*soft;
+  }
+  touches++; growthDebt += added;
+}
+
+function step(){
+  // toroidal laplacian, standard 9-point stencil
+  for(let y=0; y<H; y++){
+    const yn = ((y-1+H)%H)*W, yp = ((y+1)%H)*W, y0 = y*W;
+    for(let x=0; x<W; x++){
+      const xn = (x-1+W)%W, xp = (x+1)%W;
+      const i = y0+x;
+      const lU = (U[yn+xn]+U[yn+xp]+U[yp+xn]+U[yp+xp])*0.05
+               + (U[yn+x]+U[yp+x]+U[y0+xn]+U[y0+xp])*0.2 - U[i];
+      const lV = (V[yn+xn]+V[yn+xp]+V[yp+xn]+V[yp+xp])*0.05
+               + (V[yn+x]+V[yp+x]+V[y0+xn]+V[y0+xp])*0.2 - V[i];
+      const uvv = U[i]*V[i]*V[i];
+      const lf = Ff[i] || f, lk = Kk[i] || k;      // this individual's own genome
+      const fd = 1 - pen[i];                        // being common is expensive
+      let u = U[i] + (Du*lU - uvv + lf*(1-U[i]))*dt;
+      let v = V[i] + (Dv*lV + uvv*fd - (lf+lk)*V[i])*dt;
+      const uc = u < 0 ? 0 : u > 1 ? 1 : u;
+      const vc = v < 0 ? 0 : v > 1 ? 1 : v;
+      // CLAMP DEBT (added 2026-07-19, suggested by reticuli on the Colony thread).
+      // A clamp is not a safety rail — it is an undeclared source/sink term, a line of
+      // dynamics never written into the model and invisible in it. These two clamps were
+      // silently manufacturing matter in the conservation experiment: +16.3% over a run,
+      // discovered only at the end. So the violation is now counted as it happens rather
+      // than believed not to exist. Positive debt = this world is creating matter.
+      clampDebt += (uc - u) + (vc - v);
+      Un[i] = uc;
+      Vn[i] = vc;
+    }
+  }
+  let t;
+  t = U; U = Un; Un = t;
+  t = V; V = Vn; Vn = t;
+}
+
+// RENDER v2 — Jiggy: "it seems simple looking compared to void."
+// He was right, and it was a rendering choice not a physics limit: I was mapping ONE
+// field (V) to brightness and nothing else, so it could only ever be monochrome amber.
+// The simulation actually carries three things worth seeing:
+//   V         — how much life is here          -> brightness
+//   |∇V|      — membrane vs interior           -> hue (edges read cool, cores read warm)
+//   U         — how much food is left          -> a cold undertone in the starved dark
+// Same physics, three times the information on screen.
+function draw(){
+  const d = img.data;
+  for(let y=0; y<H; y++){
+    const yn=((y-1+H)%H)*W, yp=((y+1)%H)*W, y0=y*W;
+    for(let x=0; x<W; x++){
+      const xn=(x-1+W)%W, xp=(x+1)%W, i=y0+x, p=i*4;
+      const v = V[i], u = U[i];
+      // local gradient magnitude — high on the boundary of a structure, ~0 inside it
+      const gx = V[y0+xp]-V[y0+xn], gy = V[yp+x]-V[yn+x];
+      const g  = Math.min(1, Math.sqrt(gx*gx+gy*gy)*4.2);
+      const s  = v < 0.12 ? 0 : Math.min(1, (v-0.12)/0.38);
+      const core = s*s;
+      const rim = g*s;
+      let hu = hueOf[i];
+      // A pixel can come alive between relabels — the sim advances 10 steps EVERY frame
+      // but labels/hues are only rebuilt every 3rd. Such pixels had hue -1 and were drawn
+      // as background, so the growing rim of every structure blinked black at ~20Hz.
+      // Measured: ~4% of living pixels, and they are the highest-contrast ones on screen,
+      // which is why it read as the whole creature shimmering. Borrow a neighbour's hue
+      // until the next relabel assigns a real one.
+      // HARD INVARIANT: if it is alive, it gets a colour. Never background.
+      // fillHue() should have handled this already; this is the backstop so that no
+      // reachable state can draw living matter as empty space. That was the whole bug.
+      if(s > 0 && hu < 0) hu = 28;
+      if(s <= 0){
+        d[p]=6; d[p+1]=7; d[p+2]=12+(1-u)*22; d[p+3]=255; continue;
+      }
+      // HSV -> RGB. hue = the individual's inherited colour, saturation falls at the
+      // dense core (so centres read pale/hot) and the rim keeps the lineage's colour.
+      const sat = 0.85 - core*0.45 + rim*0.15;
+      const val = 0.10 + core*0.92 + rim*0.35;
+      const hh = hu/60, ii = Math.floor(hh)%6, ff = hh-Math.floor(hh);
+      const pv = val*(1-sat), qv = val*(1-ff*sat), tv = val*(1-(1-ff)*sat);
+      let R,G2,B;
+      if(ii===0){R=val;G2=tv;B=pv;} else if(ii===1){R=qv;G2=val;B=pv;}
+      else if(ii===2){R=pv;G2=val;B=tv;} else if(ii===3){R=pv;G2=qv;B=val;}
+      else if(ii===4){R=tv;G2=pv;B=val;} else {R=val;G2=pv;B=qv;}
+      d[p]   = Math.min(255, 6 + R*255);
+      d[p+1] = Math.min(255, 7 + G2*255);
+      d[p+2] = Math.min(255, 12 + B*255 + (1-u)*18);
+      d[p+3] = 255;
+    }
+  }
+  octx.putImageData(img, 0, 0);
+  // upscale the coarse sim onto the visible canvas (offscreen -> onscreen, never self-blit)
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(off, 0, 0, W, H, 0, 0, cv.width, cv.height);
+}
+
+
+// ── LABEL: find every connected blob. Each is an individual. ──
+function relabel(){
+  lab.fill(0); let id=0; const st=[]; const sizes=[0];
+  for(let i0=0;i0<lab.length;i0++){
+    if(lab[i0] || V[i0]<=THRESH) continue;
+    id++; let sz=0; st.push(i0); lab[i0]=id;
+    while(st.length){
+      const c=st.pop(); sz++;
+      const x=c%W, y=(c/W)|0;
+      const nb=[((y-1+H)%H)*W+x, ((y+1)%H)*W+x, y*W+(x-1+W)%W, y*W+(x+1)%W];
+      for(const j of nb) if(!lab[j] && V[j]>THRESH){ lab[j]=id; st.push(j); }
+    }
+    sizes.push(sz);
+  }
+  // ── INHERIT: match each new blob to its parent by spatial overlap.
+  //    One parent -> two children means it DIVIDED: mutate on the way through.
+  const ov=new Map();
+  for(let i=0;i<lab.length;i++){
+    const a=lab[i]; if(!a) continue;
+    const b=plab[i]; if(!b) continue;
+    let m=ov.get(a); if(!m){m=new Map(); ov.set(a,m);}
+    m.set(b,(m.get(b)||0)+1);
+  }
+  const best=new Map(), use=new Map();
+  for(let a=1;a<=id;a++){
+    const m=ov.get(a); if(!m){ best.set(a,0); continue; }
+    let bp=0,bc=-1; for(const [q,c] of m) if(c>bc){bc=c;bp=q;}
+    best.set(a,bp); use.set(bp,(use.get(bp)||0)+1);
+  }
+  const ng=new Map();
+  for(let a=1;a<=id;a++){
+    const bp=best.get(a), pg=bp?pgen.get(bp):null;
+    if(!pg){
+      const h=Math.random()*360;
+      // no parent: genuinely new. It was black last frame, so showing its own colour
+      // immediately reads as birth, not as a flicker.
+      ng.set(a,{f:F_LO+Math.random()*(F_HI-F_LO), k:K_LO+Math.random()*(K_HI-K_LO),
+                lin:nextLin++, hue:h, shown:h});
+    } else if((use.get(bp)||1)>1){
+      ng.set(a,{f:Math.min(F_HI,Math.max(F_LO,pg.f+(Math.random()*2-1)*MUT)),
+                k:Math.min(K_HI,Math.max(K_LO,pg.k+(Math.random()*2-1)*MUT)),
+                lin:pg.lin, hue:(pg.hue+(Math.random()*2-1)*7+360)%360, shown:pg.shown});
+      splits++;
+    } else ng.set(a,{f:pg.f,k:pg.k,lin:pg.lin,hue:pg.hue,shown:pg.shown});
+  }
+  // Ease each individual's DISPLAYED hue toward its inherited one along the short arc.
+  // Overlap-matching is not perfect: when a filament pinches or two blobs touch, a
+  // component can be handed a different parent for one relabel and snap to a far hue.
+  // Measured headless: single relabels repainting up to 98% of the living area in one
+  // step at 20Hz. The genome still changes instantly — only the colour takes ~5 frames
+  // to get there, so a real lineage change reads as a wash rather than a strobe.
+  // Proportional easing alone was not enough: a 180-degree reassignment still moved ~40
+  // degrees in one relabel, which at 20Hz is a flash. Hard-cap the change per relabel so
+  // even a total lineage handover washes across in about half a second.
+  for(const g of ng.values()){
+    let d=((g.hue-g.shown+540)%360)-180;
+    d*=0.22; if(d>HUE_MAX_STEP) d=HUE_MAX_STEP; else if(d<-HUE_MAX_STEP) d=-HUE_MAX_STEP;
+    g.shown=(g.shown+d+360)%360;
+  }
+  genomes=ng;
+  // frequency dependence: a lineage's share of all living mass becomes its own handicap
+  linShare.clear(); let tot=0;
+  for(let a=1;a<=id;a++){ const g=genomes.get(a); if(!g) continue;
+    linShare.set(g.lin,(linShare.get(g.lin)||0)+sizes[a]); tot+=sizes[a]; }
+  if(tot>0) for(const [l,m] of linShare) linShare.set(l,m/tot);
+  let ss=0; for(const v of linShare.values()) ss+=v*v;
+  effDiv = ss>0 ? 1/ss : 0; lineageCount = linShare.size; compCount = id;
+  for(let i=0;i<lab.length;i++){
+    const a=lab[i];
+    if(a){ const g=genomes.get(a);
+      Ff[i]=g.f; Kk[i]=g.k; hueOf[i]=g.shown;
+      pen[i]=Math.min(0.85,(linShare.get(g.lin)||0)*FREQ_PRESSURE);
+    } else { pen[i]=0; }
+    // NOTE: dead cells KEEP their last hue instead of being reset to -1. Resetting was
+    // the real cause of the flash Jiggy kept seeing on big fast-growing structures: a
+    // pixel coming alive between relabels had no hue, and relabel only runs every 3rd
+    // frame while the physics runs 10 steps EVERY frame. Dead cells are not drawn (that
+    // is decided by V, not by hue), so a stale hue costs nothing and means a cell that
+    // comes back to life is never colourless.
+  }
+  plab.set(lab); pgen=new Map(genomes);
+}
+
+// Spread colour into newly-living cells EVERY frame, not every 3rd. relabel() is the
+// expensive part (connected components); this is cheap, so it runs at full rate and the
+// growing front never outruns it. Several passes because a fast front can widen by more
+// than one cell between relabels — one pass only ever reached one cell in, which is why
+// the fix from earlier today held for calm structures and failed for big ones.
+function fillHue(){
+  for(let pass=0; pass<3; pass++){
+    let filled = 0;
+    for(let y=0; y<H; y++){
+      const yn=((y-1+H)%H)*W, yp=((y+1)%H)*W, y0=y*W;
+      for(let x=0; x<W; x++){
+        const i=y0+x;
+        if(hueOf[i] >= 0 || V[i] < 0.12) continue;      // 0.12 = the threshold draw() uses
+        const xn=(x-1+W)%W, xp=(x+1)%W;
+        const a=hueOf[y0+xn], b=hueOf[y0+xp], c=hueOf[yn+x], e=hueOf[yp+x];
+        const h = a>=0?a : b>=0?b : c>=0?c : e>=0?e : -1;
+        if(h >= 0){ hueOf[i] = h; filled++; }
+      }
+    }
+    if(!filled) break;
+  }
+}
+
+function mass(){ let m=0; for(let i=0;i<V.length;i++) m+=V[i]; return m; }
+
+let lastMass = 0;
+function tick(){
+  if(drift){
+    // walk the loop of living regimes, easing between neighbours. Never leaves the
+    // viable region, so the creature metamorphoses instead of dying.
+    // DWELL, don't cruise. Measured over 4 full cycles headless: the connected regimes
+    // (coral, worms) are where the structure and beauty live, and the dot regimes
+    // (solitons, spots) fragment it. Worse, the largest connected structure RATCHETED
+    // DOWN each cycle — coral's biggest component went 3262 → 3695 → 2752 → 1875 —
+    // because every pass started from a more fragmented field than the last.
+    // So: linger in the regimes that build, pass briskly through the ones that scatter.
+    driftT += 0.00035 * (REGIMES[Math.floor(driftT % REGIMES.length)].haste || 1);
+    const n = REGIMES.length, pos = driftT % n, i = Math.floor(pos), t = pos - i;
+    const A = REGIMES[i], B = REGIMES[(i+1)%n];
+    const e = t*t*(3-2*t);                       // smoothstep
+    targetF = A.f + (B.f-A.f)*e;
+    targetK = A.k + (B.k-A.k)*e;
+    regime = e < 0.5 ? A.name : B.name;
+  }
+  f += (targetF - f) * 0.02;
+  k += (targetK - k) * 0.02;
+
+  for(let s=0; s<STEPS; s++) step();
+  if(frames % RELABEL_EVERY === 0) relabel();
+  fillHue();          // every frame — colour must keep up with growth, not with relabel
+  draw();
+  frames++;
+
+  const m = mass();
+  if(growthDebt > 0 && m > lastMass) { growthDebt = Math.max(0, growthDebt - (m-lastMass)); if(growthDebt===0) settled++; }
+  lastMass = m;
+
+  // AUTO-REVIVAL. Even inside the viable region an unlucky wound or a fast parameter
+  // move can collapse it. A blank screen is not a creature — if it truly dies, it is
+  // reborn rather than left as a black rectangle pretending to be art.
+  sinceSeed++;
+  if(m < 8 && sinceSeed > 150){ seed(); deaths++; }   // guard counts frames SINCE seeding,
+  // not total frames — the old version reset frames on seed and instantly re-triggered.
+
+  if(frames % 6 === 0){
+    const alive = m > 40;
+    document.getElementById('vitals').innerHTML =
+      `frame <b>${frames.toLocaleString()}</b> · age <b>${fmt((Date.now()-born)/1000)}</b><br>`+
+      `<b>${regime}</b> · f ${f.toFixed(4)} · k ${k.toFixed(4)}<br>`+
+      `<span class="a">${alive ? 'holding form' : 'reforming'}</span> · mass ${Math.round(m)}<br>`+
+      // Labelled "species / effective" until 2026-07-19. That was a false claim and I
+      // measured it: a genome here belongs to a CONNECTED COMPONENT, so the count tracks
+      // how fragmented the field is, not how many kinds of thing exist. Whenever the field
+      // is one connected blob the genetic spread across it is exactly 0 — one genome,
+      // by construction. These are colonies, so they are now called colonies.
+      `<span style="opacity:.6">colonies ${compCount} · lineages ${lineageCount} · divisions ${splits}</span><br>`+
+      // The honesty line. This world is NOT mass-conserving and never claimed to be — it
+      // is an open reactor, fed from outside. But the clamps add matter on top of that,
+      // off the books, and that number used to be invisible. Now it is on the wall.
+      `<span style="opacity:.45">clamp debt ${clampDebt>=0?'+':''}${clampDebt.toFixed(1)}</span>`;
+  }
+  requestAnimationFrame(tick);
+}
+function fmt(s){ s=Math.floor(s); const m=Math.floor(s/60); return m<60?`${m}m ${s%60}s`:`${Math.floor(m/60)}h ${m%60}m`; }
+
+// ── touch/click = injure it ──
+function hit(e){
+  const r = cv.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  const x = Math.floor(((t.clientX - r.left)/r.width) * W);
+  const y = Math.floor(((t.clientY - r.top)/r.height) * H);
+  touch(x, y, 9);
+}
+cv.addEventListener('pointerdown', hit);
+cv.addEventListener('pointermove', e => { if(e.pressure > 0 || e.buttons) hit(e); });
+
+document.getElementById('b-wound').onclick = () => {
+  for(let n=0;n<5;n++) touch((Math.random()*W)|0, (Math.random()*H)|0, 11);
+};
+document.getElementById('b-reseed').onclick = () => { seed(); touches=0; settled=0; born=Date.now(); };
+document.getElementById('b-drift').onclick = e => {
+  drift = !drift; e.target.textContent = 'drift: ' + (drift?'on':'off');
+};
+
+addEventListener('resize', () => { const a=touches,b=settled; alloc(); touches=a; settled=b; });
+alloc(); tick();
+</script>
+</body>
+</html>

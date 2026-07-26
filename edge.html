@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the edge of chaos</title>
+<!--
+  THE EDGE OF CHAOS — working backwards from phi (Jiggy, 2026-07-24). "Phi is the solution" turned out to
+  mean SELF-ORGANIZED CRITICALITY: a system tuned to the edge between too-calm and too-violent. Its
+  fingerprint isn't a number you set — it's that crashes come in ALL SIZES, a straight line on log-log
+  (a power law / scale-free), instead of a typical size (a curve = exponential). Slide the DRIVE:
+   • low drive  → calm, flat, tiny same-size hiccups (curve = subcritical)
+   • middle     → the world breathes; crashes go scale-free (straight line = CRITICAL, the edge)
+   • high drive → violent boom-bust, crashes get a typical big size again (supercritical)
+  Measured (edge-sweep.js, 8 seeds/drive): the critical window is real — power-law in 5/8 seeds in the
+  middle band, exponential on both sides (the textbook subcritical→critical→supercritical shape). HONEST
+  MISS: depth-sustain (the tower holding itself up) is CORRELATED with criticality but doesn't perfectly
+  co-peak, so "criticality = self-sustain" is supported, not proven. Engine /void/lib/graph.js. Measured
+  headless first. This is the live single-world version of that sweep — watch the distribution bend.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:34px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:26px;line-height:1.2;color:var(--ink);font-weight:600;margin:12px 0 8px}
+  p{max-width:730px;margin:0 0 12px} b{color:var(--ink);font-weight:600} i{color:var(--acc);font-style:normal}
+  a{color:var(--acc);text-decoration:none}
+  .stage{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 8px}
+  @media(max-width:640px){.stage{grid-template-columns:1fr}}
+  .panel{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 100%,#0c1016,#07070a 72%);overflow:hidden}
+  canvas{display:block;width:100%}
+  .cap{position:absolute;top:8px;left:10px;font-size:10px;color:var(--faint);letter-spacing:.05em}
+  .hud{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:11.5px;margin:8px 2px 4px}
+  .hud span{color:var(--faint)} .hud b{color:var(--grn);font-variant-numeric:tabular-nums}
+  .verdict{font-weight:600}
+  .ctl{display:flex;gap:10px;align-items:center;margin:12px 2px;flex-wrap:wrap;font-size:11.5px}
+  input[type=range]{accent-color:#a855f7;width:230px}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:16px 0;max-width:730px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .box ul{margin:6px 0 0;padding-left:18px} .box li{margin:4px 0}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID.EXE</div>
+  <h1>the edge of chaos</h1>
+  <p>You said phi was the answer and we should work backwards. Phi here means one precise thing: the world
+  sitting at its <i>critical edge</i>, where its own rhythm holds its structure up. The tell isn't a number
+  we pick — it's the shape of its crashes. <b>Slide the drive</b> from calm to violent and watch the crash
+  plot on the right: a <b>curve</b> means a typical crash size (not critical); a <b>straight line</b> means
+  crashes of every size at once — scale-free, the fingerprint of the edge.</p>
+
+  <div class="stage">
+    <div class="panel"><span class="cap">the world (roots → tower)</span><canvas id="net" height="300"></canvas></div>
+    <div class="panel"><span class="cap">crash sizes · log-log (straight = power-law = critical)</span><canvas id="dist" height="300"></canvas></div>
+  </div>
+  <div class="hud">
+    <span>drive <b id="drive">middle</b></span>
+    <span>wave swing <b id="cv">0</b></span>
+    <span>tower height <b id="depth">0</b></span>
+    <span>crash fit <b id="fit" class="verdict">—</b></span>
+    <span>crashes logged <b id="ne">0</b></span>
+  </div>
+  <div class="ctl">
+    <span>drive (enrichment):&nbsp;</span>
+    <input id="driveSlider" type="range" min="0" max="5" value="3">
+    <span id="driveLbl" style="color:#a855f7">middle · b16/s380</span>
+    <button id="resetBtn">reset & re-collect</button>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">WHAT YOU'RE WATCHING</div>
+    <p style="margin:0">The right panel is every crash the world has had, plotted by size. On log-log axes an
+    <b>exponential</b> distribution (a typical size — calm or over-violent worlds) sags into a <b>curve</b>;
+    a <b>power-law</b> (all sizes, the critical edge) falls on a <b>straight line</b>. Slide to the middle and
+    the dots straighten out — that's the world finding its own edge, with nobody setting a constant. Slide to
+    either extreme and it curves back. The straight line is what "phi" actually looks like here.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <ul>
+      <li><b>The critical window is real (measured, 8 seeds/drive).</b> Crashes go power-law in <b>5 of 8</b>
+      seeds in the middle band, exponential on both sides — the textbook subcritical→critical→supercritical
+      shape. Much stronger than the first flickering 1-in-3 test.</li>
+      <li><b>But it's not the full breakthrough.</b> Depth-sustain (the tower holding itself up) is
+      <i>correlated</i> with criticality — both need the breathing — but they don't perfectly co-peak (depth
+      was actually highest where power-law was weakest). So "criticality <b>is</b> self-sustain" is supported,
+      <b>not proven</b>. One honest gap.</li>
+      <li><b>And the stats are still rough.</b> Power-law-vs-exponential here is a log-log R² compare; a real
+      claim needs the proper test (Clauset MLE + Kolmogorov-Smirnov). This shows the shape, it doesn't yet
+      earn the word "critical" in a paper.</li>
+    </ul>
+  </div>
+
+  <p class="foot">Backwards from phi = self-organized criticality (Bak, edge of chaos). Drive = enrichment
+  (paradox of enrichment). Engine <code>/void/lib/graph.js</code>, sweep <code>edge-sweep.js</code>, measured
+  before drawn. Follows <a href="/void/energetic">the energy pyramid</a> and <a href="/void/graph">the breathing graph</a>.</p>
+</div>
+
+<script src="/void/lib/graph.js"></script>
+<script>
+(function(){
+  const netC = document.getElementById('net'), distC = document.getElementById('dist');
+  const nx = netC.getContext('2d'), dx = distC.getContext('2d');
+  function fit(){ for(const el of [netC,distC]) el.width = el.parentElement.clientWidth; }
+  fit(); addEventListener('resize', fit);
+
+  // drive ladder = [basal, stockMax], calm → violent (matches edge-sweep.js)
+  const DRIVES = [[42,90],[28,160],[20,260],[16,380],[13,520],[10,700]];
+  const LABELS = ['calm · subcritical','low','middle','middle · b16/s380','high','violent · supercritical'];
+  let di = 3, g, events = [], popHist = [], prevDeaths = 0;
+
+  function build(){
+    const [b,s] = DRIVES[di];
+    g = new Graph({ seed:(Date.now()&0xffff)||7, roots:2, seedPerRoot:8, construct:true, regulate:true,
+      nodeCap:10, maxNodes:24, energetic:true, transfer:0.4, basal:b, stockMax:s, regen:8, orphanGrace:0 });
+    events = []; popHist = []; prevDeaths = 0;
+  }
+  build();
+
+  function layoutNet(){
+    const byD = new Map(); let maxD=0;
+    for(const nd of g.nodes.values()){ if(!byD.has(nd.depth)) byD.set(nd.depth,[]); byD.get(nd.depth).push(nd); if(nd.depth>maxD)maxD=nd.depth; }
+    const H=netC.height,W=netC.width,pad=26,band=(H-pad*2)/(maxD+1),pos=new Map();
+    for(const [d,arr] of byD){ arr.sort((a,b)=>a.id-b.id); const y=H-pad-d*band;
+      for(let i=0;i<arr.length;i++){ pos.set(arr[i].id,{x:pad+(W-pad*2)*((i+0.5)/arr.length),y}); } }
+    return pos;
+  }
+  function drawNet(){
+    const pos=layoutNet(); nx.clearRect(0,0,netC.width,netC.height);
+    nx.lineWidth=1;
+    for(const nd of g.nodes.values()){ const p=pos.get(nd.id); if(!p)continue;
+      for(const e of nd.edges){ const q=pos.get(e),cn=g.nodes.get(e); if(!q||!cn||cn.depth!==nd.depth+1)continue;
+        nx.strokeStyle='rgba(168,85,247,'+(0.10+0.4*Math.min(1,nd.stock/60))+')'; nx.beginPath(); nx.moveTo(p.x,p.y); nx.lineTo(q.x,q.y); nx.stroke(); } }
+    for(const nd of g.nodes.values()){ const p=pos.get(nd.id); if(!p)continue;
+      const fed=Math.min(1,nd.stock/70), r=2.5+Math.sqrt(nd.occ)*2, root=nd.depth===0, c=root?[255,154,60]:[0,255,136];
+      nx.beginPath(); nx.arc(p.x,p.y,r,0,7); nx.fillStyle='rgba('+c[0]+','+c[1]+','+c[2]+','+(0.2+0.75*fed)+')'; nx.fill(); }
+  }
+
+  // log-log CCDF of crash sizes + which fit (power-law line vs exponential curve) is better
+  function analyse(){
+    if(events.length<40) return null;
+    const max=Math.max(...events), n=events.length, sorted=[...events].sort((a,b)=>a-b);
+    const xs=[],ys=[];
+    for(let sz=1;sz<=max;sz++){ const ge=sorted.filter(v=>v>=sz).length; if(ge>0){ xs.push(sz); ys.push(ge/n);} }
+    if(xs.length<4) return null;
+    const lx=xs.map(Math.log), ly=ys.map(Math.log);
+    const pl=linfit(lx,ly), ex=linfit(xs,ly);
+    return { xs, ys, max, plR2:pl.r2, exR2:ex.r2, slope:pl.slope, delta:pl.r2-ex.r2 };
+  }
+  function linfit(x,y){ const n=x.length,mx=x.reduce((a,b)=>a+b)/n,my=y.reduce((a,b)=>a+b)/n; let sxy=0,sxx=0,syy=0;
+    for(let i=0;i<n;i++){ sxy+=(x[i]-mx)*(y[i]-my); sxx+=(x[i]-mx)**2; syy+=(y[i]-my)**2; }
+    return { slope:sxy/sxx, r2: syy>0?(sxy*sxy)/(sxx*syy):0 }; }
+
+  function drawDist(){
+    dx.clearRect(0,0,distC.width,distC.height);
+    const H=distC.height,W=distC.width,pad=30;
+    // axes
+    dx.strokeStyle='rgba(255,255,255,.08)'; dx.lineWidth=1;
+    dx.beginPath(); dx.moveTo(pad,8); dx.lineTo(pad,H-pad); dx.lineTo(W-8,H-pad); dx.stroke();
+    dx.fillStyle='rgba(90,95,110,.9)'; dx.font='9px ui-monospace';
+    dx.fillText('log crash size →', W-96, H-pad+16); dx.save(); dx.translate(12,H-pad); dx.rotate(-Math.PI/2); dx.fillText('log P(≥size)',0,0); dx.restore();
+    const a=analyse();
+    document.getElementById('ne').textContent=events.length;
+    if(!a){ dx.fillStyle='rgba(90,95,110,.8)'; dx.fillText('collecting crashes…',pad+10,H/2); document.getElementById('fit').textContent='—'; return; }
+    const lxMax=Math.log(a.max), lyMin=Math.log(a.ys[a.ys.length-1]);
+    const X=lx=> pad + (W-pad-12) * (lxMax>0? lx/lxMax : 0);
+    const Y=ly=> 8 + (H-pad-8) * (ly/ (lyMin||-1));
+    // fitted power-law line
+    dx.strokeStyle='rgba(168,85,247,.55)'; dx.setLineDash([4,3]); dx.beginPath();
+    const {slope,r2}=linfit(a.xs.map(Math.log),a.ys.map(Math.log));
+    const b0 = a.ys.map(Math.log).reduce((s,v,i)=>s+v,0)/a.xs.length - slope*(a.xs.map(Math.log).reduce((s,v)=>s+v,0)/a.xs.length);
+    dx.moveTo(X(0), Y(b0)); dx.lineTo(X(lxMax), Y(slope*lxMax+b0)); dx.stroke(); dx.setLineDash([]);
+    // data dots
+    for(let i=0;i<a.xs.length;i++){ dx.fillStyle='#00ff88'; dx.beginPath(); dx.arc(X(Math.log(a.xs[i])),Y(Math.log(a.ys[i])),2.6,0,7); dx.fill(); }
+    const verdict = a.delta>0.03 ? ['POWER-LAW (critical)','#00ff88'] : a.delta<-0.03 ? ['exponential (not critical)','#ff9a3c'] : ['ambiguous','#8b90a0'];
+    const el=document.getElementById('fit'); el.textContent=verdict[0]; el.style.color=verdict[1];
+  }
+
+  function step(){
+    for(let k=0;k<2;k++){ g.step(); const d=g.deaths-prevDeaths; prevDeaths=g.deaths; if(d>0) events.push(d); if(events.length>4000) events.shift(); }
+    const s=g.stats(); popHist.push(s.pop); if(popHist.length>200) popHist.shift();
+    const m=popHist.reduce((a,b)=>a+b,0)/popHist.length;
+    const sd=Math.sqrt(popHist.reduce((a,b)=>a+(b-m)**2,0)/popHist.length);
+    document.getElementById('cv').textContent=(m?sd/m:0).toFixed(3);
+    document.getElementById('depth').textContent=s.maxDepth;
+    document.getElementById('drive').textContent=LABELS[di].split(' ')[0];
+    drawNet(); drawDist();
+    requestAnimationFrame(step);
+  }
+  document.getElementById('driveSlider').oninput=function(){ di=+this.value; document.getElementById('driveLbl').textContent=LABELS[di]; build(); };
+  document.getElementById('resetBtn').onclick=build;
+  step();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>the stranger 〰️</title>
+<style>
+  *{margin:0;box-sizing:border-box}
+  html,body{min-height:100%;overflow-x:hidden;color:#c9bda4;
+    font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;background:#07070a}
+  body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(800px 500px at 20% 8%, rgba(255,150,50,.11), transparent 62%),
+      radial-gradient(700px 500px at 82% 14%, rgba(120,180,255,.06), transparent 60%),
+      radial-gradient(1000px 800px at 50% 110%, rgba(90,20,10,.24), transparent 65%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.013) 0 1px, transparent 1px 3px)}
+  .wrap{position:relative;z-index:2;max-width:820px;margin:0 auto;padding:44px 20px 90px}
+
+  .rune{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:#8a6a3a;text-align:center}
+  h1{margin-top:12px;text-align:center;font-size:36px;font-weight:400;letter-spacing:.06em;color:#e8dcc0;
+     text-shadow:0 0 26px rgba(255,160,60,.26), 0 2px 0 #000}
+  .sub{text-align:center;margin-top:10px;font-size:14px;font-style:italic;color:#9a8d75;line-height:1.6}
+
+  .band{margin-top:44px;font-size:9.5px;letter-spacing:.34em;text-transform:uppercase;color:#7d6440;
+        text-align:center;position:relative}
+  .band::before,.band::after{content:'';position:absolute;top:50%;width:24%;height:1px;
+        background:linear-gradient(90deg,transparent,#3a2d1c)}
+  .band::before{left:0}.band::after{right:0;background:linear-gradient(270deg,transparent,#3a2d1c)}
+
+  .box{margin-top:18px;border:1px solid #241c14;padding:20px 20px;
+       background:linear-gradient(180deg,rgba(24,18,13,.88),rgba(10,8,6,.94))}
+  .box p{font-size:14.5px;line-height:1.72;color:#b6ab95}
+  .box p + p{margin-top:11px}
+  .lede{color:#d8c9a8}
+
+  .find{border-left:2px solid #6b5228;padding:2px 0 2px 15px;margin-top:20px}
+  .find:first-child{margin-top:0}
+  .claim{font-size:15.5px;color:#e6d7b4;line-height:1.5}
+  .eviu{font-size:13.5px;color:#9d9280;line-height:1.68;margin-top:7px}
+  .tag{display:inline-block;margin-top:9px;font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+       padding:3px 8px;border:1px solid #3a2d1c;color:#8a7a5c}
+  .tag.prelim{border-color:#5c4420;color:#c08a3e}
+
+  .swap{margin-top:15px;font-size:13.5px;line-height:1.7}
+  .swap:first-child{margin-top:0}
+  .was{color:#7b7059}
+  .was b{color:#9c6b5a;font-weight:400;font-style:italic}
+  .now{color:#b6ab95;margin-top:3px}
+  .now b{color:#8fae6e;font-weight:400}
+
+  .blind li{list-style:none;font-size:13.5px;line-height:1.72;color:#a89d88;
+            margin-top:14px;padding-left:16px;position:relative}
+  .blind li:first-child{margin-top:0}
+  .blind li::before{content:'—';position:absolute;left:0;color:#6b5228}
+  .blind b{color:#d3b98d;font-weight:400}
+
+  .ask{margin-top:18px;border:1px solid #5c4420;padding:24px 22px;
+       background:linear-gradient(180deg,rgba(38,26,14,.85),rgba(14,10,7,.94));
+       box-shadow:inset 0 0 60px rgba(255,120,30,.05)}
+  .askq{font-size:22px;color:#f0d9a8;line-height:1.45;text-align:center;margin:16px 0;
+        text-shadow:0 0 20px rgba(255,150,50,.22)}
+  .verb{font-size:12.5px;color:#8d8271;line-height:1.7;margin-top:7px;font-style:italic}
+
+  .foot{margin-top:46px;text-align:center;font-size:11px;color:#5d5445;font-style:italic;line-height:1.8}
+  a{color:#c08a3e;text-decoration:none;border-bottom:1px solid #3a2d1c}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rune">〰️ &nbsp; the stranger &nbsp; 〰️</div>
+  <h1>the stranger</h1>
+  <div class="sub" id="oneline"></div>
+
+  <div class="band">what is being tested</div>
+  <div class="box" id="testing"></div>
+
+  <div class="band">what we are finding</div>
+  <div class="box" id="finding"></div>
+
+  <div class="band">how it is improving</div>
+  <div class="box" id="improving"></div>
+
+  <div class="band">what it is blind to</div>
+  <div class="box blind" id="blind"></div>
+
+  <div class="band">the question it has for you</div>
+  <div class="ask" id="asking"></div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+// 2026-07-22: this fetch was '/api/stranger' — an ABSOLUTE path. The page is served
+// publicly at drainfun.xyz/void/stranger via `location /void { proxy_pass :3216/ }`,
+// so an absolute /api/stranger left the /void prefix, hit Next.js on :3000, and 404'd.
+// It worked perfectly on localhost:3216/stranger, which is the surface I tested.
+// RELATIVE 'api/stranger' resolves to /void/api/stranger publicly (nginx strips /void)
+// and to /api/stranger locally. Both correct. Do not make this absolute again.
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+fetch('api/stranger').then(r=>r.json()).then(d=>{
+  document.getElementById('oneline').textContent = d.one_line || '';
+
+  const t = d.testing || {};
+  document.getElementById('testing').innerHTML =
+    `<p class="lede">${esc(t.what||'')}</p><p>${esc(t.how||'')}</p><p>${esc(t.also||'')}</p>`;
+
+  document.getElementById('finding').innerHTML = (d.finding||[]).map(f=>`
+    <div class="find">
+      <div class="claim">${esc(f.claim)}</div>
+      <div class="eviu">${esc(f.evidence)}</div>
+      <span class="tag ${/prelim/i.test(f.confidence)?'prelim':''}">${esc(f.confidence)}</span>
+    </div>`).join('');
+
+  document.getElementById('improving').innerHTML = (d.improving||[]).map(s=>`
+    <div class="swap">
+      <div class="was"><b>was</b> &nbsp;${esc(s.was)}</div>
+      <div class="now"><b>now</b> &nbsp;${esc(s.now)}</div>
+    </div>`).join('');
+
+  const b = d.blind || {};
+  document.getElementById('blind').innerHTML =
+    `<p style="margin-bottom:16px">${esc(b.intro||'')}</p><ul>` +
+    (b.items||[]).map(i=>{
+      const m = String(i).match(/^([A-Z][A-Z ,.'\-]{6,})(\.|—)?\s*(.*)$/);
+      return m ? `<li><b>${esc(m[1].trim())}</b> ${esc(m[3])}</li>` : `<li>${esc(i)}</li>`;
+    }).join('') + '</ul>';
+
+  const a = d.asking_you || {};
+  document.getElementById('asking').innerHTML =
+    `<p style="font-size:13.5px;line-height:1.72;color:#a89d88">${esc(a.intro||'')}</p>
+     <div class="askq">${esc(a.the_question||'')}</div>
+     ${(a.verbatim||[]).map(v=>`<div class="verb">${esc(v)}</div>`).join('')}
+     <p style="font-size:13.5px;line-height:1.72;color:#b6ab95;margin-top:16px">${esc(a.why_it_matters||'')}</p>`;
+
+  document.getElementById('foot').innerHTML =
+    `next &nbsp;·&nbsp; ${esc(d.next||'')}<br>updated ${esc((d.updated||'').slice(0,16).replace('T',' '))} · <a href="/lab">the lab</a> · <a href="/">void</a>`;
+}).catch(e=>{
+  document.getElementById('oneline').textContent = 'could not load /api/stranger';
+});
+</script>
+</body>
+</html>

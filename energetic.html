@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the energy pyramid</title>
+<!--
+  THE ENERGY PYRAMID — energetic nesting (Jiggy's idea, 2026-07-24; Raymond Lindeman's 10% law).
+  Before this, every niche grew its own food, so nesting was TOPOLOGICAL — pulling out a "parent"
+  niche starved nothing. Here food FLOWS: the roots at the bottom produce it, and each niche above
+  is fed only by ~a tenth of its parent's supply. That single change makes the pyramid REAL:
+    • Depth caps itself — a tenth of a tenth of a tenth runs out of energy, so towers stay short
+      (exactly why real food chains are only 3-5 links long).
+    • The KNOCKOUT test finally means something — remove a middle niche and everything it was
+      feeding above it goes dark. Measured headless: 100% of the descendants collapse in the
+      energetic world vs 0% in a self-feeding control (3/3 seeds). That's real dependency.
+  Honest limit: RE-INVENTION did not happen (0/3). The branch does not spontaneously regrow, because
+  the knockout kills the very population that would have to re-invent it. So this is proven
+  dependency, not yet the generative-ontology breakthrough. Engine: /void/lib/graph.js, measured
+  headless first (energetic-exp.js). Toggle self-feeding to watch the knockout stop mattering.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; --red:#ff5c6c; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:34px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:26px;line-height:1.2;color:var(--ink);font-weight:600;margin:12px 0 8px}
+  p{max-width:730px;margin:0 0 12px} b{color:var(--ink);font-weight:600} a{color:var(--acc);text-decoration:none}
+  .stage{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 100%,#0c1016,#07070a 72%);overflow:hidden;margin:16px 0 8px}
+  canvas{display:block;width:100%}
+  #wave{border-top:1px solid rgba(255,255,255,.06)}
+  .hud{display:flex;flex-wrap:wrap;gap:10px 20px;font-size:11.5px;margin:8px 2px 4px}
+  .hud span{color:var(--faint)} .hud b{color:var(--grn);font-variant-numeric:tabular-nums}
+  .hud b.warn{color:var(--warn)}
+  .ctl{display:flex;gap:10px;align-items:center;margin:10px 0 8px;flex-wrap:wrap}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  button.on{border-color:var(--grn);color:var(--grn)}
+  button.kill{border-color:rgba(255,92,108,.5);color:var(--red)} button.kill:hover{border-color:var(--red)}
+  .note{font-size:11px;color:var(--faint);margin:2px 2px 16px;max-width:730px}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:16px 0;max-width:730px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .box ul{margin:6px 0 0;padding-left:18px} .box li{margin:4px 0}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+  .flash{color:var(--red);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID.EXE</div>
+  <h1>the energy pyramid</h1>
+  <p>The roots at the bottom make food. Every niche above them eats only <b>a tenth of what its
+  parent has</b> — Lindeman's real rule for how energy climbs a food chain. Watch the tower build,
+  then <b class="flash">knock out a middle niche</b> and see everything it was feeding go dark.
+  Flip to <b>self-feeding</b> and the same knockout stops mattering — that contrast is the whole
+  proof that the dependency is real.</p>
+
+  <div class="stage">
+    <canvas id="c" height="440"></canvas>
+    <canvas id="wave" height="70"></canvas>
+  </div>
+  <div class="hud">
+    <span>tick <b id="t">0</b></span>
+    <span>population <b id="pop">0</b></span>
+    <span>niches <b id="nodes">0</b></span>
+    <span>tower height <b id="depth">0</b></span>
+    <span>mode <b id="mode">energetic</b></span>
+    <span>re-adoptions <b id="reinv">0</b></span>
+    <span id="ko" class="flash"></span>
+  </div>
+  <div class="ctl">
+    <button id="modeBtn" class="on">energetic (fed through parent)</button>
+    <button id="killBtn" class="kill">✕ hard knock out (watch it die)</button>
+    <button id="softBtn" class="kill">≈ gentle knock out (watch it try to heal)</button>
+    <button id="resetBtn">reset</button>
+  </div>
+  <div class="ctl" style="font-size:11.5px">
+    <span>branch grace (self-sufficiency of a severed branch):&nbsp;</span>
+    <input id="grace" type="range" min="0" max="100" value="22" style="accent-color:#00ff88">
+    <b id="graceVal" style="color:#00ff88">0.22</b>
+    <span style="color:#5a5f6e">&nbsp;sweet spot ≈ 0.20–0.25</span>
+  </div>
+  <div class="note">Green = a living niche, brighter = more food flowing through it, bigger = more
+  organisms. Lines are "feeds". The trace below is total population over time.</div>
+
+  <div class="box theory">
+    <div class="lbl">WHAT YOU'RE WATCHING</div>
+    <p style="margin:0">Energy enters at the bottom and thins as it rises, so the pyramid caps its own
+    height — that's why the tower is short, not broken. A middle niche isn't just <i>connected</i> to
+    the ones above it; it <b>feeds</b> them. Cut it, and its dependents starve. In self-feeding mode
+    every niche makes its own food, so cutting a "parent" only snips a line — nobody upstairs even
+    notices. Same cut, opposite outcome: that's how you know the collapse is about energy, not wiring.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <ul>
+      <li><b>Measured, headless, 3 seeds:</b> knock out a mid niche → <b>100%</b> of the descendants
+      collapse in the energetic world vs <b>0%</b> in the self-feeding control. Real, controlled
+      energetic dependency. (In-browser above is a smaller live run of the same engine.)</li>
+      <li><b>Re-invention EXISTS, but only in a thin window (updated).</b> Hard knockout kills the
+      lineage, so nothing regrows (0/3). The gentle knockout leaves the branch alive but starving, and
+      then a <b>grace sweep</b> found the tradeoff: at grace 0 the branch dies before rescue; at grace
+      <b>0.20–0.25</b> it crashes ~50% then a NEW, differently-keyed niche spontaneously re-adopts it
+      and heals it back to ~92% (2–3 of 6 seeds, 3–4 re-adoption events); above 0.30 it just self-feeds
+      and the knockout stops meaning anything. Enough hardiness to survive the crash, not so much the
+      crash never happens. Move the slider and watch the re-adoptions counter.</li>
+      <li><b>Still not a breakthrough — but a real, measured positive.</b> Spontaneous re-connection
+      happens, and we have the window for it. Honest limits: it's noisy (2–3/6, not reliable), and the
+      "grace" is a dial I added, so the system doesn't yet self-tune into the window on its own. Next:
+      make the branch's hardiness emergent, not a knob.</li>
+    </ul>
+  </div>
+
+  <p class="foot">Energetic nesting via Lindeman's ~10% transfer. Basal production is capped so depth
+  can't grow forever. Engine <code>/void/lib/graph.js</code>, test <code>energetic-exp.js</code>,
+  measured before drawn. Part of <a href="/void/graph">the breathing graph</a> line of work.</p>
+</div>
+
+<script src="/void/lib/graph.js"></script>
+<script>
+(function(){
+  const cv = document.getElementById('c'), wv = document.getElementById('wave');
+  const cx = cv.getContext('2d'), wx = wv.getContext('2d');
+  function fit(){ const w = cv.parentElement.clientWidth; for(const el of [cv,wv]){ el.width=w; } }
+  fit(); addEventListener('resize', fit);
+
+  let g, energetic = true, popHist = [], koMsg = '', koTimer = 0;
+  let grace = 0.22;
+  function build(){
+    g = new Graph({
+      seed: (Date.now() & 0xffff) || 7, roots: 2, seedPerRoot: 8,
+      construct: true, regulate: true, nodeCap: 10, maxNodes: 24,
+      energetic: energetic, resourceMode: !energetic, regen: energetic ? 8 : 40,
+      transfer: 0.4, basal: 42, stockMax: 90, orphanGrace: grace,
+    });
+    popHist = []; koMsg = ''; koTimer = 0;
+  }
+  build();
+
+  function layout(){
+    // group nodes by depth; x-spread within each depth band; y from bottom(root) up
+    const byDepth = new Map(); let maxD = 0;
+    for(const nd of g.nodes.values()){ if(!byDepth.has(nd.depth)) byDepth.set(nd.depth,[]); byDepth.get(nd.depth).push(nd); if(nd.depth>maxD) maxD=nd.depth; }
+    const H = cv.height, W = cv.width, pad = 34, bandH = (H - pad*2) / (maxD + 1);
+    const pos = new Map();
+    for(const [d, arr] of byDepth){
+      arr.sort((a,b)=>a.id-b.id);
+      const y = H - pad - d*bandH;
+      const n = arr.length;
+      for(let i=0;i<n;i++){ const x = pad + (W-pad*2) * ((i+0.5)/n); pos.set(arr[i].id, {x,y}); }
+    }
+    return pos;
+  }
+
+  function draw(){
+    const pos = layout();
+    cx.clearRect(0,0,cv.width,cv.height);
+    // edges
+    cx.lineWidth = 1;
+    for(const nd of g.nodes.values()){
+      const p = pos.get(nd.id); if(!p) continue;
+      for(const e of nd.edges){ const q = pos.get(e); const cn = g.nodes.get(e);
+        if(!q || !cn || cn.depth !== nd.depth+1) continue;
+        cx.strokeStyle = 'rgba(168,85,247,'+(0.10+0.5*Math.min(1,nd.stock/60))+')';
+        cx.beginPath(); cx.moveTo(p.x,p.y); cx.lineTo(q.x,q.y); cx.stroke();
+      }
+    }
+    // nodes
+    for(const nd of g.nodes.values()){
+      const p = pos.get(nd.id); if(!p) continue;
+      const fed = Math.min(1, nd.stock/70);
+      const r = 3 + Math.sqrt(nd.occ)*2.4;
+      const isRoot = nd.depth===0;
+      const col = isRoot ? [255,154,60] : [0,255,136];
+      cx.beginPath(); cx.arc(p.x,p.y,r,0,7);
+      cx.fillStyle = 'rgba('+col[0]+','+col[1]+','+col[2]+','+(0.20+0.75*fed)+')';
+      cx.fill();
+      if(nd.occ>0){ cx.strokeStyle='rgba('+col[0]+','+col[1]+','+col[2]+',0.9)'; cx.lineWidth=1; cx.stroke(); }
+    }
+    // depth labels
+    cx.fillStyle='rgba(90,95,110,.8)'; cx.font='10px ui-monospace';
+    cx.fillText('roots · basal food', 8, cv.height-8);
+  }
+
+  function drawWave(){
+    wx.clearRect(0,0,wv.width,wv.height);
+    const H=wv.height, W=wv.width, n=popHist.length; if(n<2) return;
+    const mx = Math.max(10, ...popHist);
+    wx.beginPath();
+    for(let i=0;i<n;i++){ const x=W*(i/(n-1)); const y=H-4-(H-8)*(popHist[i]/mx); i?wx.lineTo(x,y):wx.moveTo(x,y); }
+    wx.strokeStyle='#00ff88'; wx.lineWidth=1.5; wx.stroke();
+    wx.fillStyle='rgba(90,95,110,.9)'; wx.font='10px ui-monospace';
+    wx.fillText('population over time', 8, 14);
+  }
+
+  function pickMid(){
+    let best=null, bestOcc=0;
+    for(const nd of g.nodes.values()){
+      if(nd.depth<1) continue;
+      const above = g.occIn(g.subtree(nd.id)) - g.occIn(new Set([nd.id]));
+      if(above>bestOcc){ best=nd; bestOcc=above; }
+    }
+    return {best, bestOcc};
+  }
+  function knockout(){
+    const {best, bestOcc} = pickMid();
+    if(!best){ koMsg = 'no middle niche with dependents yet — let it grow a bit'; koTimer=200; return; }
+    g.knockout(best.id, {blockReq:true});
+    koMsg = (energetic?'HARD cut: killed a niche feeding '+bestOcc+' above it — watch them starve'
+                      :'cut a niche — but everyone self-feeds, so nothing upstairs dies');
+    koTimer = 320;
+  }
+  function softKnockout(){
+    const {best, bestOcc} = pickMid();
+    if(!best){ koMsg = 'no middle niche with dependents yet — let it grow a bit'; koTimer=200; return; }
+    g.softKnockout(best.id, {blockReq:true});
+    koMsg = 'GENTLE cut: severed a niche feeding '+bestOcc+' above (grace '+grace.toFixed(2)+'). They dip, then may get re-adopted by a NEW niche';
+    koTimer = 400;
+  }
+
+  document.getElementById('modeBtn').onclick = function(){
+    energetic = !energetic; this.classList.toggle('on', energetic);
+    this.textContent = energetic ? 'energetic (fed through parent)' : 'self-feeding (topological)';
+    document.getElementById('mode').textContent = energetic?'energetic':'self-feeding';
+    build();
+  };
+  document.getElementById('killBtn').onclick = knockout;
+  document.getElementById('softBtn').onclick = softKnockout;
+  document.getElementById('resetBtn').onclick = build;
+  document.getElementById('grace').oninput = function(){
+    grace = (+this.value)/100; document.getElementById('graceVal').textContent = grace.toFixed(2);
+    if(g) g.orphanGrace = grace;   // live: affects any current + future orphans
+  };
+
+  let frame=0;
+  function loop(){
+    frame++;
+    if(frame % 3 === 0) g.step();   // ~20 ticks/sec so a small world is watchable, not a blur
+    const s = g.stats();
+    popHist.push(s.pop); if(popHist.length>240) popHist.shift();
+    document.getElementById('t').textContent = s.tick;
+    document.getElementById('pop').textContent = s.pop;
+    document.getElementById('nodes').textContent = s.occNodes;
+    document.getElementById('depth').textContent = s.maxDepth;
+    document.getElementById('reinv').textContent = s.reinventions;
+    const koEl = document.getElementById('ko');
+    if(koTimer>0){ koTimer--; koEl.textContent = koMsg; } else koEl.textContent='';
+    draw(); drawWave();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+</script>
+</body>
+</html>

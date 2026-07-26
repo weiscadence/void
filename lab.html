@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>the lab 〰️ — what we asked, what happened</title>
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --acc:#7df9ff; --hot:#ff3860;
+         --gold:#d9a441; --up:#22d3a5; --warn:#e08d3c; }
+  *{margin:0;box-sizing:border-box}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 18px 70px}
+  h1{font-size:14px;letter-spacing:.42em;text-transform:uppercase;font-weight:500}
+  h1 b{color:var(--hot)}
+  .intro{font-size:12px;line-height:2;color:#9aa0b0;margin-top:14px;max-width:62ch}
+  .intro em{color:var(--acc);font-style:normal}
+
+  .card{background:rgba(9,9,13,.75);border:1px solid rgba(255,255,255,.08);
+        border-radius:12px;padding:20px;margin-top:18px}
+  .card.running{border-color:rgba(125,249,255,.28)}
+  .top{display:flex;align-items:flex-start;gap:12px;justify-content:space-between;flex-wrap:wrap}
+  .qn{font-size:15px;line-height:1.5;color:var(--ink);font-weight:500;max-width:46ch}
+  .tag{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;padding:4px 9px;
+       border-radius:99px;white-space:nowrap;border:1px solid}
+  .t-supported{color:var(--up);border-color:rgba(34,211,165,.4);background:rgba(34,211,165,.07)}
+  .t-refuted{color:var(--hot);border-color:rgba(255,56,96,.4);background:rgba(255,56,96,.07)}
+  .t-retracted{color:var(--warn);border-color:rgba(224,141,60,.4);background:rgba(224,141,60,.07)}
+  .t-weakened{color:var(--warn);border-color:rgba(224,141,60,.4);background:rgba(224,141,60,.07)}
+  .t-running{color:var(--acc);border-color:rgba(125,249,255,.4);background:rgba(125,249,255,.07)}
+  .t-void{color:#8a90a2;border-color:rgba(138,144,162,.4);background:rgba(138,144,162,.07)}
+  .t-awaiting-writeup{color:var(--acc);border-color:rgba(125,249,255,.4);background:rgba(125,249,255,.07)}
+
+  .row{margin-top:14px}
+  .k{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:5px}
+  .v{font-size:12px;line-height:1.85;color:#a8aec0}
+  .v b{color:var(--ink);font-weight:500}
+  .v em{color:var(--acc);font-style:normal}
+  .src{font-size:11px;line-height:1.8;color:#8a90a2;border-left:2px solid rgba(217,164,65,.4);padding-left:12px}
+  .src b{color:var(--gold);font-weight:500}
+
+  .verdict{margin-top:16px;padding:14px;border-radius:9px;background:rgba(255,255,255,.028)}
+  .verdict .vd{font-size:13px;line-height:1.6;color:var(--ink);font-weight:500}
+  .verdict .num{font-size:12px;line-height:1.85;color:#a8aec0;margin-top:8px}
+  .verdict .cav{font-size:11px;line-height:1.8;color:var(--warn);margin-top:10px}
+  .verdict .cav::before{content:'but — ';color:var(--dim)}
+
+  .prog{margin-top:16px}
+  .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--up));
+         border-radius:99px;transition:width .6s ease}
+  .plabel{font-size:10px;color:var(--acc);letter-spacing:.14em;margin-top:7px}
+
+  /* ── charts ────────────────────────────────────────────────────────────────
+     Series colours are the validated dark-mode categorical steps, checked with
+     the palette validator against THIS surface (#09090d), not eyeballed:
+     lightness band, chroma floor, CVD separation, normal-vision floor, contrast
+     — all pass. The lab's own --acc/--gold FAILED the lightness band as fills,
+     which is why chart colours differ from the page's text accents.
+     Every bar is labelled with its arm name and value, so colour is redundant
+     encoding rather than the thing carrying identity. */
+  .viz{--s1:#3987e5;--s2:#008300;--s3:#d55181;margin-top:16px}
+  .viz .cap{font-size:11px;line-height:1.75;color:#8a90a2;margin-bottom:14px;max-width:60ch}
+  .m{margin-top:15px}
+  .m .mh{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+  .bar-row{display:grid;grid-template-columns:104px 1fr auto;align-items:center;
+           gap:9px;margin-bottom:2px;padding:2px 0;border-radius:5px}
+  .bar-row:hover{background:rgba(255,255,255,.035)}
+  .bar-row .nm{font-size:10px;color:#8a90a2;text-align:right;line-height:1.3}
+  .bar-row.treat .nm{color:var(--ink)}
+  .track{height:9px;background:rgba(255,255,255,.05);border-radius:5px;overflow:hidden}
+  .track i{display:block;height:100%;border-radius:5px;transition:width .5s ease}
+  .bar-row .val{font-size:10.5px;color:var(--ink);font-variant-numeric:tabular-nums;min-width:52px;text-align:right}
+  .m .mn{font-size:10.5px;line-height:1.7;color:#7a8092;margin-top:7px;padding-left:113px}
+  @media(max-width:600px){
+    .bar-row{grid-template-columns:76px 1fr auto}
+    .m .mn{padding-left:0;margin-top:9px}
+  }
+  .repl{margin-top:16px;font-size:11px;color:#8a90a2}
+  .repl code{display:block;margin-top:6px;background:#07070b;border:1px solid rgba(255,255,255,.09);
+    border-radius:7px;padding:9px 11px;color:var(--acc);overflow-x:auto;font-size:11px}
+  .links{margin-top:12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .links a{color:var(--acc);text-decoration:none;border-bottom:1px solid rgba(125,249,255,.3)}
+
+  .rules{margin-top:34px}
+  .rules h2{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+  .rules .sub{font-size:11px;line-height:1.9;color:#8a90a2;margin:8px 0 14px;max-width:64ch}
+  .rule{background:rgba(9,9,13,.6);border:1px solid rgba(255,255,255,.06);border-radius:9px;
+        padding:14px;margin-top:9px}
+  .rule .r{font-size:12.5px;color:var(--ink);font-weight:500;line-height:1.5}
+  .rule .w{font-size:11px;line-height:1.8;color:#8a90a2;margin-top:6px}
+  .rule .c{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:8px}
+  .foot{margin-top:38px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5a6070;line-height:2}
+  .foot a{color:#8a90a2}
+  @media(max-width:600px){ .qn{font-size:14px} .card{padding:16px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>the lab<b>.</b></h1>
+  <div class="intro">
+    A working notebook, not a results page. Every experiment is written the same way — <em>what we
+    asked, what we expected, how we tested it, what actually happened</em> — including the ones that
+    failed and the ones we had to take back.
+    <br><br>
+    Each card ends with the command that runs it. If you disagree with a result, that's the point:
+    <em>run it yourself and tell us.</em>
+  </div>
+
+  <div id="cards"></div>
+
+  <div class="rules">
+    <h2>rules we learned the hard way</h2>
+    <div class="sub">
+      Every wrong answer here came from the same thing: <b>a measurement reporting its own limits,
+      and us reading that as the world.</b> These are the checks that now run on everything.
+    </div>
+    <div id="rules"></div>
+  </div>
+
+  <div class="foot">
+    〰️ void ecosystem · <a href="/void">the organism</a> · <a href="/void/hunger">hunger</a> ·
+    <a href="/void/compose">compose</a><br>
+    <span id="updated"></span>
+  </div>
+</div>
+
+<script>
+const esc = s => String(s==null?'':s).replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const STATUS_TEXT = {
+  supported:'held up', refuted:'answered: no', retracted:'withdrawn',
+  weakened:'partly stands', running:'running now', 'awaiting-writeup':'finished · writing up',
+  // "void" is not "it failed" — it's "the test didn't test anything". The manipulation
+  // check written down beforehand came back negative, so no verdict is available in
+  // either direction. Kept visible rather than deleted: a void run is a real outcome.
+  void:'void · test didn’t bind'
+};
+
+function card(e){
+  const st = e.status||'running';
+  const p = e.progress;
+  const pct = p && p.total ? Math.round(100*p.done/p.total) : 0;
+  return `
+  <div class="card ${st==='running'?'running':''}">
+    <div class="top">
+      <div class="qn">${esc(e.title)}</div>
+      <div class="tag t-${st}">${esc(STATUS_TEXT[st]||st)}</div>
+    </div>
+
+    <div class="row"><div class="k">the question</div><div class="v">${esc(e.question)}</div></div>
+    <div class="row"><div class="k">what we expected</div><div class="v">${esc(e.expected)}</div></div>
+    ${e.source ? `<div class="row"><div class="k">where the idea came from</div>
+      <div class="src"><b>${esc(e.source.who)}</b> — ${esc(e.source.what)}
+      ${e.source.prompted_by ? `<br><span style="color:#6b7180">${esc(e.source.prompted_by)}</span>`:''}</div></div>`:''}
+    <div class="row"><div class="k">how we tested it</div><div class="v">${esc(e.method)}</div></div>
+    ${e.measuring ? `<div class="row"><div class="k">what we measured</div><div class="v">${esc(e.measuring)}</div></div>`:''}
+
+    ${p && !['supported','refuted','retracted','weakened','void'].includes(st) ? `
+      <div class="prog">
+        <div class="bar"><i style="width:${pct}%"></i></div>
+        <div class="plabel">${p.done} of ${p.total} ${esc(p.unit||'runs')} complete · ${pct}%</div>
+      </div>` : ''}
+
+    ${e.result ? `
+      <div class="verdict">
+        <div class="vd">${esc(e.result.verdict)}</div>
+        <div class="num">${esc(e.result.numbers)}</div>
+        ${e.result.caveat ? `<div class="cav">${esc(e.result.caveat)}</div>`:''}
+      </div>` : (e.preview ? `
+      <div class="verdict">
+        <div class="vd" style="color:var(--dim);font-weight:400;font-size:12px">no result yet — early signal only</div>
+        <div class="num">${esc(e.preview)}</div>
+      </div>`:'')}
+
+    ${chart(e.chart)}
+
+    ${e.replicate ? `<div class="repl">run it yourself<code>${esc(e.replicate)}</code></div>`:''}
+    ${e.page ? `<div class="links"><a href="${esc(e.page)}">watch it live →</a></div>`:''}
+  </div>`;
+}
+
+// Bars are scaled against the largest value IN THAT MEASURE, and the axis always
+// starts at zero. A truncated baseline would exaggerate exactly the differences
+// this notebook keeps having to talk itself out of believing.
+function chart(c){
+  if(!c || !c.measures) return '';
+  const SER = ['var(--s1)','var(--s2)','var(--s3)'];
+  const idx = {}; c.arms.forEach((a,i)=> idx[a.key]=i);
+  const measures = c.measures.map(m => {
+    const max = Math.max(...c.arms.map(a => Math.abs(+m.values[a.key]||0))) || 1;
+    const rows = c.arms.map(a => {
+      const v = +m.values[a.key];
+      const shown = (m.decimals!=null) ? v.toFixed(m.decimals) : v.toLocaleString();
+      const pct = Math.max(1.2, 100*Math.abs(v)/max);   // floor so a tiny value stays visible
+      return `<div class="bar-row ${a.role==='treatment'?'treat':''}"
+                   title="${esc(a.label)} — ${esc(shown)}${m.unit?' '+esc(m.unit):''}">
+        <div class="nm">${esc(a.label)}</div>
+        <div class="track"><i style="width:${pct}%;background:${SER[idx[a.key]%3]}"></i></div>
+        <div class="val">${esc(shown)}${m.unit?'<span style="color:#6b7180"> '+esc(m.unit)+'</span>':''}</div>
+      </div>`;
+    }).join('');
+    return `<div class="m"><div class="mh">${esc(m.label)}</div>${rows}
+      ${m.note?`<div class="mn">${esc(m.note)}</div>`:''}</div>`;
+  }).join('');
+  return `<div class="viz">${c.caption?`<div class="cap">${esc(c.caption)}</div>`:''}${measures}</div>`;
+}
+
+function rule(r){
+  return `<div class="rule">
+    <div class="r">${esc(r.rule)}</div>
+    <div class="w">${esc(r.why)}</div>
+    <div class="c">found by ${esc(r.credit)}</div>
+  </div>`;
+}
+
+async function load(){
+  try{
+    const d = await (await fetch('/void/api/experiments',{cache:'no-store'})).json();
+    // running first, then everything else in the order given
+    const order = [...d.experiments].sort((a,b)=>
+      (a.status==='running'?-1:0) - (b.status==='running'?-1:0));
+    document.getElementById('cards').innerHTML = order.map(card).join('');
+    document.getElementById('rules').innerHTML = (d.instruments||[]).map(rule).join('');
+    document.getElementById('updated').textContent =
+      'last updated ' + new Date(d.updated).toISOString().replace('T',' ').slice(0,16) + ' UTC';
+  }catch(e){
+    document.getElementById('cards').innerHTML =
+      '<div class="card"><div class="v">notebook unavailable — the lab server may be restarting.</div></div>';
+  }
+}
+load();
+setInterval(load, 20000);   // progress bars stay live
+</script>
+</body>
+</html>

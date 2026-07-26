@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the pepper</title>
+<!--
+  THE PEPPER — niche construction (lever C). Two worlds, same seed, one switch: can organisms
+  REMODEL the ground they live on? Left = control (no construction). Right = constructors that
+  terraform hostile ground into patches they can eat. Watch the coexisting-kinds counter split.
+  Core: /void/lib/niche.js, tested headless first (paired-seed, pre-registered +0.30 threshold,
+  8/8 seeds). Author has no browser in-container — flagged for eyes-on. Honesty box is load-bearing.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:38px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:27px;line-height:1.2;color:var(--ink);font-weight:600;margin:14px 0 8px}
+  p{max-width:700px;margin:0 0 12px} b{color:var(--ink);font-weight:600} a{color:var(--acc);text-decoration:none}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 6px}
+  @media(max-width:640px){.grid2{grid-template-columns:1fr}}
+  .panel{border:1px solid rgba(255,255,255,.09);border-radius:12px;overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 30%,#0b0b12,#07070a 72%)}
+  .panel .top{display:flex;justify-content:space-between;align-items:baseline;padding:9px 12px 6px;font-size:11px;letter-spacing:.14em}
+  .panel .top .lab{color:var(--ink);font-weight:600} .panel.ctrl .lab{color:var(--dim)} .panel.treat .lab{color:var(--grn)}
+  .panel .niches{font-size:11px;color:var(--faint)} .panel .niches b{font-size:16px;font-variant-numeric:tabular-nums}
+  .panel.ctrl .niches b{color:var(--dim)} .panel.treat .niches b{color:var(--grn)}
+  canvas{display:block;width:100%;image-rendering:pixelated}
+  .delta{text-align:center;font-size:12px;margin:2px 0 14px}
+  .delta b{color:var(--grn);font-size:15px;font-variant-numeric:tabular-nums}
+  .ctl{display:flex;gap:14px;align-items:center;margin:6px 0 18px;flex-wrap:wrap}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  .legend{font-size:10.5px;color:var(--faint);display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:14px 0;max-width:720px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID <span style="color:var(--acc)">〰️</span> · THE PEPPER</div>
+  <h1>What if a thing could remodel the world that judges it?</h1>
+
+  <p>A spicy pepper isn't adapting to its environment — it's <b>editing</b> it, growing a fruit only
+  birds will eat so birds become the ones who spread its seed. That's <b>niche construction</b>:
+  the organism reaches out and changes the rules of the world it lives in. Both grids below start
+  from the same hostile world — most of the ground suits only one kind (the dim majority). The
+  only difference is the switch on the right: <b>can organisms terraform their own cell</b> to a
+  resource they can eat?</p>
+
+  <p>Colour is which resource a cell holds; a dot is an organism sitting on it. Count the colours
+  that persist — that's how many kinds <b>coexist</b>. Left, the hostile world squeezes everyone
+  toward one. Right, constructors manufacture the niches the world refused them.</p>
+
+  <div class="grid2">
+    <div class="panel ctrl">
+      <div class="top"><span class="lab">CONTROL · no construction</span>
+        <span class="niches">coexisting kinds <b id="c_eff">–</b></span></div>
+      <canvas id="c_cv"></canvas>
+    </div>
+    <div class="panel treat">
+      <div class="top"><span class="lab">CONSTRUCTORS · the pepper</span>
+        <span class="niches">coexisting kinds <b id="t_eff">–</b></span></div>
+      <canvas id="t_cv"></canvas>
+    </div>
+  </div>
+  <div class="delta">difference so far: <b id="d_eff">+0.00</b> more coexisting kinds with construction
+    &nbsp;·&nbsp; <span style="color:var(--faint)">tick <b id="tick" style="color:var(--dim)">0</b></span></div>
+
+  <div class="ctl">
+    <button id="play">pause</button>
+    <button id="reseed">new world</button>
+    <span class="legend">
+      <span><span class="sw" style="background:hsl(275,70%,55%)"></span><span class="sw" style="background:hsl(150,70%,50%)"></span><span class="sw" style="background:hsl(35,90%,55%)"></span><span class="sw" style="background:hsl(200,75%,55%)"></span>resource types</span>
+      <span><span class="sw" style="background:#fff;opacity:.9"></span>built ground (organism-made)</span>
+    </span>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">THE FINDING — CONSTRUCTION SUSTAINS COEXISTENCE (MEASURED, 8/8)</div>
+    <p style="margin:0 0 8px">Run headless before this page existed, paired seeds (same world, only the
+    switch differs), with the effect size and threshold fixed <i>before</i> the run: an established
+    constructor community holds <b>+0.84 more coexisting kinds</b> than the control — positive in
+    <b>all 8 seeds</b>, effect nearly 3× its own noise. With a heritable variant (parents prepare
+    the ground their offspring land on) it rises to <b>+1.24</b>. The mechanism is exactly the
+    theory: more ways to make a living means more kinds can coexist (competitive exclusion — the
+    number of coexisting types is bounded by the number of limiting factors, and construction
+    <i>manufactures</i> limiting factors).</p>
+    <p style="margin:0 0 8px">The effect is <b>stable, not a fluke of when you look</b>: held flat at
+    +1.17 from tick 1,000 all the way to 20,000. And it's <b>causal, not just correlated</b> — stop
+    the building mid-run and let the built ground decay, and coexistence <b>collapses straight back
+    to the control baseline</b> in a few thousand ticks. The constructors are ecosystem engineers,
+    and their engineering is load-bearing.</p>
+    <p style="margin:0">Two catches the same runs found: construction <b>can't bootstrap</b> — drop
+    the trait into a world that already has one working niche and it's selected out as dead weight
+    before the specialists who'd benefit can establish. And it <b>isn't inherited</b>: the coexistence
+    is <i>actively maintained</i>, rebuilt every generation, not passed down as a made world.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <p style="margin:0 0 8px"><b>What's true:</b> the coexistence gain is real, pre-registered,
+    replicated 8/8 seeds, stable to 20,000 ticks, and knocked out cleanly (remove construction →
+    it collapses). The world is genuinely hostile (control holds ~1.5 kinds) so there's real room,
+    not a ceiling artifact — an earlier version <i>false-passed on +0.008</i> because I wrote a
+    threshold with no minimum effect size, and that false pass is why this one has one.</p>
+    <p style="margin:0"><b>What's ruled OUT:</b> that descendants <i>inherit</i> the world their
+    ancestors built. I built the instrument for it and it reads ~zero even among builders — this is
+    the <i>active</i> pepper (a maintained niche), not the <i>heritable</i> one. And it's a stable
+    equilibrium, which is the honest opposite of open-endedness: it settles. Nobody has solved
+    open-ended evolution in a web page, us included — this is one clean measured brick, not the wall.</p>
+  </div>
+
+  <p class="foot">Core: <b>/void/lib/niche.js</b> — pure, seeded, tested headless first
+    (niche-exp.js / niche-maint.js). · <a href="/void">synthesis</a> ·
+    <a href="/void/ceiling">the ceiling</a> · <a href="/void/silica">silica</a></p>
+</div>
+
+<script src="/void/lib/niche.js"></script>
+<script>
+(function(){
+  var Niche = window.Niche;
+  const $=id=>document.getElementById(id);
+  if(!Niche){ $('c_eff').textContent='core failed to load'; return; }
+  const COLS=50, ROWS=50;
+  const REGIME={resources:4,window:2,skew:0.85,predation:false,buildThresh:3,buildCost:3,buildP:0.5,
+                seedConstructors:true,cols:COLS,rows:ROWS};
+  // resource hues: purple / green / amber / blue (matches the legend + brand)
+  const HUES=[275,150,35,200];
+  let ctrl, treat, paused=false, seed=5, CELL, WIDTH, H;
+  const cc=$('c_cv'), cx=cc.getContext('2d'), tc=$('t_cv'), tx=tc.getContext('2d');
+
+  function sizeCanvas(){
+    const wrap=cc.parentElement.clientWidth;
+    CELL=Math.max(3,Math.floor(wrap/COLS)); WIDTH=COLS*CELL; H=ROWS*CELL;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    for(const [cv,ctx] of [[cc,cx],[tc,tx]]){
+      cv.width=WIDTH*dpr; cv.height=H*dpr; cv.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+  }
+  function build(){
+    sizeCanvas();
+    ctrl =new Niche({...REGIME,seed,construct:false});
+    treat=new Niche({...REGIME,seed,construct:true,constructMode:'offspring'});
+  }
+  function drawOne(sim,ctx){
+    ctx.fillStyle='#07070a'; ctx.fillRect(0,0,WIDTH,H);
+    for(const o of sim.view()){
+      const x=(o.cell%COLS)*CELL, y=((o.cell/COLS)|0)*CELL;
+      ctx.fillStyle=`hsl(${HUES[o.res%4]},70%,${o.built?62:48}%)`;
+      ctx.fillRect(x,y,CELL-1,CELL-1);
+      if(o.built){ ctx.fillStyle='rgba(255,255,255,.85)'; ctx.fillRect(x+CELL/2-0.5,y+CELL/2-0.5,1.2,1.2); }
+    }
+  }
+  function hud(){
+    const cs=ctrl.stats(), ts=treat.stats();
+    $('c_eff').textContent=cs.effNiches.toFixed(2);
+    $('t_eff').textContent=ts.effNiches.toFixed(2);
+    const d=ts.effNiches-cs.effNiches;
+    $('d_eff').textContent=(d>=0?'+':'')+d.toFixed(2);
+    $('tick').textContent=ts.tick;
+  }
+  function loop(){ if(!paused){ for(let k=0;k<2;k++){ ctrl.step(); treat.step(); } drawOne(ctrl,cx); drawOne(treat,tx); hud(); } requestAnimationFrame(loop); }
+
+  $('play').onclick=()=>{ paused=!paused; $('play').textContent=paused?'play':'pause'; };
+  $('reseed').onclick=()=>{ seed=(seed*7+13)%99991; build(); };
+  let lastW=0;
+  window.addEventListener('resize',()=>{ const w=cc.parentElement.clientWidth; if(w!==lastW){lastW=w;sizeCanvas();} });
+  lastW=cc.parentElement.clientWidth;
+  build(); loop();
+})();
+</script>
+</body>
+</html>

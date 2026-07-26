@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — silica</title>
+<!--
+  SILICA — self-replicating programs under REAL substrate scarcity.
+
+  Every earlier void experiment failed the same way (SYNTHESIS §2, §7): I hand-simulated
+  biology's constraints — conservation, scarcity, death — and the machine fought me, because
+  none of them are native here. Copying code is free and lossless; nothing dies unless I write
+  death; nothing is scarce unless I invent it.
+
+  So stop simulating chemistry. Use what the machine actually rations: MEMORY (bytes) and
+  CYCLES (CPU time). A program reproduces by writing a copy of its own code into free memory —
+  which costs real bytes to hold and real cycles to write. Now copying is expensive, and
+  scarcity is enforced by the substrate, not by my fiat.
+
+  This is Tierra (Ray, 1991) in a browser. HONESTY BOX below states exactly what that does and
+  does not mean. The simulation core is /void/lib/silica.js — pure, seeded, headless-testable.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; -webkit-font-smoothing:antialiased; }
+  .wrap{ max-width:940px; margin:0 auto; padding:38px 18px 90px; }
+  .kick{ font-size:11px; letter-spacing:.34em; color:var(--ink); font-weight:600; }
+  h1{ font-size:27px; line-height:1.2; color:var(--ink); font-weight:600; margin:14px 0 8px; }
+  p{ max-width:700px; margin:0 0 12px; }
+  b{ color:var(--ink); font-weight:600; }
+  a{ color:var(--acc); text-decoration:none; }
+  .stage{ position:relative; border:1px solid rgba(255,255,255,.09); border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 30%,#0b0b12,#07070a 72%); overflow:hidden; margin:18px 0 10px; }
+  canvas{ display:block; width:100%; image-rendering:pixelated; }
+  .hud{ display:flex; flex-wrap:wrap; gap:14px 22px; font-size:11.5px; margin:10px 0 4px; }
+  .hud div{ color:var(--dim); } .hud b{ color:var(--grn); font-variant-numeric:tabular-nums; }
+  .hud .warn b{ color:#ff9a3c; }
+  .ctl{ display:flex; gap:10px; align-items:center; margin:6px 0 20px; flex-wrap:wrap; }
+  button{ background:#0d0d15; color:var(--ink); border:1px solid rgba(255,255,255,.14);
+    border-radius:7px; padding:7px 13px; font:inherit; font-size:12px; cursor:pointer; }
+  button:hover{ border-color:var(--acc); }
+  .box{ border:1px solid rgba(255,255,255,.09); border-radius:10px; padding:14px 16px; margin:14px 0; max-width:720px; }
+  .box .lbl{ font-size:11px; letter-spacing:.2em; font-weight:600; margin-bottom:7px; }
+  .honesty .lbl{ color:#ff9a3c; } .theory .lbl{ color:var(--acc); }
+  .foot{ font-size:11.5px; color:var(--faint); margin-top:26px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID <span style="color:var(--acc)">〰️</span> · SILICA</div>
+  <h1>Organisms that reproduce — some alone, some needing two</h1>
+
+  <p>Each dot is an organism with a variable-length genome, living in a finite grid (memory) and
+  acting only when it can afford the CPU. Two ways to breed, both carried as a gene: <b>asexual</b>
+  ones copy themselves; <b>sexual</b> ones need a partner nearby and their offspring recombine
+  both genomes — a crossover that takes a run of genes from each parent. Reproduction costs cycles
+  in proportion to genome length, and cells are finite, so selection is enforced by the machine,
+  not by fiat.</p>
+
+  <p><b>Colour is genotype</b> — every distinct genome gets its own hue, so what you see is exactly
+  what's measured (the earlier version reported 30 lineages and showed 2 colours; that was the
+  instrument lying, now fixed). Brighter cells are sexual organisms. Mutations flip genes and
+  insert/delete them, so genomes can grow or shrink. Watch the <b>novelty curve</b> below: it
+  never falls to zero — the soup keeps inventing new genotypes forever.</p>
+
+  <div class="stage"><canvas id="c"></canvas>
+    <div id="cap" style="position:absolute;left:12px;bottom:10px;font-size:10.5px;color:var(--faint)"></div>
+  </div>
+
+  <div class="hud">
+    <div>tick <b id="s_tick">0</b></div>
+    <div>organisms alive <b id="s_pop">0</b></div>
+    <div>distinct genotypes <b id="s_geno">0</b></div>
+    <div>mean genome length <b id="s_len">0</b></div>
+    <div>sexual fraction <b id="s_sex">0%</b></div>
+    <div class="warn">novelty /100t <b id="s_nov">0</b></div>
+    <div>genotypes ever seen <b id="s_seen">0</b></div>
+  </div>
+  <div style="margin:2px 0 6px">
+    <div style="font-size:10.5px;letter-spacing:.16em;color:var(--faint);margin-bottom:4px">NOVELTY OVER TIME — new genotypes per 100 ticks (never hits zero: endless novelty)</div>
+    <canvas id="spark" height="46" style="width:100%;height:46px;border:1px solid rgba(255,255,255,.07);border-radius:6px;background:#0b0b12"></canvas>
+  </div>
+  <div class="ctl">
+    <button id="play">pause</button>
+    <button id="reseed">reseed</button>
+    <span style="font-size:11px;color:var(--faint)">two rival resources: <b style="color:var(--dim)">memory</b> (the grid fills) + <b style="color:var(--dim)">cycles</b> (a fixed CPU budget per tick)</span>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">THE FINDING — NOVELTY IS NOT OPEN-ENDEDNESS</div>
+    <p style="margin:0 0 8px">Add variable-length genomes and recombination and the obvious guess is
+    that complexity climbs. It doesn't. Measured headless over 8,000 ticks: the population invents
+    <b>new genotypes forever</b> — 5,000+ never-seen genomes every 100 ticks, no sign of stopping,
+    370,000+ seen in one run. But mean genome length crawls from 5.5 to ~6.3 and stalls. The soup
+    endlessly explores <b>new</b> forms without ever building <b>more complex</b> ones.</p>
+    <p style="margin:0">That gap <i>is</i> the open problem in artificial life, stated exactly: a
+    system can churn novelty eternally and still never become open-ended. Novelty is cheap — drift
+    through a big genome space guarantees it. Accumulating structure is the hard part, and nothing
+    here rewards it, so nothing here grows it. Watching the novelty curve stay pinned high while the
+    length readout stays flat is the whole result.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <p style="margin:0 0 8px"><b>What is true:</b> real organisms with variable-length genomes,
+    two reproduction strategies (asexual + sexual with genuine crossover), heritable mutation, and
+    selection driven by memory + CPU the machine actually meters (<a href="/void">SYNTHESIS §7</a>).
+    Sex persists but only as a fragile ~1–3% minority — the two-fold cost of sex, an old and real
+    result. Three bugs were caught by the novelty instrument going flat (newborns culled before
+    breeding, mates unfindable, an iteration-order starvation) and fixed before this went live.</p>
+    <p style="margin:0"><b>What is NOT claimed:</b> open-ended evolution, or that sex "wins," or that
+    endless new genotypes mean progress — they don't; most are neutral drift. This is closer to
+    Avida/Tierra than to a solution. The honest contribution is the measurement: an instrument that
+    separates novelty from complexity and shows one rising while the other doesn't.</p>
+  </div>
+
+  <p class="foot">Simulation core: <b>/void/lib/silica.js</b> — pure, seeded (reproducible), and tested
+  headless before it was drawn, the same discipline as the rest of the lab. ·
+  <a href="/void">← the synthesis</a> · <a href="/void/creature">the creature</a> · <a href="/void/flow">flow</a></p>
+</div>
+
+<script src="/void/lib/silica.js"></script>
+<script>
+(function(){
+  // silica.js exports via module.exports (node); for the browser, re-expose it. The file ends
+  // with a CommonJS guard, so in a browser `Silica` isn't global — inline a tiny loader that
+  // fetches + evals is overkill; instead the module guard is a no-op in browser and the class
+  // is declared with `class Silica` at top level, so it IS global here. Guard just in case:
+  var Silica = window.Silica;
+  if (typeof Silica === 'undefined') { document.getElementById('cap').textContent = 'core failed to load'; return; }
+
+  const COLS = 60, ROWS = 60;
+  const cv = document.getElementById('c');
+  const ctx = cv.getContext('2d');
+  const sp = document.getElementById('spark');
+  const spx = sp.getContext('2d');
+  let sim, W, H, CELL, paused = false, seed = 7;
+
+  function hue(geno){ return (geno * 2654435761 >>> 0) % 360; }   // distinct genome → distinct hue
+
+  // Canvas sizing is DECOUPLED from the simulation. The grid is a fixed 60×60 no matter the
+  // pixel size, so a resize only rescales the canvas — it must never recreate the population.
+  // (Mobile fires `resize` on scroll when the URL bar hides; the old handler reseeded the whole
+  // sim every scroll — that was the "refreshes every time I scroll" bug.)
+  function sizeCanvas(){
+    const wrap = cv.parentElement.clientWidth;
+    CELL = Math.max(3, Math.floor(wrap / COLS));
+    W = COLS * CELL; H = ROWS * CELL;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function build(){
+    sizeCanvas();
+    sim = new Silica({ seed, cols: COLS, rows: ROWS, cycles: 1500, seedOrganisms: 16 });
+  }
+
+  function draw(){
+    ctx.fillStyle = '#07070a'; ctx.fillRect(0,0,W,H);
+    const cells = sim.view();                         // living organisms only → no gray dead-space
+    for (const o of cells){
+      const x = (o.cell % COLS) * CELL, y = ((o.cell / COLS) | 0) * CELL;
+      ctx.fillStyle = `hsl(${hue(o.geno)},70%,${o.sex ? 72 : 52}%)`;   // sexual = brighter
+      ctx.fillRect(x, y, CELL-1, CELL-1);
+    }
+  }
+
+  const $ = id => document.getElementById(id);
+  function hud(){
+    const s = sim.stats();
+    $('s_tick').textContent = s.tick;
+    $('s_pop').textContent = s.pop;
+    $('s_geno').textContent = s.genotypes;
+    $('s_len').textContent = s.meanLen;
+    $('s_sex').textContent = Math.round(s.sexFrac*100)+'%';
+    $('s_nov').textContent = s.novelRate.toLocaleString();
+    $('s_seen').textContent = s.seenTotal.toLocaleString();
+    $('cap').textContent = s.pop === 0 ? 'extinct — reseed' : `${s.genotypes} distinct genotypes`;
+    drawSpark(s);
+  }
+
+  function drawSpark(s){
+    const w = sp.clientWidth, h = 46;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (sp.width !== w*dpr){ sp.width = w*dpr; sp.height = h*dpr; spx.setTransform(dpr,0,0,dpr,0,0); }
+    spx.clearRect(0,0,w,h);
+    const win = sim.novelWindow || [];
+    if (!win.length) return;
+    const max = Math.max(1, ...win);
+    spx.strokeStyle = '#00ff88'; spx.lineWidth = 1.5; spx.beginPath();
+    win.forEach((v,i) => { const x = (i/(win.length-1||1))*w, y = h - (v/max)*(h-6) - 3;
+      i ? spx.lineTo(x,y) : spx.moveTo(x,y); });
+    spx.stroke();
+  }
+
+  function loop(){
+    if (!paused){ for (let k=0;k<2;k++) sim.step(); draw(); hud(); }
+    requestAnimationFrame(loop);
+  }
+
+  $('play').onclick = () => { paused = !paused; $('play').textContent = paused ? 'play' : 'pause'; };
+  $('reseed').onclick = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; build(); };
+  // resize only rescales the canvas, and only when the WIDTH actually changed (ignores the
+  // height-only scroll resize on mobile). The sim keeps running untouched.
+  let lastW = 0;
+  window.addEventListener('resize', () => {
+    const w = cv.parentElement.clientWidth;
+    if (w !== lastW) { lastW = w; sizeCanvas(); }
+  });
+  lastW = cv.parentElement.clientWidth;
+
+  build(); loop();
+})();
+</script>
+</body>
+</html>

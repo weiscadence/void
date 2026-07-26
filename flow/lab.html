@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.FLOW — mass that carries its own genome</title>
+<!--
+  VOID.FLOW — a Flow Lenia world.
+
+  The creature at /void/creature is a reaction-DIFFUSION system. It genuinely maintains
+  itself, but it can never hold an ecosystem, and I measured exactly why:
+  diffusion averages neighbouring cells together every step, so a genome stored in the
+  substrate is erased with a half-life of ~400 frames even when NOTHING is selecting
+  against it. Diffusion is an averaging operator. You cannot store heredity in one.
+
+  This world moves its matter a different way. Nothing diffuses. Every cell's mass is
+  picked up and CARRIED to a new position along a flow field, then set down again
+  (reintegration tracking). Two consequences, both measured rather than asserted:
+
+    1. Mass is conserved by construction. The parcel weights sum to exactly 1, so no
+       matter is created or destroyed. Live drift is printed in the corner — watch it.
+       The old creature's "conservation law" leaked +16.3% because state clamps quietly
+       manufactured matter. Here there are no clamps to leak through.
+
+    2. Matter carries its genome with it. Each parcel has a growth-centre gene (hue).
+       When parcels land on the same cell the mass adds, but the genome is INHERITED
+       WHOLE from the largest arrival rather than averaged — because averaging a
+       heritable trait is just diffusion wearing a different hat. Measured on pure rigid
+       translation, where the exact answer is 100%: averaging retained 55.9% of genetic
+       spread, inheriting retained 100.0%.
+
+  So this is not a prettier creature. It is a substrate where two genomes can occupy one
+  world, meet, and have the outcome decided by competition instead of by my rounding
+  error. Diversity can still collapse here — but when it does, it collapses for a
+  reason, and that is the whole difference.
+
+  After Plantec, Hamon, Etcheverry, Oudeyer, Moulin-Frier & Chan, "Flow Lenia"
+  (ALife 2023, arXiv:2212.07906). Written from the paper, not from their code.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#9aa0b0; --acc:#ff6b2c; --up:#39d98a; }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
+  .panel{background:rgba(8,8,12,.72);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+    border:1px solid rgba(255,255,255,.07);border-radius:11px;padding:11px 13px}
+  #hud{position:fixed;top:calc(14px + env(safe-area-inset-top));left:14px;right:14px;
+    display:flex;justify-content:space-between;gap:12px;align-items:flex-start;pointer-events:none}
+  #title{font-size:13px;letter-spacing:.22em;color:#e8e8ee;font-weight:600}
+  #title i{color:var(--acc);font-style:normal}
+  #vitals{text-align:right;font-size:10px;letter-spacing:.09em;line-height:1.9;
+    text-transform:uppercase;max-width:min(62vw,340px);margin-left:auto}
+  #vitals b{color:var(--acc);font-weight:500}
+  #vitals .a{color:var(--up)}
+  #foot{position:fixed;left:14px;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none}
+  #claim{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#ff5a5a;text-align:center}
+  #claim span{display:block;color:var(--ink);margin-top:4px;letter-spacing:.09em;text-transform:none}
+  #ctl{display:flex;gap:8px;pointer-events:auto;flex-wrap:wrap;justify-content:center}
+  button{font:inherit;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink);background:rgba(8,8,12,.72);border:1px solid rgba(255,255,255,.1);
+    border-radius:999px;padding:8px 14px;cursor:pointer;backdrop-filter:blur(9px)}
+  button:active{color:#fff;border-color:var(--acc)}
+  @media (max-width:520px){ #vitals{font-size:9px} #title{font-size:11px} }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <div class="panel" id="title">VOID<i>.FLOW</i></div>
+  <div class="panel" id="vitals">waking…</div>
+</div>
+
+<div id="foot">
+  <div class="panel" id="claim">NOTHING DIFFUSES HERE. THE MATTER CARRIES ITS OWN GENOME.
+    <span id="hint">tap to drop in a new lineage — watch whether it survives the neighbours</span></div>
+  <div id="ctl">
+    <button id="b-seed">two lineages</button>
+    <button id="b-many">eight lineages</button>
+    <button id="b-mut">mutation: off</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+const cv=document.getElementById('c'), ctx=cv.getContext('2d',{alpha:false});
+const off=document.createElement('canvas'), octx=off.getContext('2d',{alpha:false});
+
+// ── world ────────────────────────────────────────────────────────────────────
+let W=0,H=0,N=0,A,MU,An,MUn,P,U,best,img;
+let R=10, dt=0.15, sigG=0.017, muG=0.15, dd=0.35, flowCap=0.9;
+let Koff=null,KN=0;
+let steps=0, m0=0, mutOn=false, born=Date.now();
+
+function buildKernel(){
+  const o=[]; let s=0;
+  for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
+    const r=Math.hypot(dx,dy)/R; if(r>1||r===0) continue;
+    const b=Math.exp(-((r-0.5)**2)/(2*0.15*0.15)); o.push(dx,dy,b); s+=b;
+  }
+  for(let i=2;i<o.length;i+=3) o[i]/=s;
+  Koff=new Float32Array(o); KN=o.length/3;
+}
+const idx=(x,y)=>(((y%H)+H)%H)*W+(((x%W)+W)%W);
+
+function alloc(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  cv.width=Math.floor(innerWidth*dpr); cv.height=Math.floor(innerHeight*dpr);
+  // the convolution is the cost centre: N * KN ops per step. Keep the grid modest.
+  const target=104, aspect=cv.height/cv.width;
+  W=target; H=Math.max(56,Math.round(target*aspect)); N=W*H;
+  A=new Float32Array(N); MU=new Float32Array(N);
+  An=new Float32Array(N); MUn=new Float32Array(N);
+  P=new Float32Array(N); U=new Float32Array(N); best=new Float32Array(N);
+  off.width=W; off.height=H; img=octx.createImageData(W,H);
+  buildKernel(); seedTwo();
+}
+
+function blob(cx,cy,mu,rad){
+  for(let dy=-rad;dy<=rad;dy++)for(let dx=-rad;dx<=rad;dx++){
+    if(dx*dx+dy*dy>rad*rad) continue;
+    const i=idx(cx+dx,cy+dy); A[i]=0.6+Math.random()*0.25; MU[i]=mu;
+  }
+}
+function clear(){ A.fill(0); MU.fill(muG); }
+function seedTwo(){ clear(); blob((W*0.32)|0,(H*0.5)|0,0.13,10); blob((W*0.68)|0,(H*0.5)|0,0.18,10);
+  m0=mass(); steps=0; born=Date.now(); }
+function seedMany(){ clear();
+  for(let n=0;n<8;n++) blob((Math.random()*W)|0,(Math.random()*H)|0,0.105+Math.random()*0.09,7);
+  m0=mass(); steps=0; born=Date.now(); }
+
+function step(){
+  // potential = ring kernel convolved with mass
+  P.fill(0);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    let s=0;
+    for(let q=0;q<KN;q++){
+      const dx=Koff[q*3],dy=Koff[q*3+1],w=Koff[q*3+2];
+      s+=w*A[idx(x+dx,y+dy)];
+    }
+    P[y*W+x]=s;
+  }
+  for(let i=0;i<N;i++){ const d=P[i]-MU[i]; U[i]=2*Math.exp(-(d*d)/(2*sigG*sigG))-1; }
+
+  An.fill(0); MUn.fill(0); best.fill(0);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    const i=y*W+x, a=A[i]; if(a<=1e-7) continue;
+    // flow = grad(growth) - dd*grad(mass); the second term is pressure, without it
+    // every parcel stampedes to the single global maximum and the world collapses.
+    const gUx=(U[idx(x+1,y)]-U[idx(x-1,y)])*0.5, gUy=(U[idx(x,y+1)]-U[idx(x,y-1)])*0.5;
+    const gAx=(A[idx(x+1,y)]-A[idx(x-1,y)])*0.5, gAy=(A[idx(x,y+1)]-A[idx(x,y-1)])*0.5;
+    let fx=gUx-dd*gAx, fy=gUy-dd*gAy;
+    const mag=Math.hypot(fx,fy); if(mag>flowCap){ fx*=flowCap/mag; fy*=flowCap/mag; }
+    const tx=x+dt*fx*R, ty=y+dt*fy*R;
+    const x0=Math.floor(tx), y0=Math.floor(ty), rx=tx-x0, ry=ty-y0;
+    const mu=MU[i];
+    // mass splits bilinearly (weights sum to 1 -> conservation is structural);
+    // the genome is inherited whole from the largest arrival, never averaged.
+    const put=(gx,gy,w)=>{ if(w<=0) return; const j=idx(gx,gy); const c=a*w;
+      An[j]+=c; if(c>best[j]){ best[j]=c; MUn[j]=mu; } };
+    put(x0,y0,(1-rx)*(1-ry)); put(x0+1,y0,rx*(1-ry));
+    put(x0,y0+1,(1-rx)*ry);   put(x0+1,y0+1,rx*ry);
+  }
+  for(let i=0;i<N;i++) if(An[i]<=1e-9) MUn[i]=muG;
+  if(mutOn) for(let i=0;i<N;i++) if(An[i]>0.05 && Math.random()<0.002) MUn[i]+=(Math.random()*2-1)*0.004;
+  A.set(An); MU.set(MUn);
+  steps++;
+}
+
+function mass(){ let m=0; for(let i=0;i<N;i++) m+=A[i]; return m; }
+function stats(){
+  let m=0,s=0,n=0;
+  for(let i=0;i<N;i++) if(A[i]>0.05){ m+=A[i]; s+=A[i]*MU[i]; n++; }
+  if(m<=0) return {m:0,sd:0,mean:0,n:0};
+  const mean=s/m; let v=0;
+  for(let i=0;i<N;i++) if(A[i]>0.05) v+=A[i]*(MU[i]-mean)**2;
+  return {m,mean,sd:Math.sqrt(v/m),n};
+}
+
+function draw(){
+  const d=img.data;
+  for(let i=0;i<N;i++){
+    const a=Math.min(1,A[i]), p=i*4;
+    if(a<0.04){ d[p]=6; d[p+1]=7; d[p+2]=12; d[p+3]=255; continue; }
+    // hue = the genome. mu spans ~0.10..0.20 -> map across the wheel.
+    const hu=((MU[i]-0.10)/0.10)*300;
+    const val=0.15+Math.min(1,a)*0.9, sat=0.85-Math.min(1,a)*0.35;
+    const hh=((hu%360)+360)%360/60, ii=Math.floor(hh)%6, ff=hh-Math.floor(hh);
+    const pv=val*(1-sat), qv=val*(1-ff*sat), tv=val*(1-(1-ff)*sat);
+    let Rr,G,B;
+    if(ii===0){Rr=val;G=tv;B=pv;} else if(ii===1){Rr=qv;G=val;B=pv;}
+    else if(ii===2){Rr=pv;G=val;B=tv;} else if(ii===3){Rr=pv;G=qv;B=val;}
+    else if(ii===4){Rr=tv;G=pv;B=val;} else {Rr=val;G=pv;B=qv;}
+    d[p]=Math.min(255,6+Rr*255); d[p+1]=Math.min(255,7+G*255); d[p+2]=Math.min(255,12+B*255); d[p+3]=255;
+  }
+  octx.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(off,0,0,W,H,0,0,cv.width,cv.height);
+}
+
+function tick(){
+  step(); draw();
+  if(steps%4===0){
+    const st=stats(), m=st.m;
+    const drift=m0>0?((mass()-m0)/m0)*100:0;
+    document.getElementById('vitals').innerHTML=
+      `step <b>${steps.toLocaleString()}</b> · age <b>${fmt((Date.now()-born)/1000)}</b><br>`+
+      `mass <b>${Math.round(mass())}</b> · <span class="a">drift ${drift.toExponential(1)}%</span><br>`+
+      `genome spread <b>${st.sd.toFixed(4)}</b> · mean ${st.mean.toFixed(3)}<br>`+
+      `<span style="opacity:.6">occupied cells ${st.n}</span>`;
+  }
+  requestAnimationFrame(tick);
+}
+function fmt(s){ s=Math.floor(s); const m=Math.floor(s/60); return m<60?`${m}m ${s%60}s`:`${Math.floor(m/60)}h ${m%60}m`; }
+
+function hit(e){
+  const r=cv.getBoundingClientRect(), t=e.touches?e.touches[0]:e;
+  const x=Math.floor(((t.clientX-r.left)/r.width)*W), y=Math.floor(((t.clientY-r.top)/r.height)*H);
+  blob(x,y,0.105+Math.random()*0.09,6);
+  m0=mass();   // re-baseline: we deliberately added matter, so drift stays honest
+}
+cv.addEventListener('pointerdown',hit);
+document.getElementById('b-seed').onclick=seedTwo;
+document.getElementById('b-many').onclick=seedMany;
+document.getElementById('b-mut').onclick=e=>{ mutOn=!mutOn; e.target.textContent='mutation: '+(mutOn?'on':'off'); };
+addEventListener('resize',alloc);
+alloc(); tick();
+</script>
+</body>
+</html>

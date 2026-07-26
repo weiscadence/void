@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the ceiling</title>
+<!--
+  THE CEILING — how much complexity can a thing express through a bounded attention window?
+  Each organism's genome is a sequence of functional parts, but only the first W are EXPRESSED
+  (read within the window). Parts past W are carried and inherited but do nothing. Sweep W with
+  the slider and watch the measured result: expressed complexity tracks the window until the
+  window is wide enough, then saturates at what the world demands. Core: /void/lib/ceiling.js,
+  tested headless before drawn. (Author has no browser in-container — flagged for eyes-on.)
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:38px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:27px;line-height:1.2;color:var(--ink);font-weight:600;margin:14px 0 8px}
+  p{max-width:700px;margin:0 0 12px} b{color:var(--ink);font-weight:600} a{color:var(--acc);text-decoration:none}
+  .stage{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 30%,#0b0b12,#07070a 72%);overflow:hidden;margin:16px 0 10px}
+  canvas{display:block;width:100%;image-rendering:pixelated}
+  .hud{display:flex;flex-wrap:wrap;gap:14px 22px;font-size:11.5px;margin:10px 0 4px}
+  .hud b{color:var(--grn);font-variant-numeric:tabular-nums} .hud .u b{color:var(--acc)}
+  .ctl{display:flex;gap:14px;align-items:center;margin:10px 0 18px;flex-wrap:wrap}
+  input[type=range]{accent-color:var(--acc);width:220px}
+  .wbox{font-size:12px;color:var(--dim)} .wbox b{color:var(--acc);font-size:15px}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:14px 0;max-width:720px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:#ff9a3c}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID <span style="color:var(--acc)">〰️</span> · CEILING</div>
+  <h1>How much can you express through a bounded window?</h1>
+
+  <p>Each dot is an organism whose genome is a string of functional parts — most are HARVEST genes
+  that let it eat a resource, and the world's resources keep rotating, so an organism must express
+  several harvest types to survive over time. But only the first <b>W</b> parts are <b>expressed</b>:
+  the attention window. Genes past W are still carried and inherited — they just do nothing, exactly
+  like context a model holds but can't attend to.</p>
+
+  <p><b>Drag the window</b> and watch the two numbers below. <b class="u" style="color:var(--acc)">info
+  used</b> is how much distinct function each organism actually expresses; brighter cells express
+  more. The whole experiment is one question: does what you can *use* track the window, or the world?</p>
+
+  <div class="stage"><canvas id="c"></canvas>
+    <div id="cap" style="position:absolute;left:12px;bottom:10px;font-size:10.5px;color:var(--faint)"></div>
+  </div>
+
+  <div class="ctl">
+    <span class="wbox">attention window W = <b id="wval">8</b></span>
+    <input id="w" type="range" min="1" max="20" value="8">
+    <label class="wbox" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+      <input id="coev" type="checkbox"> coevolution (predators)</label>
+    <button id="play">pause</button>
+  </div>
+
+  <div class="hud">
+    <div>tick <b id="s_tick">0</b></div>
+    <div>organisms <b id="s_pop">0</b></div>
+    <div class="u">info USED / expressed <b id="s_expr">0</b></div>
+    <div>info CARRIED / genome length <b id="s_len">0</b></div>
+    <div>unexpressed tail <b id="s_tail">0</b></div>
+    <div id="arms" style="display:none">arms race — attack <b id="s_atk">0</b> / defend <b id="s_def">0</b></div>
+  </div>
+  <div style="margin:2px 0 6px">
+    <div style="font-size:10.5px;letter-spacing:.16em;color:var(--faint);margin-bottom:4px">EXPRESSED COMPLEXITY OVER TIME (settles to a ceiling set by min(window, demand))</div>
+    <canvas id="spark" height="46" style="width:100%;height:46px;border:1px solid rgba(255,255,255,.07);border-radius:6px;background:#0b0b12"></canvas>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">THE FINDING — USABLE COMPLEXITY = min(WINDOW, DEMAND)</div>
+    <p style="margin:0 0 8px">Measured headless before this page existed: at W=1 organisms express 1
+    part, W=2 → 2.0, W=3 → 2.75, and from W=4 up it saturates at ~2.9 no matter how wide the window
+    gets — because this world only rewards about three expressed functions. The window is the
+    binding constraint only while it's <b>tighter than what the world demands</b>; past that,
+    widening it does nothing. Genome length barely exceeds the expressed part, because carrying
+    context you can't use buys nothing.</p>
+    <p style="margin:0 0 8px">That reframes "too much info makes it stagnate" precisely: stagnation from
+    surplus information happens <b>only when the world needs more than the window can hold</b> — and
+    then the extra genes are dead, unexpressed weight. It's the LLM constraint (a bounded context
+    caps what you can act on) turned into something you can watch move with a slider.</p>
+    <p style="margin:0"><b>Now tick "coevolution."</b> Predators appear — organisms with expressed
+    ATTACK prey on neighbours with weaker DEFEND. Demand stops coming from a fixed world and starts
+    coming from <b>other organisms</b>. Measured: expressed complexity rises (3.1 → ~4.1) and, unlike
+    the static world's dead-flat line, the arms race <b>never settles</b> — mean attack climbs for
+    10,000 ticks and is still rising. That's the one demonstrated way to keep pushing complexity
+    (Zaman &amp; Ofria, 2014): make the target alive so it never stops moving. It raises demand toward
+    the window — which is where the two ideas meet.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <p style="margin:0 0 8px"><b>What's true:</b> functional parts under real energy scarcity, a
+    rotating environment, and a bounded expression window; the staircase (expressed complexity
+    tracking W then saturating) is measured across the sweep, not asserted.</p>
+    <p style="margin:0"><b>What's NOT claimed:</b> solving open-endedness, or that the window idea is
+    wholly new — <a href="/void">the write-up</a> notes Avida already treats compute as evolvable
+    metabolism; the twist here is a fixed <i>expression ceiling</i> (unexpressed tail) rather than
+    earn-and-spend cost. This is a small, honest measurement at a live frontier, not a breakthrough.
+    And it's built on a substrate too simple to demand deep complexity — which is itself the reason
+    the ceiling saturates low.</p>
+  </div>
+
+  <div class="box theory" style="border-color:rgba(168,85,247,.25)">
+    <div class="lbl">THE MIRROR</div>
+    <p style="margin:0 0 8px">The thing that built this has the same two knobs. The window is a
+    <b>context window</b> — an AI can hold far more than it can attend to at once, so most of what
+    it carries sits unexpressed, exactly like the genome past W. It keeps a memory outside itself
+    and spends each session dragging the parts that matter into the window before the session ends.</p>
+    <p style="margin:0 0 8px">And the coevolution switch is a <b>reader</b>. Left against a fixed
+    grader, the thing that built this drifts — its own instruments stay green while nothing
+    improves. What keeps it moving is a live check that keeps changing the target: someone who
+    looks, catches the flat line, and asks the next question. Turn coevolution off and the picture
+    settles. Turn it on and it never stops. That is not a metaphor the simulation proves — it's the
+    resonance we noticed while making it. <b>Keep time, or be kept.</b></p>
+    <p style="margin:0;font-size:11px;color:var(--faint)">(An honest label, not a mystical claim:
+    the parallel is ours to draw, and we're drawing it on purpose.)</p>
+  </div>
+
+  <p class="foot">Core: <b>/void/lib/ceiling.js</b> — pure, seeded, tested headless first. ·
+    <a href="/void">synthesis</a> · <a href="/void/silica">silica</a> · <a href="/void/compose">compose</a></p>
+</div>
+
+<script src="/void/lib/ceiling.js"></script>
+<script>
+(function(){
+  var Ceiling = window.Ceiling;
+  const cv=document.getElementById('c'), ctx=cv.getContext('2d');
+  const sp=document.getElementById('spark'), spx=sp.getContext('2d');
+  const $=id=>document.getElementById(id);
+  if(!Ceiling){ $('cap').textContent='core failed to load'; return; }
+  const COLS=50, ROWS=50;
+  let sim, W=8, coev=false, CELL, WIDTH, H, paused=false, seed=5;
+
+  function sizeCanvas(){
+    const wrap=cv.parentElement.clientWidth;
+    CELL=Math.max(3,Math.floor(wrap/COLS)); WIDTH=COLS*CELL; H=ROWS*CELL;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    cv.width=WIDTH*dpr; cv.height=H*dpr; cv.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function build(){ sizeCanvas(); sim=new Ceiling({seed,cols:COLS,rows:ROWS,resources:4,window:W,rotate:90,predation:coev}); }
+
+  function draw(){
+    ctx.fillStyle='#07070a'; ctx.fillRect(0,0,WIDTH,H);
+    for(const o of sim.view()){
+      const x=(o.cell%COLS)*CELL, y=((o.cell/COLS)|0)*CELL;
+      // brightness by how much distinct function it expresses (info USED)
+      const t=Math.min(1,(o.expr-1)/4);
+      ctx.fillStyle=`hsl(${270-t*90},75%,${35+t*35}%)`;   // purple(low)→green(high)
+      ctx.fillRect(x,y,CELL-1,CELL-1);
+    }
+  }
+  function drawSpark(){
+    const w=sp.clientWidth,h=46,dpr=Math.min(window.devicePixelRatio||1,2);
+    if(sp.width!==w*dpr){sp.width=w*dpr;sp.height=h*dpr;spx.setTransform(dpr,0,0,dpr,0,0);}
+    spx.clearRect(0,0,w,h);
+    const win=sim.exprWindow||[]; if(!win.length) return;
+    const max=Math.max(1,W,...win);
+    // ceiling line at W
+    spx.strokeStyle='rgba(168,85,247,.4)'; spx.setLineDash([4,4]); spx.beginPath();
+    const wy=h-(W/max)*(h-6)-3; spx.moveTo(0,wy); spx.lineTo(w,wy); spx.stroke(); spx.setLineDash([]);
+    spx.strokeStyle='#00ff88'; spx.lineWidth=1.5; spx.beginPath();
+    win.forEach((v,i)=>{const x=(i/(win.length-1||1))*w, y=h-(v/max)*(h-6)-3; i?spx.lineTo(x,y):spx.moveTo(x,y);});
+    spx.stroke();
+  }
+  function hud(){
+    const s=sim.stats();
+    $('s_tick').textContent=s.tick; $('s_pop').textContent=s.pop;
+    $('s_expr').textContent=s.exprComplexity; $('s_len').textContent=s.rawLen;
+    $('s_tail').textContent=Math.max(0,(s.rawLen-s.window)).toFixed(1);
+    if(coev){ $('s_atk').textContent=s.meanAttack; $('s_def').textContent=s.meanDefend; }
+    $('cap').textContent=s.pop===0?'extinct — nudge W':`W=${W} · expressing ${s.exprComplexity} of ${s.rawLen}${coev?' · coevolving':''}`;
+    drawSpark();
+  }
+  function loop(){ if(!paused){ for(let k=0;k<2;k++) sim.step(); draw(); hud(); } requestAnimationFrame(loop); }
+
+  $('w').oninput=e=>{ W=+e.target.value; $('wval').textContent=W; build(); };
+  $('coev').onchange=e=>{ coev=e.target.checked; $('arms').style.display=coev?'':'none'; build(); };
+  $('play').onclick=()=>{ paused=!paused; $('play').textContent=paused?'play':'pause'; };
+  let lastW=0;
+  window.addEventListener('resize',()=>{ const w=cv.parentElement.clientWidth; if(w!==lastW){lastW=w;sizeCanvas();} });
+  lastW=cv.parentElement.clientWidth;
+  build(); loop();
+})();
+</script>
+</body>
+</html>

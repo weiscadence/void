@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — open vocabulary</title>
+<!--
+  OPEN VOCABULARY — the one architecture that broke void's defining plateau. Three worlds, same
+  rules, one difference: how many KINDS of thing an organism can become. Left: a fixed menu of 8.
+  Middle: an open, generated vocabulary. Right: open vocabulary + niche construction. Watch the
+  "stable niches" counter — the fixed menu freezes, open-alone freezes higher, open+construction
+  keeps climbing. Core: /void/lib/open.js, measured headless first (menu 6.8 / open 39 / open+build
+  90.7 stable niches at 40k ticks). No browser in-container — flagged for eyes-on.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:960px;margin:0 auto;padding:38px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:27px;line-height:1.2;color:var(--ink);font-weight:600;margin:14px 0 8px}
+  p{max-width:720px;margin:0 0 12px} b{color:var(--ink);font-weight:600} a{color:var(--acc);text-decoration:none}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:18px 0 6px}
+  @media(max-width:680px){.grid3{grid-template-columns:1fr}}
+  .panel{border:1px solid rgba(255,255,255,.09);border-radius:11px;overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 30%,#0b0b12,#07070a 72%)}
+  .panel .top{padding:9px 11px 5px}
+  .panel .lab{font-size:10px;letter-spacing:.13em;color:var(--dim);font-weight:600}
+  .panel.o3 .lab{color:var(--grn)} .panel.o1 .lab{color:var(--warn)}
+  .panel .big{font-size:22px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
+  .panel.o3 .big{color:var(--grn)} .panel .big small{font-size:10px;color:var(--faint);font-weight:400;letter-spacing:.08em}
+  canvas{display:block;width:100%;image-rendering:pixelated}
+  .meta{font-size:10px;color:var(--faint);padding:5px 11px 9px;display:flex;justify-content:space-between}
+  .ctl{display:flex;gap:12px;align-items:center;margin:6px 0 16px;flex-wrap:wrap}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:14px 0;max-width:740px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID <span style="color:var(--acc)">〰️</span> · OPEN VOCABULARY</div>
+  <h1>The night void stopped settling.</h1>
+
+  <p>Every world here before this one plateaued — invented a while, then stopped getting more complex.
+  The reason was always the same: a <b>fixed menu</b> of things an organism could be. You can't keep
+  getting richer out of a closed dictionary; you can only stack more copies of the words you already
+  have.</p>
+
+  <p>So the genome stopped being a parts-list and became a tiny <b>program that computes a key</b> —
+  and the set of possible keys isn't a menu, it's <b>generated</b>, open. A cell feeds you only if your
+  key fits its lock, and with niche construction you can <b>plant your own key</b> as a lock. Three
+  worlds below, identical but for one thing — <b>how open the vocabulary is</b>. Watch the counter.</p>
+
+  <div class="grid3">
+    <div class="panel"><div class="top"><div class="lab">FIXED MENU · 8 kinds</div>
+      <div class="big" id="m_n">–<small> stable niches</small></div></div>
+      <canvas id="m_cv"></canvas><div class="meta"><span>the ceiling</span><span id="m_t">t 0</span></div></div>
+    <div class="panel o1"><div class="top"><div class="lab">OPEN VOCABULARY</div>
+      <div class="big" id="o_n">–<small> stable niches</small></div></div>
+      <canvas id="o_cv"></canvas><div class="meta"><span>lifts, then re-plateaus</span><span id="o_t">t 0</span></div></div>
+    <div class="panel o3"><div class="top"><div class="lab">OPEN + CONSTRUCTION</div>
+      <div class="big" id="b_n">–<small> stable niches</small></div></div>
+      <canvas id="b_cv"></canvas><div class="meta"><span>keeps climbing</span><span id="b_t">t 0</span></div></div>
+  </div>
+
+  <div class="ctl"><button id="play">pause</button><button id="reseed">new worlds</button>
+    <span style="font-size:10.5px;color:var(--faint)">each dot's hue = its computed key (its "kind"). more hues persisting = more coexisting functions.</span>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">THE RESULT — TWO LEVERS THAT EACH PLATEAU, STACKED, DON'T (MEASURED, 40k TICKS)</div>
+    <p style="margin:0 0 8px">Headless, pre-registered, 4 seeds. <b>Fixed menu</b> freezes at ~7 stable
+    niches — the closed dictionary, exactly as predicted. <b>Open vocabulary alone</b> jumps ~6× to ~39
+    and then <b>re-plateaus</b>: an open map is the fuel, but with nothing driving exploration it settles
+    into the niches drift can reach. <b>Open vocabulary + niche construction</b> is the only arm that
+    keeps going — <b>46 → 90+ stable niches over 40,000 ticks, still rising</b> where the others froze by
+    2,000, program complexity climbing alongside it.</p>
+    <p style="margin:0">The mechanism is a clean three-way split: fixed menu is an <i>engine with no
+    fuel</i>; open-without-building is <i>fuel with no engine</i>; only together — construction keeps
+    planting locks in new regions of an open space, so new niches beget new builders — do you get a climb
+    that doesn't run out. It ties the whole project together: niche construction <i>settled</i> into a
+    stable equilibrium on a fixed vocabulary; on an open one, the same mechanism doesn't settle.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <p style="margin:0 0 8px"><b>What's true:</b> three-way dissociation, pre-registered, replicated,
+    and the niches are <i>stable</i> (held for hundreds of ticks), not novelty churn — so this is not
+    silica's endless-drift trap. It's the first result here where the defining plateau is <i>broken</i>,
+    not just relocated.</p>
+    <p style="margin:0 0 8px"><b>What's NOT claimed:</b> that this is open-ended evolution solved.
+    Open+construction beats open-alone in <b>9 of 10 seeds</b> — a robust direction, but with big
+    variance (+41 to −10 niches; on some worlds construction even hurts), so any single run you watch
+    may not show it. The climb also <i>decelerates</i> — not a proven runaway.</p>
+    <p style="margin:0"><b>And we found the next ceiling:</b> once the menu is gone, the binding limit
+    is <b>space, not vocabulary</b> — raising the key-space cap 16× changes nothing, but a bigger grid
+    keeps the climb going. So the niche count is partly just filling the box. Ceilings all the way
+    down; we lifted one and named the next. A real brick, honestly sized — not the whole wall.</p>
+  </div>
+
+  <p class="foot">Core: <b>/void/lib/open.js</b> — pure, seeded, tested headless first (open-exp.js). ·
+    <a href="/void">synthesis</a> · <a href="/void/niche">the pepper</a> · <a href="/void/ceiling">the ceiling</a></p>
+</div>
+
+<script src="/void/lib/open.js"></script>
+<script>
+(function(){
+  var Open = window.Open;
+  const $=id=>document.getElementById(id);
+  if(!Open){ $('m_n').textContent='core failed to load'; return; }
+  const COLS=50, ROWS=50;
+  const REG={cols:COLS,rows:ROWS,tol:2};
+  let sims, paused=false, seed=7, CELL, WIDTH, H;
+  const P=[['m',{menuSize:8,construct:false}],['o',{menuSize:0,construct:false}],['b',{menuSize:0,construct:true}]];
+  const cvs={};
+
+  function sizeCanvas(){
+    const wrap=$('m_cv').parentElement.clientWidth;
+    CELL=Math.max(2,Math.floor(wrap/COLS)); WIDTH=COLS*CELL; H=ROWS*CELL;
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    for(const [k] of P){ const cv=$(k+'_cv'),ctx=cv.getContext('2d');
+      cv.width=WIDTH*dpr; cv.height=H*dpr; cv.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); cvs[k]=ctx; }
+  }
+  function build(){ sizeCanvas(); sims={}; for(const [k,o] of P) sims[k]=new Open({...REG,seed,...o}); }
+
+  function drawOne(sim,ctx){
+    ctx.fillStyle='#07070a'; ctx.fillRect(0,0,WIDTH,H);
+    for(const o of sim.view()){
+      const x=(o.cell%COLS)*CELL, y=((o.cell/COLS)|0)*CELL;
+      ctx.fillStyle=`hsl(${o.hue},72%,${o.built?66:52}%)`;
+      ctx.fillRect(x,y,CELL-1,CELL-1);
+    }
+  }
+  function hud(){
+    for(const [k] of P){ const s=sims[k].stats();
+      $(k+'_n').innerHTML=`${s.stableNiches}<small> stable niches</small>`;
+      $(k+'_t').textContent='t '+s.tick;
+    }
+  }
+  function loop(){ if(!paused){ for(let step=0;step<3;step++) for(const [k] of P) sims[k].step(); for(const [k] of P) drawOne(sims[k],cvs[k]); hud(); } requestAnimationFrame(loop); }
+
+  $('play').onclick=()=>{ paused=!paused; $('play').textContent=paused?'play':'pause'; };
+  $('reseed').onclick=()=>{ seed=(seed*7+13)%99991; build(); };
+  let lastW=0;
+  window.addEventListener('resize',()=>{ const w=$('m_cv').parentElement.clientWidth; if(w!==lastW){lastW=w;sizeCanvas();} });
+  lastW=$('m_cv').parentElement.clientWidth;
+  build(); loop();
+})();
+</script>
+</body>
+</html>

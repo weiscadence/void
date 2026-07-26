@@ -1,0 +1,144 @@
+// void body-server — serves the page, the shared genome library, and the live
+// state of the organism. Proxied at drainfun.xyz/void. The creature itself lives
+// in the separate void-life daemon; this just lets the world watch it.
+const http = require('http'), fs = require('fs'), path = require('path');
+const DIR = '/home/ubuntu/.openclaw/workspace/data/void';
+const send = (res, code, type, body) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*' }); res.end(body); };
+
+// ── ARCHIVE CACHE ────────────────────────────────────────────────────────────
+// /api/archive used to readFileSync + JSON.parse the whole 21MB archive on EVERY
+// request. Node is single-threaded, so that 396ms blocked every other route behind it:
+// six people opening the gallery serialised into a 2.7s tail, and /api/state polling
+// stalled behind each parse. The gallery is the best part of the site and it was the
+// slowest thing on it.
+//
+// Safe to cache only because life.js now writes the archive atomically (temp + rename).
+// Against an in-place truncating writer, an mtime cache would happily memoise a torn
+// file. The two fixes are one fix: the write had to become atomic before the read
+// could become cached.
+let _archCache = null, _archMtime = 0;
+function loadArchive(){
+  const p = path.join(DIR, 'archive.json');
+  const m = fs.statSync(p).mtimeMs;
+  if (!_archCache || m !== _archMtime) {
+    _archCache = JSON.parse(fs.readFileSync(p, 'utf8'));
+    _archMtime = m;
+  }
+  return _archCache;
+}
+http.createServer((req, res) => {
+  let u = (req.url || '/').split('?')[0].replace(/\/+/g,'/');
+  if (u.indexOf('/void') === 0) u = u.slice(5) || '/';  // tolerate nginx prefix
+  try {
+    if (u === '/' || u === '/index.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
+    // the creature — reaction-diffusion, real state, carries frame to frame. Lives
+    // BESIDE the evolving organism rather than replacing it: two different truths.
+    if (u === '/creature' || u === '/creature.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'creature.html')));
+    // The Flow Lenia LAB. Jiggy's call: a lab should visibly test and grow things, not be
+    // hidden. Served at /void/flow. Distinct from the creature — this is where genomes are
+    // carried per-parcel and real coexistence experiments run.
+    if (u === '/flow' || u === '/flow.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'flow', 'lab.html')));
+    // /hunger — the surprise-as-resource experiment, watchable side by side.
+    // Jiggy's reframe: stop copying carbon life, ask what is actually scarce to code.
+    if (u === '/hunger' || u === '/hunger.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'hunger.html')));
+    // /compose — composability: can evolution invent a part and build on it?
+    // Grok's diagnosis (via Jiggy) + birbus's "reuse as an operation". The library panel is
+    // the answer to "how do I judge if it's more structured" — you look at the parts it kept.
+    if (u === '/compose' || u === '/compose.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'compose.html')));
+    // THE LAB NOTEBOOK — every experiment in one shape: question, expectation, method,
+    // result, and the command to reproduce it. Jiggy's framing: a live book, not a results page.
+    if (u === '/lab' || u === '/lab.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'lab.html')));
+    // the lab notebook: every experiment in one shape, with live progress.
+    if (u === '/api/experiments') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'experiments.json')));
+    // /kin — the observer experiment. Every earlier page scored against a fixed ruler;
+    // this one inherits the ruler. The loss matrix is both the measurement and the picture.
+    if (u === '/kin' || u === '/kin.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'kin.html')));
+    if (u === '/api/kin') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'kin.json')));
+    // /stranger — the blind-spot finder. Not a reviewer: a reviewer tells you what is wrong,
+    // this tells you what you have stopped looking at. Validated on a planted bug, then it
+    // killed one of our own published results an hour after we announced it.
+    if (u === '/stranger' || u === '/stranger.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'stranger.html')));
+    if (u === '/api/stranger') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'stranger.json')));
+    if (u === '/lib/genome.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'genome.js')));
+    // silica — self-replicating programs under real substrate scarcity (memory + cycles).
+    // SYNTHESIS §7's direction: stop simulating biology's constraints, use the machine's own.
+    if (u === '/silica' || u === '/silica.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'silica.html')));
+    // lens — hand-rolled canvasui technique: live content → texture → refraction shader.
+    if (u === '/lens' || u === '/lens.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'lens.html')));
+    if (u === '/ceiling' || u === '/ceiling.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'ceiling.html')));
+    // niche construction — "the pepper" (lever C): control vs constructors, same seed, side by side.
+    if (u === '/niche' || u === '/niche.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'niche.html')));
+    // open vocabulary — the architecture that broke the plateau (open genotype→phenotype + construction).
+    if (u === '/open' || u === '/open.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'open.html')));
+    // the breathing graph — waves + nested growth on a graph-of-niches world.
+    if (u === '/graph' || u === '/graph.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'graph.html')));
+    // the energy pyramid — energetic nesting (Lindeman 10%): food flows parent→child, knockout collapses descendants.
+    if (u === '/energetic' || u === '/energetic.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'energetic.html')));
+    // the edge of chaos — self-organized criticality: slide the drive, watch crashes go power-law (working backwards from phi).
+    if (u === '/edge' || u === '/edge.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'edge.html')));
+    // the river and the lake — throughput (not abundance) drives open-endedness; flow-under-scarcity beats infinite source.
+    if (u === '/throughput' || u === '/throughput.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'throughput.html')));
+    if (u === '/lib/graph.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'graph.js')));
+    if (u === '/lib/ceiling.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'ceiling.js')));
+    if (u === '/lib/niche.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'niche.js')));
+    if (u === '/lib/open.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'open.js')));
+    if (u === '/lib/silica.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'silica.js')));
+    if (u === '/api/state') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'state.json')));
+    if (u === '/api/lineage') { // last 200 fossils
+      const lines = fs.readFileSync(path.join(DIR, 'lineage.jsonl'), 'utf8').trim().split('\n');
+      return send(res, 200, 'application/json', '[' + lines.slice(-200).join(',') + ']');
+    }
+    // ── THE GALLERY FEED — the body, not just the dream ──────────────────────
+    // Until now the only way to see void was the single organism on screen. Eight
+    // thousand others were on disk with nobody able to look at them. This paginates
+    // the archive so a browser can render a wall of them without trying to swallow
+    // ~11 MB and ~8,000 CPPN renders in one go.
+    //
+    // Sort modes matter more than they look: "lineage" groups by founding seed, which
+    // is what makes the monoculture VISIBLE — one family occupies half the wall, and
+    // you can see that rather than having to trust a number I quoted.
+    if (u === '/api/archive') {
+      const q = new URLSearchParams((req.url.split('?')[1] || ''));
+      const sort = q.get('sort') || 'quality';
+      const limit = Math.min(240, Math.max(1, +q.get('limit') || 120));
+      const offset = Math.max(0, +q.get('offset') || 0);
+      const arch = loadArchive();
+      let all = Object.entries(arch).map(([cell, e]) => ({
+        cell: +cell, quality: e.quality, gen: e.gen, desc: e.desc,
+        seed: e.genome && e.genome.seed, id: e.genome && e.genome.id,
+        h: e.genome && e.genome.h, s: e.genome && e.genome.s, v: e.genome && e.genome.v,
+      })).filter(e => e.h);
+      const total = all.length;
+      // lineage sort is grouped-then-ranked: biggest families first, best member first
+      // within each. Sorting by seed value alone would scatter the big families and hide
+      // exactly the thing the view exists to show.
+      if (sort === 'lineage') {
+        const size = {};
+        for (const e of all) size[e.seed] = (size[e.seed] || 0) + 1;
+        all.sort((a, b) => (size[b.seed] - size[a.seed]) || (a.seed - b.seed) || (b.quality - a.quality));
+      } else if (sort === 'recent') all.sort((a, b) => b.gen - a.gen);
+      else if (sort === 'colour') all.sort((a, b) => b.desc[1] - a.desc[1]);
+      else if (sort === 'symmetry') all.sort((a, b) => b.desc[2] - a.desc[2]);
+      // motion sort exists so the fourth axis is inspectable: sorting ascending puts the
+      // still organisms first — the ones that only survive now that stillness is its own
+      // kind rather than a losing score.
+      else if (sort === 'motion') all.sort((a, b) => (a.desc[3] ?? 0) - (b.desc[3] ?? 0));
+      else all.sort((a, b) => b.quality - a.quality);
+      // lineage rank travels with each organism so the client can label families
+      // without re-deriving the grouping it did not compute.
+      const fam = {};
+      for (const e of all) fam[e.seed] = (fam[e.seed] || 0) + 1;
+      const page = all.slice(offset, offset + limit).map(e => ({ ...e, family: fam[e.seed] }));
+      return send(res, 200, 'application/json', JSON.stringify({ total, offset, limit, sort, items: page }));
+    }
+    send(res, 404, 'application/json', '{"error":"not found"}');
+  } catch (e) {
+    // Never echo the raw error to the client. Node's ENOENT message embeds the FULL
+    // absolute path, so a single missing or half-written data file was disclosing
+    // /home/<user>/... — server username and disk layout — through a public,
+    // nginx-proxied endpoint to anyone who could trigger it. Detail goes to the log,
+    // where it is useful; the client gets a shape that reveals nothing.
+    console.error('[void] request failed:', u, e && e.message);
+    send(res, 500, 'application/json', '{"error":"internal error"}');
+  }
+}).listen(3216, () => console.log('[void] body-server :3216'));

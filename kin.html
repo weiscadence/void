@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>kin 〰️ — is it still surprising us?</title>
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --acc:#7df9ff; --hot:#ff3860;
+         --gold:#d9a441; --up:#22d3a5; --warn:#e08d3c; }
+  *{margin:0;box-sizing:border-box}
+  html,body{min-height:100%;background:var(--bg);color:var(--ink);
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 18px 70px}
+  h1{font-size:14px;letter-spacing:.42em;text-transform:uppercase;font-weight:500}
+  h1 b{color:var(--hot)}
+  .intro{font-size:12px;line-height:2;color:#9aa0b0;margin-top:14px;max-width:64ch}
+  .intro em{color:var(--acc);font-style:normal}
+  .intro b{color:var(--ink);font-weight:500}
+
+  .card{background:rgba(9,9,13,.75);border:1px solid rgba(255,255,255,.08);
+        border-radius:12px;padding:20px;margin-top:18px}
+  .top{display:flex;align-items:baseline;gap:12px;justify-content:space-between;flex-wrap:wrap}
+  .nm{font-size:14px;color:var(--ink);font-weight:500}
+  .tag{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;padding:4px 9px;
+       border-radius:99px;white-space:nowrap;border:1px solid}
+  .t-yes{color:var(--up);border-color:rgba(34,211,165,.4);background:rgba(34,211,165,.07)}
+  .t-no{color:#8a90a2;border-color:rgba(138,144,162,.35);background:rgba(138,144,162,.06)}
+  .role{font-size:10.5px;color:var(--dim);line-height:1.7;margin-top:6px;max-width:62ch}
+
+  .two{display:grid;grid-template-columns:auto 1fr;gap:16px;margin-top:16px;align-items:start}
+  @media(max-width:640px){ .two{grid-template-columns:1fr} }
+  .grid{display:grid;gap:2px}
+  .cell{width:22px;height:22px;border-radius:3px}
+  .cell.na{background:rgba(255,255,255,.03)}
+  .axes{font-size:9px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin-top:7px}
+
+  .scores{font-size:11.5px;line-height:2;color:#a8aec0}
+  .scores b{color:var(--ink);font-weight:500}
+  .bar{height:7px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;margin:3px 0 9px}
+  .bar i{display:block;height:100%;border-radius:5px}
+  .good{background:#008300} .bad{background:#d55181}
+
+  .foot{margin-top:38px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#5a6070;line-height:2}
+  .foot a{color:#8a90a2}
+  .warn{margin-top:20px;padding:14px;border-radius:9px;background:rgba(224,141,60,.07);
+        border:1px solid rgba(224,141,60,.3);font-size:11.5px;line-height:1.9;color:#d8b98a}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>kin<b>.</b></h1>
+  <div class="intro">
+    Every earlier experiment here scored creatures against a <b>fixed ruler</b> — and every one
+    of them eventually stopped moving. That turned out to be structural, not bad luck: there is
+    no observer-free way to measure open-endedness, so a fixed ruler always runs out before the
+    world does.
+    <br><br>
+    So this one makes the ruler <em>inherited</em>. A child gets a copy of its parent's
+    predictive model and is judged on how badly that model saw it coming. The question:
+    <em>does a lineage stay surprising when the thing it must surprise is its own ancestor?</em>
+    <br><br>
+    A system is open-ended only if what it makes is <b>both novel and learnable</b> to an
+    observer — novel alone is just noise. Both numbers below have to be positive. That
+    definition is Hughes et al. 2024; we are borrowing it, not inventing it.
+  </div>
+
+  <div id="cards"></div>
+
+  <div class="foot">
+    〰️ void ecosystem · <a href="/void/lab">the lab</a> · <a href="/void">the organism</a> ·
+    <a href="/void/hunger">hunger</a><br>
+    <span id="updated"></span>
+  </div>
+</div>
+
+<script>
+const esc = s => String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const ROLE = {
+  fixed_ruler:  'Classic novelty search — judged against a fixed yardstick that never learns. The way this has always been done.',
+  shared_model: 'One observer for everyone. It learns, but it is never inherited. This arm exists to separate "the observer learns" from "the observer is inherited" — if it matches the kin arm, inheritance was decoration.',
+  heritable:    'The kin arm. Each child inherits its parent’s model whole, then keeps learning from its own life.',
+  noise_plant:  'Planted garbage: children ignore their parents entirely. It MUST fail. If random noise reads as open-ended, the measurement is broken and every row above it is void.',
+};
+const LABEL = { fixed_ruler:'fixed ruler', shared_model:'shared observer', heritable:'inherited observer', noise_plant:'planted noise (control)' };
+
+// sequential single hue, light -> dark, for a magnitude. Never a rainbow.
+function heat(v, lo, hi){
+  if(v==null) return null;
+  const t = hi>lo ? Math.max(0,Math.min(1,(v-lo)/(hi-lo))) : 0.5;
+  const l = 88 - t*62;                       // lightness carries the magnitude
+  return `hsl(203 72% ${l}%)`;
+}
+
+function matrix(L){
+  if(!L || !L.length) return '<div class="role">no matrix recorded</div>';
+  const vals = L.flat().filter(v=>v!=null);
+  const lo = Math.min(...vals), hi = Math.max(...vals);
+  const cols = L[0].length;
+  let html = `<div class="grid" style="grid-template-columns:repeat(${cols},22px)">`;
+  for(let t=0;t<L.length;t++) for(let T=0;T<cols;T++){
+    const v = L[t][T];
+    html += v==null
+      ? `<div class="cell na"></div>`
+      : `<div class="cell" style="background:${heat(v,lo,hi)}" title="observer frozen at era ${t+1}, judged on era ${T+1} — error ${v.toFixed(4)}"></div>`;
+  }
+  return html + '</div><div class="axes">→ later artifacts &nbsp;·&nbsp; ↓ observer watched longer</div>';
+}
+
+function card(a, mats){
+  const nv = a.novelty, lr = a.learnability;
+  const w = v => Math.max(0, Math.min(100, 50 + v*100));   // 0 sits mid-bar; negative reads left
+  return `<div class="card">
+    <div class="top">
+      <div class="nm">${esc(LABEL[a.name]||a.name)}</div>
+      <div class="tag ${a.openEnded?'t-yes':'t-no'}">${a.openEnded?'novel AND learnable':'not open-ended'}</div>
+    </div>
+    <div class="role">${esc(ROLE[a.name]||'')}</div>
+    <div class="two">
+      <div>${matrix(mats[a.name])}</div>
+      <div class="scores">
+        <b>novelty</b> ${nv>=0?'+':''}${nv.toFixed(3)} — does a frozen observer fall behind?
+        <div class="bar"><i class="${nv>0.05?'good':'bad'}" style="width:${w(nv)}%"></i></div>
+        <b>learnability</b> ${lr>=0?'+':''}${lr.toFixed(3)} — does watching longer help?
+        <div class="bar"><i class="${lr>0.05?'good':'bad'}" style="width:${w(lr)}%"></i></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function load(){
+  try{
+    const d = await (await fetch('/void/api/kin',{cache:'no-store'})).json();
+    let html = d.arms.map(a=>card(a,d.matrices||{})).join('');
+    if(d.noiseGateFired){
+      html = `<div class="warn"><b>VOID.</b> The planted noise control scored as open-ended, which means
+        the measurement cannot tell a lineage from a random number generator. Every result on this page
+        is meaningless — and finding that out is exactly why the control is planted.</div>` + html;
+    }
+    document.getElementById('cards').innerHTML = html;
+    document.getElementById('updated').textContent =
+      `${d.reps} replicates · ${d.generated_at_gen} generations · matrices shown are replicate 1`;
+  }catch(e){
+    document.getElementById('cards').innerHTML =
+      '<div class="card"><div class="role">no run recorded yet — run: node projects/void/flow/kin.js 400 8</div></div>';
+  }
+}
+load();
+</script>
+</body>
+</html>

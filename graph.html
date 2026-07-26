@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the breathing graph</title>
+<!--
+  THE BREATHING GRAPH — the world stops being a box and becomes a GRAPH OF NICHES that can grow,
+  nest, and keep time. Two toggles, two honest findings:
+   • KEEP TIME: fixed niches + a depletable food stock (a time delay) → a clean population WAVE
+     (verified limit cycle, period scale-invariant ~44 ticks). The system stays alive by cycling.
+   • BREATHE + GROW: also let niches spawn child niches (nested construction, depth 50+). Structure
+     grows — but the clean metronome dissolves into irregular boom-bust. Rhythm and open-ended
+     growth are in tension: a clean wave wants a fixed stage; growth keeps rebuilding the stage.
+  Core: /void/lib/graph.js, all measured headless first. No browser in-container — eyes-on is yours.
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:38px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:27px;line-height:1.2;color:var(--ink);font-weight:600;margin:14px 0 8px}
+  p{max-width:720px;margin:0 0 12px} b{color:var(--ink);font-weight:600} a{color:var(--acc);text-decoration:none}
+  .stage{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 35%,#0b0b12,#07070a 72%);overflow:hidden;margin:16px 0 8px}
+  canvas{display:block;width:100%}
+  #wave{border-top:1px solid rgba(255,255,255,.06)}
+  .hud{display:flex;flex-wrap:wrap;gap:12px 20px;font-size:11.5px;margin:8px 0 4px}
+  .hud b{color:var(--grn);font-variant-numeric:tabular-nums}
+  .ctl{display:flex;gap:10px;align-items:center;margin:10px 0 18px;flex-wrap:wrap}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  button.on{border-color:var(--grn);color:var(--grn)}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:14px 0;max-width:730px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID <span style="color:var(--acc)">〰️</span> · THE BREATHING GRAPH</div>
+  <h1>A world that keeps time — and the price of also growing.</h1>
+
+  <p>The world is no longer a box of cells; it's a <b>graph of niches</b>. Each niche holds a food
+  stock that gets eaten down and slowly regrows — that lag is a <b>delay</b>, and a delay is what
+  turns a dead-flat population into a <b>wave</b>. Watch the trace at the bottom: it doesn't settle
+  to a number, it <b>breathes</b>. The system stays alive by cycling, not by stopping.</p>
+
+  <p>Hit <b>breathe + grow</b> and niches start spawning child niches — the graph grows and nests
+  (depth 50+). But notice the wave: the clean rhythm frays into irregular boom-bust. A clean beat
+  wants a fixed stage; open-ended growth keeps rebuilding the stage. That tension is the finding.</p>
+
+  <div class="stage">
+    <canvas id="c"></canvas>
+    <canvas id="wave" height="70"></canvas>
+    <div id="cap" style="position:absolute;left:12px;top:10px;font-size:10.5px;color:var(--faint)"></div>
+  </div>
+
+  <div class="hud">
+    <div>tick <b id="s_t">0</b></div>
+    <div>population <b id="s_pop">0</b></div>
+    <div>niches <b id="s_niche">0</b></div>
+    <div>nesting depth <b id="s_depth">0</b></div>
+    <div>rhythm <b id="s_rhythm">–</b></div>
+  </div>
+
+  <div class="ctl">
+    <button id="m_time" class="on">keep time (fixed niches)</button>
+    <button id="m_grow">breathe + grow (nested construction)</button>
+    <button id="reset">reset</button>
+  </div>
+
+  <div class="box theory">
+    <div class="lbl">THE FINDING — A DELAY MAKES A WAVE; GROWTH FRAYS IT</div>
+    <p style="margin:0 0 8px"><b>Keep time:</b> measured headless, the population is a clean limit
+    cycle — period ~44 ticks, and the period stays pinned at 44 whether the population is 74 or 148.
+    A rhythm that doesn't shift when you double the population is a <i>real</i> cycle, not noise. It
+    comes straight from the food-stock delay (Rosenzweig–MacArthur): too little regrowth starves it
+    out, the right amount cycles, too much makes the swings wilder — the paradox of enrichment,
+    unprompted.</p>
+    <p style="margin:0"><b>Breathe + grow:</b> add nested construction (a niche can spawn a linked
+    child niche; inhabited depth climbs past 50) and the structure genuinely grows — but the clean
+    metronome dissolves into aperiodic boom-bust. Clean rhythm needs a fixed number of niches;
+    open-ended growth keeps moving the carrying capacity. You get a crisp wave on a frozen world, or
+    growth with a messy pulse — coupled, it's irregular, which is exactly what real ecosystems are.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <p style="margin:0 0 8px"><b>What's true:</b> the clean wave is verified (scale-invariant period).
+    The nested growth is real (depth 50+ needs the parent-links; unlinked construction stays flat).
+    Both are measured before they're drawn.</p>
+    <p style="margin:0"><b>What's NOT claimed:</b> the consumer–resource wave is a <i>known</i> result
+    (not novel); ours is that it's here and verified. The breathe+grow coupling hasn't been made to
+    keep clean time — the growing run also hit a node cap, so "can a clean wave survive on a
+    finished, saturated structure" is still open. And none of this is solved open-endedness. It's the
+    chord and the climb, measured pulling against each other — not resolved.</p>
+  </div>
+
+  <p class="foot">Core: <b>/void/lib/graph.js</b> — pure, seeded, tested headless first. ·
+    <a href="/void">synthesis</a> · <a href="/void/open">open vocabulary</a> · <a href="/void/niche">the pepper</a></p>
+</div>
+
+<script src="/void/lib/graph.js"></script>
+<script>
+(function(){
+  var Graph = window.Graph;
+  const $=id=>document.getElementById(id);
+  if(!Graph){ $('cap').textContent='core failed to load'; return; }
+  const c=$('c'), ctx=c.getContext('2d'), wv=$('wave'), wx=wv.getContext('2d');
+  let sim, mode='time', W, H, WH=70, paused=false, hist=[];
+
+  const CFG = {
+    time: { roots:30, seedPerRoot:8, construct:false, resourceMode:true, regen:2, stockMax:40,
+            nodeCap:400, yield:6, upkeep:1, reproThresh:14, reproCost:10 },
+    grow: { roots:8, seedPerRoot:20, construct:true, regulate:true, resourceMode:true, regen:2.5,
+            stockMax:50, nodeCap:40, maxNodes:500, decayEmpty:50, yield:7, upkeep:1,
+            reproThresh:14, reproCost:10, buildCost:5, buildThresh:8, linkMode:'nested' }
+  };
+  function size(){
+    const w=c.parentElement.clientWidth; const dpr=Math.min(window.devicePixelRatio||1,2);
+    W=w; H=Math.round(w*0.62);
+    c.width=W*dpr; c.height=H*dpr; c.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0);
+    wv.width=W*dpr; wv.height=WH*dpr; wv.style.height=WH+'px'; wx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function build(){ size(); sim=new Graph({seed:7,...CFG[mode]}); hist=[]; }
+
+  function draw(){
+    ctx.fillStyle='#07070a'; ctx.fillRect(0,0,W,H);
+    const nodes=[...sim.nodes.values()];
+    if(!nodes.length) return;
+    // project node.req[0],req[1] to canvas, auto-framed
+    let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;
+    for(const n of nodes){ const x=n.req[0],y=n.req[1]; if(x<mnx)mnx=x;if(x>mxx)mxx=x;if(y<mny)mny=y;if(y>mxy)mxy=y; }
+    const pad=40, spanx=(mxx-mnx)||1, spany=(mxy-mny)||1;
+    const px=n=>pad+((n.req[0]-mnx)/spanx)*(W-2*pad);
+    const py=n=>pad+((n.req[1]-mny)/spany)*(H-2*pad);
+    // edges
+    ctx.strokeStyle='rgba(168,85,247,.14)'; ctx.lineWidth=1;
+    for(const n of nodes){ for(const e of n.edges){ const m=sim.nodes.get(e); if(!m||e<n.id)continue;
+      ctx.beginPath(); ctx.moveTo(px(n),py(n)); ctx.lineTo(px(m),py(m)); ctx.stroke(); } }
+    // nodes: radius ~ sqrt(occ), hue by depth, brightness by occupancy (so the WAVE shows as a pulse)
+    for(const n of nodes){
+      const occ=n.occ||0; const r=Math.max(1.5, Math.sqrt(occ)*1.7);
+      const hue=(200+n.depth*14)%360; const light=occ>0?Math.min(66,34+occ*2):18;
+      ctx.beginPath(); ctx.arc(px(n),py(n),r,0,7); ctx.fillStyle=`hsl(${hue},72%,${light}%)`; ctx.fill();
+      if(occ>0){ ctx.beginPath(); ctx.arc(px(n),py(n),r*2.2,0,7); ctx.fillStyle=`hsla(${hue},80%,60%,.08)`; ctx.fill(); }
+    }
+  }
+  function drawWave(){
+    wx.fillStyle='#0b0b12'; wx.fillRect(0,0,W,WH);
+    if(hist.length<2) return;
+    const mx=Math.max(...hist,1), n=hist.length;
+    wx.strokeStyle='#00ff88'; wx.lineWidth=1.4; wx.beginPath();
+    hist.forEach((v,i)=>{ const x=(i/(n-1))*W, y=WH-4-(v/mx)*(WH-8); i?wx.lineTo(x,y):wx.moveTo(x,y); });
+    wx.stroke();
+    wx.fillStyle='rgba(0,255,136,.55)'; wx.font='10px ui-monospace';
+    wx.fillText('population over time — the breath', 8, 13);
+  }
+  // crude live rhythm read: coefficient of variation of recent pop
+  function rhythm(){
+    if(hist.length<40) return '–';
+    const h=hist.slice(-120), m=h.reduce((a,b)=>a+b,0)/h.length;
+    const sd=Math.sqrt(h.reduce((a,b)=>a+(b-m)**2,0)/h.length);
+    const cv=sd/(m||1);
+    return cv<0.05?'flat':cv<0.30?'clean wave':'irregular boom-bust';
+  }
+  function hud(){
+    const s=sim.stats();
+    $('s_t').textContent=s.tick; $('s_pop').textContent=s.pop; $('s_niche').textContent=s.occNodes;
+    $('s_depth').textContent=s.maxDepth; $('s_rhythm').textContent=rhythm();
+    $('cap').textContent=mode==='time'?'keep time · fixed niches · clean wave':'breathe + grow · nested construction · irregular pulse';
+  }
+  function loop(){ if(!paused){ for(let k=0;k<2;k++) sim.step(); const p=sim.orgs.filter(o=>!o.dead).length; hist.push(p); if(hist.length>600)hist.shift(); draw(); drawWave(); hud(); } requestAnimationFrame(loop); }
+
+  function setMode(m){ mode=m; $('m_time').classList.toggle('on',m==='time'); $('m_grow').classList.toggle('on',m==='grow'); build(); }
+  $('m_time').onclick=()=>setMode('time');
+  $('m_grow').onclick=()=>setMode('grow');
+  $('reset').onclick=()=>build();
+  let lastW=0; window.addEventListener('resize',()=>{const w=c.parentElement.clientWidth; if(w!==lastW){lastW=w;size();}});
+  lastW=c.parentElement.clientWidth;
+  build(); loop();
+})();
+</script>
+</body>
+</html>

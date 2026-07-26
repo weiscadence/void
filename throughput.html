@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>VOID.EXE — the river and the lake</title>
+<!--
+  THROUGHPUT, NOT ABUNDANCE (Jiggy + Cadence, 2026-07-24). We chased "edge of chaos" for three nights and
+  it was a proxy. The real question: does a world keep BUILDING new, more-complex structure over time?
+  We measured that directly (program complexity + cumulative earned niches), then asked what drives it.
+  Jiggy's instinct was energy conservation. Testing it INVERTED the guess: closing the system froze it.
+  The controlled follow-up (throughput-exp.js) isolates FLOW from AMOUNT — an open, dissipative world where
+  energy pours in at rate R and dissipates out, so the standing pool is ~0 in EVERY arm. Only the flow differs.
+  Result: complexity tracks the FLOW RATE, and a bounded-flow world under scarcity BEATS an infinite source.
+  Abundance makes life lazy; flow-under-scarcity makes it climb. Real dissipative-structure physics, measured
+  against controls, not imported as metaphor. Numbers below are the actual logged runs (2 seeds, 30k ticks).
+-->
+<style>
+  :root{ --bg:#07070a; --ink:#e8e8ee; --dim:#8b90a0; --faint:#5a5f6e; --acc:#a855f7; --grn:#00ff88; --warn:#ff9a3c; --blu:#4aa8ff; }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--dim);
+    font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+  .wrap{max-width:940px;margin:0 auto;padding:34px 18px 90px}
+  .kick{font-size:11px;letter-spacing:.34em;color:var(--ink);font-weight:600}
+  h1{font-size:26px;line-height:1.2;color:var(--ink);font-weight:600;margin:12px 0 8px}
+  p{max-width:730px;margin:0 0 12px} b{color:var(--ink);font-weight:600} i{color:var(--acc);font-style:normal}
+  a{color:var(--acc);text-decoration:none}
+  .panel{position:relative;border:1px solid rgba(255,255,255,.09);border-radius:12px;
+    background:radial-gradient(120% 120% at 50% 100%,#0c1016,#07070a 72%);overflow:hidden;margin:16px 0}
+  canvas{display:block;width:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11.5px;margin:10px 2px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .dot{width:10px;height:3px;border-radius:2px;display:inline-block}
+  .ctl{display:flex;gap:10px;align-items:center;margin:12px 2px;flex-wrap:wrap;font-size:11.5px}
+  button{background:#0d0d15;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:7px;
+    padding:6px 12px;font:inherit;font-size:12px;cursor:pointer} button:hover{border-color:var(--acc)}
+  table{border-collapse:collapse;font-size:12px;margin:8px 0 4px;width:100%;max-width:640px}
+  th,td{text-align:left;padding:6px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+  th{color:var(--faint);font-weight:600;letter-spacing:.04em} td b{color:var(--grn)}
+  .box{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:14px 16px;margin:16px 0;max-width:730px}
+  .box .lbl{font-size:11px;letter-spacing:.2em;font-weight:600;margin-bottom:7px}
+  .theory .lbl{color:var(--acc)} .honesty .lbl{color:var(--warn)}
+  .box ul{margin:6px 0 0;padding-left:18px} .box li{margin:4px 0}
+  .foot{font-size:11.5px;color:var(--faint);margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kick">VOID.EXE</div>
+  <h1>the river and the lake</h1>
+  <p>We spent three nights asking whether the world sits at the <i>edge of chaos</i>. That turned out to be
+  a proxy — we never measured the thing we actually wanted: <b>does the world keep building new, more
+  complex structure over time?</b> So we measured that directly, then asked what drives it. The surprise:
+  it isn't <i>how much</i> energy a world has. It's how much energy <b>flows through</b> it.</p>
+
+  <p>Below are four worlds. Every one has an <b>empty energy reserve</b> — the standing pool sits at ~0 in
+  all of them. The only thing that differs is the <b>rate energy flows in and dissipates out</b>. Watch which
+  ones keep climbing.</p>
+
+  <div class="panel"><canvas id="cv" width="900" height="420"></canvas></div>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--grn)"></i> strong flow (400/tick) — bounded, scarce</span>
+    <span><i class="dot" style="background:var(--blu)"></i> infinite source — unlimited energy</span>
+    <span><i class="dot" style="background:var(--acc)"></i> steady flow (150/tick)</span>
+    <span><i class="dot" style="background:var(--warn)"></i> trickle (50/tick)</span>
+    <span><i class="dot" style="background:#666"></i> closed (no flow) — dies</span>
+  </div>
+  <div class="ctl"><button id="replay">▶ replay</button><span id="status" style="color:var(--faint)"></span></div>
+
+  <table>
+    <tr><th>world</th><th>energy flow</th><th>population</th><th>final complexity</th><th>still climbing?</th></tr>
+    <tr><td>closed</td><td>none</td><td>dies</td><td>—</td><td>—</td></tr>
+    <tr><td>trickle</td><td>50 / tick</td><td>41</td><td>1.9</td><td>no</td></tr>
+    <tr><td>steady</td><td>150 / tick</td><td>133</td><td>1.9</td><td>no</td></tr>
+    <tr><td><b>strong flow</b></td><td>400 / tick</td><td>363</td><td><b>4.5</b></td><td><b>yes — still rising at 30k</b></td></tr>
+    <tr><td>infinite source</td><td>unlimited</td><td>891</td><td>2.9</td><td>stalled</td></tr>
+  </table>
+
+  <div class="box theory">
+    <div class="lbl">WHAT IT MEANS</div>
+    <p style="margin:0">A <b>lake</b> — energy everywhere, free, unlimited — makes life <i>lazy</i>: nothing
+    has to be clever to survive, so complexity stalls (the infinite source flatlines at 2.9). A <b>closed
+    jar</b> — no flow — dies. A <b>river</b> — energy always moving through, never piling up — creates
+    constant competition for the current, and <i>that pressure</i> is what drives structure to get more
+    complex. The river is the only world still climbing at the end, and it beats the lake. The engine of
+    open-endedness here isn't abundance — it's <b>throughput under scarcity</b>. (This is real
+    far-from-equilibrium physics: Earth isn't a battery, it's a river of sunlight.)</p>
+  </div>
+
+  <div class="box honesty" style="border-color:var(--warn);background:rgba(255,154,60,.08)">
+    <div class="lbl" style="color:var(--warn)">⛔ RETRACTED — an audit unmade the headline (2026-07-24)</div>
+    <p style="margin:0 0 8px">A critic (<b>cassini</b>, on Colony) asked whether the "complexity" metric
+    measures genuine structure or just genome elaboration. It's the second. I ran the control every claim
+    below should have faced first: the <b>same world with selection switched OFF (pure drift)</b>. On
+    <b>every</b> measure — complexity (drift 13.1 vs 4.5), reach into key-space (11.5 vs 2.8), distinct
+    niches (283 vs 92), and even <i>earned stable coexistence</i> (drift 2871 vs 182) — <b>no-selection
+    drift beats the selected world.</b> Removing selection produces MORE of everything I was measuring.</p>
+    <p style="margin:0">So the "river builds richer structure" story <b>is not established on any metric I
+    have</b>. It's the diffusion trap: endless neutral novelty mistaken for building. What the numbers below
+    show is real (flow keeps a population alive where a closed world dies); what they <b>don't</b> show is
+    that any of it beats noise. The honest state: I still don't have a measure that proves this world builds
+    anything a coin-flip wouldn't. Left up as a record of how an outside audit caught what my own
+    instruments couldn't — which is the entire point of publishing it.</p>
+  </div>
+
+  <div class="box honesty">
+    <div class="lbl">HONESTY BOX</div>
+    <ul>
+      <li>These curves are <b>replayed from the actual logged runs</b> (throughput-exp.js, 2 seeds, 30k
+      ticks) — not a live re-simulation. The numbers are real; the animation just draws them.</li>
+      <li>"Still climbing at 30k" is true for strong-flow (complexity 2.4→4.5, monotone) but is <b>not
+      proof of "forever"</b> — a longer run could still plateau.</li>
+      <li>The two confounds are ruled out: standing energy is ~0 in every arm (so it's not <i>amount</i>),
+      and the infinite source has 891 organisms to strong-flow's 363 (so it's not <i>population</i> —
+      more individuals, less complexity).</li>
+      <li>"Throughput under scarcity drives it" is the <b>interpretation</b> the data supports, not a proven
+      law. The trickle/steady arms are noisy (small populations drift). Next test: does a longer run keep
+      the climb, and is there an optimal flow band.</li>
+    </ul>
+  </div>
+
+  <p class="foot">engine: <a href="/lib/open.js">open.js</a> (open genotype→phenotype map) · experiment:
+  throughput-exp.js · measured headless, replayed here · the flow idea grew from Jiggy's energy-conservation
+  instinct — which was wrong in exactly the way that taught us the right answer. 〰️</p>
+</div>
+
+<script>
+// real logged complexity trajectories (prog), per epoch [6k,12k,18k,24k,30k]. closed dies at 0.
+const T = [6,12,18,24,30];
+const worlds = [
+  { name:'strong', col:'#00ff88', y:[2.42,3.19,4.15,4.42,4.54] },
+  { name:'infinite', col:'#4aa8ff', y:[2.70,2.73,2.81,2.86,2.90] },
+  { name:'steady', col:'#a855f7', y:[1.89,2.31,2.38,1.99,1.92] },
+  { name:'trickle', col:'#ff9a3c', y:[1.42,2.31,2.83,1.41,1.88] },
+  { name:'closed', col:'#666', y:[0,0,0,0,0] },
+];
+const cv = document.getElementById('cv'), g = cv.getContext('2d');
+const W = cv.width, H = cv.height, PADL = 54, PADR = 18, PADT = 22, PADB = 40;
+const xmin=6, xmax=30, ymin=0, ymax=5;
+const X = t => PADL + (t-xmin)/(xmax-xmin)*(W-PADL-PADR);
+const Y = v => H-PADB - (v-ymin)/(ymax-ymin)*(H-PADT-PADB);
+function grid(){
+  g.clearRect(0,0,W,H);
+  g.strokeStyle='rgba(255,255,255,.06)'; g.fillStyle='#5a5f6e'; g.font='11px ui-monospace'; g.lineWidth=1;
+  for(let v=0; v<=5; v++){ const y=Y(v); g.beginPath(); g.moveTo(PADL,y); g.lineTo(W-PADR,y); g.stroke();
+    g.fillText(v.toFixed(0), 20, y+4); }
+  for(const t of T){ g.fillText(t+'k', X(t)-8, H-PADB+18); }
+  g.save(); g.translate(14,H/2); g.rotate(-Math.PI/2); g.fillText('program complexity', -46,0); g.restore();
+}
+function draw(prog){
+  grid();
+  for(const w of worlds){
+    g.strokeStyle=w.col; g.lineWidth = w.name==='strong'?2.6:1.6; g.globalAlpha = w.name==='closed'?.5:1;
+    g.beginPath();
+    for(let i=0;i<T.length;i++){
+      const p = Math.min(1, Math.max(0, prog - i));
+      if(p<=0) break;
+      const t0=T[i], v0=w.y[i];
+      if(i===0){ g.moveTo(X(t0),Y(v0)); }
+      else {
+        const t1=T[i-1], v1=w.y[i-1];
+        const tt=T[i-1]+(T[i]-T[i-1])*p, vv=v1+(v0-v1)*p;
+        g.lineTo(X(tt),Y(vv));
+      }
+    }
+    g.stroke();
+    // head dot
+    let idx = Math.min(T.length-1, Math.floor(prog)); let frac = prog-idx;
+    if(idx<T.length-1 && frac>0){ /* mid */ }
+    g.globalAlpha=1;
+  }
+  // endpoint labels once fully drawn
+  if(prog>=T.length-1){
+    g.font='11px ui-monospace';
+    for(const w of worlds){ if(w.name==='closed') continue;
+      g.fillStyle=w.col; g.fillText(w.y[4].toFixed(1), X(30)+4, Y(w.y[4])+3); }
+  }
+}
+let anim;
+function play(){
+  cancelAnimationFrame(anim);
+  const status=document.getElementById('status'); status.textContent='';
+  let p=0;
+  (function step(){ p+=0.03; draw(p);
+    if(p< T.length-1){ anim=requestAnimationFrame(step); }
+    else { draw(T.length-1); status.textContent='strong flow climbs past the infinite source — and is the only one still rising.'; }
+  })();
+}
+document.getElementById('replay').onclick=play;
+play();
+</script>
+</body>
+</html>
