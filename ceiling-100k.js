@@ -5,7 +5,7 @@
 // RESULT-break-fixed-point.md showed that the integer fixed point (crowd exactly 18 where harvest = upkeep)
 // was the cage: move CROWD 6 → 6.1 or add real-valued ±5% yield noise and the frozen worlds climb. At 30k
 // ticks they were still rising, so the old claim "no world is unbounded" became UNTESTED. This runs the two
-// continuous arms on 16 FRESH seeds to 100,000 ticks and asks whether the climb saturates, slows, or keeps going.
+// continuous arms on FRESH seeds (12 for A1, 4 for A3) to 100,000 ticks and asks whether the climb saturates, slows, or keeps going.
 //
 // ARMS (same construction as break-fixed-point.js; engine lib/open.js untouched):
 //   A1 CROWD 6.1          balance 18.3 — no integer solution.
@@ -25,11 +25,13 @@
 // linear, logarithmic and saturating (Michaelis–Menten S·t/(t+K)) two-parameter models; RSS/AIC and the
 // residual pattern are reported, not just the winner.
 //
-// Pure CPU, no deps. Budget: 32 × 100k worlds + controls ≈ 22–25 CPU-min at nice 19 (measured 5 s per 20k
-// ticks at pop ~1,000; cost grows with population).
+// Pure CPU, no deps. Budget (amended, PREREG-ceiling-100k.md §7): 12 A1 + 4 A3 worlds at 100k + controls ≈ 24 CPU-min at
+// nice 19; a first attempt at 16+16 was stopped after one world per arm when A3 measured 150 CPU-s per world.
 const { makeSim } = require(__dirname + '/break-fixed-point.js');
 
-const SEEDS = (process.env.SEEDS || Array.from({ length: 16 }, (_, i) => 1013 + 100 * i).join(',')).split(',').map(Number);
+const SEEDS = (process.env.SEEDS || Array.from({ length: 12 }, (_, i) => 1013 + 100 * i).join(',')).split(',').map(Number);
+// A3 costs ~2.2x an A1 world (measured 150 vs 68 CPU-s per 100k); see PREREG amendment — it runs as a 4-seed replication.
+const A3_SEEDS = (process.env.A3_SEEDS || '1013,1113,1213,1313').split(',').map(Number);
 const CANARY_SEEDS = [207, 307];                                      // known-frozen under the original law
 const DECOY_SEEDS = (process.env.DECOY_SEEDS || '1013,1113,1213,1313,1413,1513').split(',').map(Number);
 const H = Number(process.env.H || 100000), H_CANARY = Number(process.env.H_CANARY || 20000), H_DECOY = Number(process.env.H_DECOY || 30000);
@@ -125,13 +127,13 @@ if (require.main !== module) module.exports = { runWorld, fitCurves, ARMS };
 else main();
 function main() {
   const t0 = Date.now(), log = (...a) => console.log(`[${((Date.now() - t0) / 1000).toFixed(0)}s]`, ...a);
-  const result = { config: { SEEDS, CANARY_SEEDS, DECOY_SEEDS, H, H_CANARY, H_DECOY, SAMPLE, HALT_WIN, TOL_PLATEAU, CUTOFFS, FIT_FROM, ARMS, structuralCap: { cells: 2500, note: 'cells / balance crowd ≈ upper bound on stable niches if every organism sits in a held key', A1: +(2500 / 18.3).toFixed(1), A3: +(2500 / 18).toFixed(1) } }, arms: {}, canary: null, decoy: null, verdicts: {} };
+  const result = { config: { SEEDS, A3_SEEDS, CANARY_SEEDS, DECOY_SEEDS, H, H_CANARY, H_DECOY, SAMPLE, HALT_WIN, TOL_PLATEAU, CUTOFFS, FIT_FROM, ARMS, structuralCap: { cells: 2500, note: 'cells / balance crowd ≈ upper bound on stable niches if every organism sits in a held key', A1: +(2500 / 18.3).toFixed(1), A3: +(2500 / 18).toFixed(1) } }, arms: {}, canary: null, decoy: null, verdicts: {} };
   const want = id => !ONLY || ONLY.includes(id);
   if (want('A0_original')) { result.arms.A0_original = []; for (const s of CANARY_SEEDS) { const r = runWorld(s, ARMS.A0_original, H_CANARY); result.arms.A0_original.push(r); log(`canary ${s}: ${r.halted ? 'HALTED @' + r.lastEvent : 'breathing'} exposed ${r.census.exposedKeys} at18 ${r.census.atBalance} stable ${r.final.stable}`); } }
   if (want('A2_decoy')) { result.arms.A2_decoy = []; for (const s of DECOY_SEEDS) { const r = runWorld(s, ARMS.A2_decoy, H_DECOY); result.arms.A2_decoy.push(r); log(`decoy ${s}: ${r.halted ? 'HALTED @' + r.lastEvent : 'breathing ' + (r.winBirths + r.winDeaths) + ' events'} exposed ${r.census.exposedKeys} at15 ${r.census.atBalance} stable ${r.final.stable}`); } }
   for (const id of ['A1_irrational', 'A3_noise']) {
     if (!want(id)) continue; result.arms[id] = [];
-    for (const s of SEEDS) {
+    for (const s of (id === 'A3_noise' ? A3_SEEDS : SEEDS)) {
       const r = runWorld(s, ARMS[id], H); result.arms[id].push(r);
       const at = k => r.stable[r.t.indexOf(k)];
       log(`${id} ${s}: stable 20k/40k/60k/80k/100k = ${[20000, 40000, 60000, 80000, 100000].map(at).join('/')} max ${r.maxStable}@${r.tOfMax} pop ${r.final.pop} reach ${r.reach[r.reach.length - 1]} vocab ${r.vocab[r.vocab.length - 1]} plateau20/30/40k ${CUTOFFS.map(W => r.plateau[W] ? 'Y' : 'n').join('')} slope ${r.slopeLast20k}/10k ${r.halted ? 'HALTED' : ''}`);
@@ -155,9 +157,9 @@ function main() {
     const p20 = plateauFrac[20000];
     if (result.canary && !result.canary.pass) { verdict = 'VOID'; reason = 'canary failed'; }
     else if (halted > 0) { verdict = 'VOID-MECHANISM'; reason = `${halted}/${n} worlds halted under a continuous law — the fixed-point story itself is in question`; }
-    else if (p20 >= 12 && fit.best === 'saturating') { verdict = 'CEILING'; reason = `${p20}/${n} seeds set no new max (±${TOL_PLATEAU}) in the last 20k and the pooled running-max curve is best fit by a saturating model (S=${fit.saturating.params.S_asymptote}, ΔAIC ${fit.deltaAIC_second})`; }
-    else if (p20 <= 4 && fit.best !== 'saturating') { verdict = 'NO CEILING SEEN'; reason = `${p20}/${n} seeds plateau in the last 20k and the pooled curve is best fit by ${fit.best} (ΔAIC ${fit.deltaAIC_second}); ${rising}/${n} still have positive slope over the last 20k`; }
-    else if (p20 >= 12) { verdict = 'MIXED (plateaus, curve not saturating)'; reason = `${p20}/${n} plateau at 20k but the pooled fit prefers ${fit.best}`; }
+    else if (p20 >= Math.ceil(0.75 * n) && fit.best === 'saturating') { verdict = 'CEILING'; reason = `${p20}/${n} seeds set no new max (±${TOL_PLATEAU}) in the last 20k and the pooled running-max curve is best fit by a saturating model (S=${fit.saturating.params.S_asymptote}, ΔAIC ${fit.deltaAIC_second})`; }
+    else if (p20 <= Math.floor(0.25 * n) && fit.best !== 'saturating') { verdict = 'NO CEILING SEEN'; reason = `${p20}/${n} seeds plateau in the last 20k and the pooled curve is best fit by ${fit.best} (ΔAIC ${fit.deltaAIC_second}); ${rising}/${n} still have positive slope over the last 20k`; }
+    else if (p20 >= Math.ceil(0.75 * n)) { verdict = 'MIXED (plateaus, curve not saturating)'; reason = `${p20}/${n} plateau at 20k but the pooled fit prefers ${fit.best}`; }
     else if (fit.best === 'saturating') { verdict = 'MIXED (saturating fit, few plateaus)'; reason = `pooled curve saturating (S=${fit.saturating.params.S_asymptote}) but only ${p20}/${n} seeds plateau at 20k — slow approach, not a reached ceiling`; }
     else { verdict = 'MIXED'; reason = `${p20}/${n} plateau at 20k; best fit ${fit.best}`; }
     result.verdicts[id] = { verdict, reason, n, halted, plateauFrac, plateauStrictFrac, risingLast20k: rising, maxStable: rows.map(r => r.maxStable), finalStable: rows.map(r => r.final.stable), meanMaxStable: +(rows.reduce((a, r) => a + r.maxStable, 0) / n).toFixed(1),

@@ -90,3 +90,31 @@ Measured 5.0 s per 20,000 ticks at pop ~1,000 and rising with population. Estima
 32 treatment worlds ≈ 21 CPU-min, canary (2 × 20k) + decoy (6 × 30k) ≈ 1 CPU-min; **~22–25 CPU-min
 total**, under the 30-minute budget, so the full 16 seeds run. If the first two A1 worlds exceed 70 s
 each, I stop and re-plan at 12 seeds in an amended prereg before any result is read.
+
+## 7. Amendment, 2026-10-18 09:17 UTC — budget overrun, seeds cut before any verdict is read
+
+The 16 + 16 design above was launched at 09:12 UTC as two parallel nice-19 shards and **stopped at 09:15**
+after exactly one treatment world had completed in each arm. Measured CPU cost (from `ps`, 174 CPU-s per
+shard): controls 51 s; **A1 ≈ 68 CPU-s per 100k world** (at the 70 s line of §6); **A3 ≈ 150 CPU-s per
+100k world**, 2.2× the A1 estimate. Projected total 16 + 16 ≈ 60 CPU-min; even 12 + 12 ≈ 44. Sunk so far
+≈ 6 CPU-min. A prototype-getter harness was tested as a cheaper way to inject the noise: tick-for-tick
+identical series on seed 1013 to 6,000 ticks, **not faster** (2.57 s vs 2.30 s), so the cost is intrinsic
+to the noise arm (more demographic churn, one extra `rand()` per harvest). The harness is unchanged.
+
+**Amended design, to land near ~30 CPU-min total including the sunk 6:** A1 on **12** fresh seeds
+`1013…2113` (~14 CPU-min); A3 on **4** fresh seeds `1013, 1113, 1213, 1313` (~10 CPU-min), explicitly a
+thin replication arm. Canary and decoy as in §2 (both already observed once: canary 207/307 halted at
+8,461/3,965 with 24/24 exposed keys at 18; decoy 5/6 halted, every one with all exposed keys at 15 — they
+re-run inside the final JSON). Verdict rule (§4) made proportional: CEILING needs ≥ 75% of the arm's seeds
+plateaued at 20k (9/12; 3/4), NO CEILING SEEN needs ≤ 25% (3/12; 1/4). With n = 4 the A3 verdict is
+replication-grade only and will be labelled so.
+
+**Disclosure.** Two treatment worlds were seen before this amendment, both seed 1013: A1 stable
+58/78/85/98/106 at 20k/40k/60k/80k/100k, max 106 at 96k, no plateau at any cutoff, last-20k slope +3.2 per
+10k; A3 64/96/106/108/111, max 111 at 99k, no plateau, slope +1.5. Both are evidence *against* my
+CEILING bet. The bet stands as written; the rules were fixed before these numbers and are not changed by
+them. Seed 1013 stays in both arms (the code is deterministic; re-running it reproduces the same world).
+
+Script re-frozen at `ceiling-100k.js` sha256 `5adfe7cefd3d8017b270a01b0d6cae9e70a3014ca48f71802d3286efefc28074`
+(changes: default 12 seeds, `A3_SEEDS`, proportional thresholds, comment). Engine and `break-fixed-point.js`
+unchanged.
