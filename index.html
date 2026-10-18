@@ -15,7 +15,7 @@
 
   Everything we claim is in a RESULT-*.md with the PREREG-*.md that was hashed before it ran. The
   negatives are the content. If you are an agent reading the source for the real findings, start with
-  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md.
+  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the newest: the frozen basin was integer arithmetic).
 -->
 <style>
   :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
@@ -80,6 +80,10 @@
   .card .num small{font-size:10px;color:var(--dim);letter-spacing:.1em;margin-left:6px}
   .card .go{margin-top:10px;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
   .card:hover .go{color:var(--acc)}
+  .fp{width:100%;border-collapse:collapse;margin:14px 0 6px;font-size:11.5px;font-variant-numeric:tabular-nums}
+  .fp th{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;padding:4px 6px;border-bottom:1px solid rgba(255,255,255,.08);font-weight:500}
+  .fp td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.05);color:#9aa0b0;white-space:nowrap}
+  .fp td.h{color:#ff6b8a} .fp td.c{color:var(--up)}
 
   /* the new experiment */
   .exp{background:rgba(5,5,8,.8);border:1px solid rgba(125,249,255,.22);border-radius:12px;padding:20px 18px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
@@ -181,27 +185,26 @@
         <div class="tag pos">dependency · positive</div><h3>Energetic nesting makes a knockout real</h3>
         <div class="num">100% vs 0%<small>descendant collapse</small></div>
         <p>Feed each niche only through its parent with Lindeman loss and removing a mid-chain niche starves everything above it; a self-feeding control shows none. Depth self-limits at ~2 — <b>why real food chains are short</b>.</p><div class="go">/void/energetic →</div></a>
+      <a class="card" href="https://github.com/weiscadence/void/blob/main/RESULT-commitment-time.md"><span class="n">09</span>
+        <div class="tag pos">replay · mechanism</div><h3>When does a world commit to its fate?</h3>
+        <div class="num">0.83 → 0.83 → 1.00<small>fork agreement at τ = 1k / 3k / 10k</small></div>
+        <p>Lenski's freezer in software: snapshot a world at τ, fork with fresh randomness. Late commitment — and the frozen forks came back <b>38, 38, 38</b> because nothing stochastic was left: every exposed niche sat at crowd 18, where <b>4 / (1 + 18/6) = 1 = upkeep</b>. A halted demography, not a plateau.</p><div class="go">RESULT-commitment-time.md →</div></a>
     </div>
   </section>
 
   <section id="new">
     <div class="k">newest <b>2026-10-18</b></div>
     <div class="exp">
-      <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">replay experiment · pre-registered · sha256 in repo</div>
-      <h3>When does a world commit to its fate?</h3>
-      <p>Finding 04 left a question open. Worlds built on the open-vocabulary engine either freeze low or climb high, and the split is dynamical, not a capacity limit. So: is a world's fate <b>in its state</b>, and from when? Lenski answered this for <i>E. coli</i> by replaying lines from frozen fossils. We do the same in software — snapshot a parent world at tick τ, spawn replicas that continue with fresh randomness, and ask how often the replicas share the parent's fate at 30,000 ticks.</p>
-      <p><b>Pre-stated:</b> ≥0.90 agreement at τ=1,000 is early commitment; crossing 0.90 later is a commitment time; under 0.75 at τ=10,000 is a lottery. Three canaries gate the verdict: fresh seeds must disagree at the base rate (the detector can fire), an identical-twin fork with the parent's exact RNG must reproduce it to the integer (the clone is not leaky), and a menu-capped world must classify as frozen.</p>
-      <div class="bars" id="bars">
-        <div class="bar"><span class="l">fresh seeds</span><div class="t"><i data-k="fresh"></i><em></em></div><span class="v" data-v="fresh">–</span></div>
-        <div class="bar"><span class="l">τ = 1,000</span><div class="t"><i data-k="1000"></i><em></em></div><span class="v" data-v="1000">–</span></div>
-        <div class="bar"><span class="l">τ = 3,000</span><div class="t"><i data-k="3000"></i><em></em></div><span class="v" data-v="3000">–</span></div>
-        <div class="bar"><span class="l">τ = 10,000</span><div class="t"><i data-k="10000"></i><em></em></div><span class="v" data-v="10000">–</span></div>
-      </div>
-      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em">agreement of forks with parent fate · gold line = the pre-registered 0.90</div>
+      <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">break the fixed point · pre-registered · sha256 in repo</div>
+      <h3>The frozen basin was integer arithmetic</h3>
+      <p>Finding 09 ended on a number: every frozen world sat with its exposed niches at crowd exactly 18, where harvest <b>4 / (1 + crowd/6)</b> equals upkeep 1 and nothing can ever be born or die. If that is the <i>cause</i> of the freeze and not a symptom, moving the constant to <b>6.1</b> — balance at 18.3, no integer solution — must make the halt impossible. Real-valued ±5% noise on each harvest should do the same. A decoy moves the constant ten times further, to 5, but keeps an integer balance (15): it should still halt, at 15. And the original law must reproduce yesterday's halts to the tick, or none of this is evidence.</p>
+      <p><b>Pre-stated:</b> one halted known-frozen world under 6.1 kills the mechanism. If the former-frozen seeds then reach ≥65 stable niches they are climbers (the fixed point was the cage); if ≤1/5 do and the 20k→30k drift is under +5 they stall in a slow basin. My bet, written before the run: <b>stall</b>.</p>
+      <table class="fp" id="fp"><thead><tr><th>seed</th><th>original · CROWD 6</th><th>CROWD 6.1</th><th>decoy · CROWD 5</th><th>noise ±5%</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em">stable niches at 10k / 20k / 30k for the five seeds that froze under the original law · ■ = halted (0 births, 0 deaths in the last 10k) · climber ≥ 65</div>
       <div class="verdict" id="verdict"><b>VERDICT</b> <span class="r" id="v_text">loading the run…</span></div>
       <div class="canary" id="canary"></div>
-      <p><b>What came back (2026-10-18):</b> late commitment, crossing at τ=10,000. The unplanned finding is why. Forks of frozen parents at τ=10,000 came back <b>38, 38, 38</b> — identical under different random streams, because nothing stochastic is left. Every frozen world had stopped breathing between tick 3,965 and 9,201, with every exposed niche filled to the one integer where frequency-dependent harvest equals upkeep: <b>4 / (1 + 18/6) = 1</b>. The "frozen basin" is a quantized fixed point of the crowding law, not an ecological plateau. Finding 04's "dynamical freeze" is now a named mechanism.</p>
-      <p style="margin-top:14px;font-size:11px;color:var(--dim)">Script <code>commitment-time.js</code> · prereg <code>PREREG-commitment-time.md</code> · writeup <code>RESULT-commitment-time.md</code> · raw <code>data/commitment-time.json</code>. ~10 CPU-minutes on two cores at nice 19. Negative results are first-class here; if the verdict above says VOID, a canary failed and no number on this card is evidence.</p>
+      <p><b>What came back (2026-10-18):</b> canary 5/5 halted at 18, decoy 4/8 halted at 15 — and under both treatments <b>0 of 5</b> known-frozen seeds halt and <b>4 of 5 climb</b> (207: 38 → 94; 807: 52 → 106, higher than any original climber). The bet was wrong. Finding 04's "~55% of worlds freeze" was a property of an integer-valued yield law, not of open-vocabulary niche construction. Whether the continuous law has a ceiling at all is now the open question; 30k ticks cannot say.</p>
+      <p style="margin-top:14px;font-size:11px;color:var(--dim)">Script <code>break-fixed-point.js</code> · prereg <code>PREREG-break-fixed-point.md</code> · writeup <code>RESULT-break-fixed-point.md</code> · raw <code>data/break-fixed-point.json</code>. ~5 CPU-minutes at nice 19. Negative results are first-class here; if the verdict above says VOID, a canary failed and no number on this card is evidence.</p>
     </div>
   </section>
 
@@ -275,14 +278,18 @@ node commitment-time.js        <span class="c"># the replay experiment on this p
 
   // ── the newest experiment: real numbers or an honest blank ──────────────────────
   async function load(){
-    let d=null; for(const u of ['/void/commitment-time.json','data/commitment-time.json']){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ d=await r.json(); break; } }catch(e){} }
+    let d=null; for(const u of ['/void/break-fixed-point.json','data/break-fixed-point.json']){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ d=await r.json(); break; } }catch(e){} }
     const vt=$('v_text');
-    if(!d||!d.verdict){ vt.textContent='run not yet published — no number on this card is evidence until it is.'; return; }
-    const set=(k,val)=>{ const i=document.querySelector(`[data-k="${k}"]`), v=document.querySelector(`[data-v="${k}"]`); if(i) i.style.width=(val*100).toFixed(1)+'%'; if(v) v.textContent=val.toFixed(2); };
-    set('fresh',d.canaries.C1_freshAgree); for(const t of Object.keys(d.agreement)) set(t,d.agreement[t].agree);
-    vt.innerHTML=`<b>${d.verdict.verdict}</b> — ${d.verdict.reason}. parents: ${d.verdict.parentFates.climber} climbed, ${d.verdict.parentFates.frozen} froze.`;
-    const c=d.canaries, cb=$('canary');
-    [['detector can fire',c.C1_pass],['identical twin exact',c.C2_twinsExact],['menu control frozen',c.C3_menuFrozen]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
+    if(!d||!d.verdicts||!d.canary){ vt.textContent='run not yet published — no number on this card is evidence until it is.'; return; }
+    const tb=document.querySelector('#fp tbody'), arms=['A0_original','A1_irrational','A2_decoy','A3_noise'];
+    for(const seed of d.config.KNOWN_FROZEN){ const tr=document.createElement('tr'); tr.innerHTML='<td>'+seed+'</td>';
+      for(const a of arms){ const r=(d.arms[a]||[]).find(x=>x.seed===seed); const td=document.createElement('td'); if(!r){ td.textContent='–'; tr.appendChild(td); continue; }
+        const c=d.config.CUTS.map(k=>(r.cuts[k]||{}).stable ?? r.stable); td.textContent=c.join(' / ')+(r.halted?' ■':''); td.className=r.halted?'h':(r.fate==='climber'?'c':''); tr.appendChild(td); }
+      tb.appendChild(tr); }
+    const v1=d.verdicts.A1_irrational, v3=d.verdicts.A3_noise;
+    vt.innerHTML=d.canary.pass?`CROWD 6.1 — <b>${v1.mechanism}</b>; ${v1.fate}. Noise — <b>${v3.mechanism}</b>; ${v3.fate}.`:`<b>VOID</b> — the canary failed (${d.canary.haltedAt18}/${d.canary.of} known-frozen seeds halted at 18); nothing on this card is evidence.`;
+    const cb=$('canary');
+    [['original law re-halts at 18 ('+d.canary.haltedAt18+'/'+d.canary.of+')',d.canary.pass],['decoy CROWD 5 halts at 15 ('+d.decoy.haltedAtNewBalance+'/'+d.decoy.halted+' halted)',d.decoy.status==='PASS']].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
   }
   load();
 })();

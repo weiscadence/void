@@ -1,0 +1,1215 @@
+{
+ "config": {
+  "SEEDS": [
+   107,
+   207,
+   307,
+   407,
+   507,
+   607,
+   707,
+   807
+  ],
+  "KNOWN_FROZEN": [
+   207,
+   307,
+   507,
+   707,
+   807
+  ],
+  "H": 30000,
+  "CUTS": [
+   10000,
+   20000,
+   30000
+  ],
+  "THRESH": 65,
+  "HALT_WIN": 10000,
+  "SIGMA": 0.05,
+  "CFG": {
+   "tol": 2,
+   "construct": true,
+   "stableAge": 400,
+   "menuSize": 0
+  },
+  "ARMS": [
+   {
+    "id": "A0_original",
+    "crowd": 6,
+    "balance": 18,
+    "noise": 0
+   },
+   {
+    "id": "A1_irrational",
+    "crowd": 6.1,
+    "balance": null,
+    "noise": 0
+   },
+   {
+    "id": "A2_decoy",
+    "crowd": 5,
+    "balance": 15,
+    "noise": 0
+   },
+   {
+    "id": "A3_noise",
+    "crowd": 6,
+    "balance": null,
+    "noise": 0.05
+   }
+  ]
+ },
+ "arms": {
+  "A0_original": [
+   {
+    "seed": 107,
+    "cuts": {
+     "10000": {
+      "stable": 66,
+      "pop": 867,
+      "prog": 2.79
+     },
+     "20000": {
+      "stable": 83,
+      "pop": 995,
+      "prog": 2.96
+     },
+     "30000": {
+      "stable": 90,
+      "pop": 1122,
+      "prog": 3.09
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 90,
+    "pop": 1122,
+    "winBirths": 35673,
+    "winDeaths": 35546,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 54,
+     "atBalance": 17,
+     "crowdMin": 2,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 207,
+    "cuts": {
+     "10000": {
+      "stable": 38,
+      "pop": 594,
+      "prog": 2.37
+     },
+     "20000": {
+      "stable": 38,
+      "pop": 594,
+      "prog": 2.37
+     },
+     "30000": {
+      "stable": 38,
+      "pop": 594,
+      "prog": 2.37
+     }
+    },
+    "lastEvent": 8461,
+    "stable": 38,
+    "pop": 594,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 24,
+     "atBalance": 24,
+     "crowdMin": 18,
+     "crowdMax": 18
+    }
+   },
+   {
+    "seed": 307,
+    "cuts": {
+     "10000": {
+      "stable": 37,
+      "pop": 534,
+      "prog": 2.34
+     },
+     "20000": {
+      "stable": 37,
+      "pop": 534,
+      "prog": 2.34
+     },
+     "30000": {
+      "stable": 37,
+      "pop": 534,
+      "prog": 2.34
+     }
+    },
+    "lastEvent": 3965,
+    "stable": 37,
+    "pop": 534,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 24,
+     "atBalance": 24,
+     "crowdMin": 18,
+     "crowdMax": 18
+    }
+   },
+   {
+    "seed": 407,
+    "cuts": {
+     "10000": {
+      "stable": 51,
+      "pop": 718,
+      "prog": 2.65
+     },
+     "20000": {
+      "stable": 58,
+      "pop": 784,
+      "prog": 2.91
+     },
+     "30000": {
+      "stable": 63,
+      "pop": 830,
+      "prog": 2.97
+     }
+    },
+    "lastEvent": 29993,
+    "stable": 63,
+    "pop": 830,
+    "winBirths": 8875,
+    "winDeaths": 8829,
+    "halted": false,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 31,
+     "atBalance": 24,
+     "crowdMin": 15,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 507,
+    "cuts": {
+     "10000": {
+      "stable": 40,
+      "pop": 585,
+      "prog": 2.34
+     },
+     "20000": {
+      "stable": 40,
+      "pop": 585,
+      "prog": 2.34
+     },
+     "30000": {
+      "stable": 40,
+      "pop": 585,
+      "prog": 2.34
+     }
+    },
+    "lastEvent": 5106,
+    "stable": 40,
+    "pop": 585,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 24,
+     "atBalance": 24,
+     "crowdMin": 18,
+     "crowdMax": 18
+    }
+   },
+   {
+    "seed": 607,
+    "cuts": {
+     "10000": {
+      "stable": 63,
+      "pop": 840,
+      "prog": 3.03
+     },
+     "20000": {
+      "stable": 76,
+      "pop": 981,
+      "prog": 3.22
+     },
+     "30000": {
+      "stable": 81,
+      "pop": 1068,
+      "prog": 3.29
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 81,
+    "pop": 1068,
+    "winBirths": 18811,
+    "winDeaths": 18724,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 45,
+     "atBalance": 21,
+     "crowdMin": 2,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 707,
+    "cuts": {
+     "10000": {
+      "stable": 37,
+      "pop": 512,
+      "prog": 2
+     },
+     "20000": {
+      "stable": 37,
+      "pop": 512,
+      "prog": 2
+     },
+     "30000": {
+      "stable": 37,
+      "pop": 512,
+      "prog": 2
+     }
+    },
+    "lastEvent": 5492,
+    "stable": 37,
+    "pop": 512,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 24,
+     "atBalance": 24,
+     "crowdMin": 18,
+     "crowdMax": 18
+    }
+   },
+   {
+    "seed": 807,
+    "cuts": {
+     "10000": {
+      "stable": 52,
+      "pop": 712,
+      "prog": 2.9
+     },
+     "20000": {
+      "stable": 52,
+      "pop": 712,
+      "prog": 2.9
+     },
+     "30000": {
+      "stable": 52,
+      "pop": 712,
+      "prog": 2.9
+     }
+    },
+    "lastEvent": 9201,
+    "stable": 52,
+    "pop": 712,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 26,
+     "atBalance": 26,
+     "crowdMin": 18,
+     "crowdMax": 18
+    }
+   }
+  ],
+  "A1_irrational": [
+   {
+    "seed": 107,
+    "cuts": {
+     "10000": {
+      "stable": 53,
+      "pop": 760,
+      "prog": 2.64
+     },
+     "20000": {
+      "stable": 75,
+      "pop": 959,
+      "prog": 3.07
+     },
+     "30000": {
+      "stable": 91,
+      "pop": 1097,
+      "prog": 3.15
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 91,
+    "pop": 1097,
+    "winBirths": 28985,
+    "winDeaths": 28847,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 54,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 207,
+    "cuts": {
+     "10000": {
+      "stable": 49,
+      "pop": 660,
+      "prog": 2.53
+     },
+     "20000": {
+      "stable": 74,
+      "pop": 955,
+      "prog": 3.43
+     },
+     "30000": {
+      "stable": 94,
+      "pop": 1004,
+      "prog": 3.53
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 94,
+    "pop": 1004,
+    "winBirths": 71079,
+    "winDeaths": 71030,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 62,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 307,
+    "cuts": {
+     "10000": {
+      "stable": 40,
+      "pop": 488,
+      "prog": 2.38
+     },
+     "20000": {
+      "stable": 56,
+      "pop": 675,
+      "prog": 3.33
+     },
+     "30000": {
+      "stable": 64,
+      "pop": 768,
+      "prog": 3.45
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 64,
+    "pop": 768,
+    "winBirths": 2535,
+    "winDeaths": 2442,
+    "halted": false,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 33,
+     "atBalance": null,
+     "crowdMin": 2,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 407,
+    "cuts": {
+     "10000": {
+      "stable": 58,
+      "pop": 766,
+      "prog": 2.61
+     },
+     "20000": {
+      "stable": 77,
+      "pop": 883,
+      "prog": 2.77
+     },
+     "30000": {
+      "stable": 86,
+      "pop": 1025,
+      "prog": 2.93
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 86,
+    "pop": 1025,
+    "winBirths": 40579,
+    "winDeaths": 40437,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 56,
+     "atBalance": null,
+     "crowdMin": 3,
+     "crowdMax": 21
+    }
+   },
+   {
+    "seed": 507,
+    "cuts": {
+     "10000": {
+      "stable": 55,
+      "pop": 757,
+      "prog": 2.82
+     },
+     "20000": {
+      "stable": 65,
+      "pop": 883,
+      "prog": 2.94
+     },
+     "30000": {
+      "stable": 75,
+      "pop": 1006,
+      "prog": 3.06
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 75,
+    "pop": 1006,
+    "winBirths": 17581,
+    "winDeaths": 17458,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 43,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 607,
+    "cuts": {
+     "10000": {
+      "stable": 73,
+      "pop": 923,
+      "prog": 3.08
+     },
+     "20000": {
+      "stable": 94,
+      "pop": 1086,
+      "prog": 3.24
+     },
+     "30000": {
+      "stable": 102,
+      "pop": 1233,
+      "prog": 3.35
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 102,
+    "pop": 1233,
+    "winBirths": 58016,
+    "winDeaths": 57869,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 51,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 707,
+    "cuts": {
+     "10000": {
+      "stable": 42,
+      "pop": 559,
+      "prog": 2.27
+     },
+     "20000": {
+      "stable": 51,
+      "pop": 677,
+      "prog": 2.59
+     },
+     "30000": {
+      "stable": 67,
+      "pop": 863,
+      "prog": 2.85
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 67,
+    "pop": 863,
+    "winBirths": 12742,
+    "winDeaths": 12556,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 41,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 807,
+    "cuts": {
+     "10000": {
+      "stable": 72,
+      "pop": 920,
+      "prog": 3.05
+     },
+     "20000": {
+      "stable": 92,
+      "pop": 1069,
+      "prog": 3.24
+     },
+     "30000": {
+      "stable": 106,
+      "pop": 1190,
+      "prog": 3.34
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 106,
+    "pop": 1190,
+    "winBirths": 79401,
+    "winDeaths": 79280,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 61,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 21
+    }
+   }
+  ],
+  "A2_decoy": [
+   {
+    "seed": 107,
+    "cuts": {
+     "10000": {
+      "stable": 58,
+      "pop": 641,
+      "prog": 2.72
+     },
+     "20000": {
+      "stable": 73,
+      "pop": 777,
+      "prog": 2.9
+     },
+     "30000": {
+      "stable": 86,
+      "pop": 912,
+      "prog": 3.1
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 86,
+    "pop": 912,
+    "winBirths": 55435,
+    "winDeaths": 55300,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 58,
+     "atBalance": 17,
+     "crowdMin": 1,
+     "crowdMax": 16
+    }
+   },
+   {
+    "seed": 207,
+    "cuts": {
+     "10000": {
+      "stable": 17,
+      "pop": 254,
+      "prog": 1.73
+     },
+     "20000": {
+      "stable": 18,
+      "pop": 269,
+      "prog": 1.85
+     },
+     "30000": {
+      "stable": 18,
+      "pop": 269,
+      "prog": 1.85
+     }
+    },
+    "lastEvent": 11325,
+    "stable": 18,
+    "pop": 269,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 17,
+     "atBalance": 17,
+     "crowdMin": 15,
+     "crowdMax": 15
+    }
+   },
+   {
+    "seed": 307,
+    "cuts": {
+     "10000": {
+      "stable": 50,
+      "pop": 534,
+      "prog": 2.69
+     },
+     "20000": {
+      "stable": 50,
+      "pop": 534,
+      "prog": 2.69
+     },
+     "30000": {
+      "stable": 50,
+      "pop": 534,
+      "prog": 2.69
+     }
+    },
+    "lastEvent": 6067,
+    "stable": 50,
+    "pop": 534,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 24,
+     "atBalance": 24,
+     "crowdMin": 15,
+     "crowdMax": 15
+    }
+   },
+   {
+    "seed": 407,
+    "cuts": {
+     "10000": {
+      "stable": 58,
+      "pop": 665,
+      "prog": 2.95
+     },
+     "20000": {
+      "stable": 60,
+      "pop": 667,
+      "prog": 2.97
+     },
+     "30000": {
+      "stable": 60,
+      "pop": 667,
+      "prog": 2.98
+     }
+    },
+    "lastEvent": 22070,
+    "stable": 60,
+    "pop": 667,
+    "winBirths": 271,
+    "winDeaths": 271,
+    "halted": false,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 25,
+     "atBalance": 25,
+     "crowdMin": 15,
+     "crowdMax": 15
+    }
+   },
+   {
+    "seed": 507,
+    "cuts": {
+     "10000": {
+      "stable": 58,
+      "pop": 670,
+      "prog": 2.74
+     },
+     "20000": {
+      "stable": 82,
+      "pop": 877,
+      "prog": 2.96
+     },
+     "30000": {
+      "stable": 90,
+      "pop": 951,
+      "prog": 3.04
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 90,
+    "pop": 951,
+    "winBirths": 50916,
+    "winDeaths": 50842,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 51,
+     "atBalance": 20,
+     "crowdMin": 3,
+     "crowdMax": 16
+    }
+   },
+   {
+    "seed": 607,
+    "cuts": {
+     "10000": {
+      "stable": 60,
+      "pop": 610,
+      "prog": 2.76
+     },
+     "20000": {
+      "stable": 60,
+      "pop": 614,
+      "prog": 2.77
+     },
+     "30000": {
+      "stable": 60,
+      "pop": 614,
+      "prog": 2.77
+     }
+    },
+    "lastEvent": 13401,
+    "stable": 60,
+    "pop": 614,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 25,
+     "atBalance": 25,
+     "crowdMin": 15,
+     "crowdMax": 15
+    }
+   },
+   {
+    "seed": 707,
+    "cuts": {
+     "10000": {
+      "stable": 22,
+      "pop": 314,
+      "prog": 1.8
+     },
+     "20000": {
+      "stable": 22,
+      "pop": 314,
+      "prog": 1.8
+     },
+     "30000": {
+      "stable": 22,
+      "pop": 314,
+      "prog": 1.8
+     }
+    },
+    "lastEvent": 1028,
+    "stable": 22,
+    "pop": 314,
+    "winBirths": 0,
+    "winDeaths": 0,
+    "halted": true,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 20,
+     "atBalance": 20,
+     "crowdMin": 15,
+     "crowdMax": 15
+    }
+   },
+   {
+    "seed": 807,
+    "cuts": {
+     "10000": {
+      "stable": 47,
+      "pop": 557,
+      "prog": 2.46
+     },
+     "20000": {
+      "stable": 47,
+      "pop": 560,
+      "prog": 2.46
+     },
+     "30000": {
+      "stable": 47,
+      "pop": 562,
+      "prog": 2.46
+     }
+    },
+    "lastEvent": 29997,
+    "stable": 47,
+    "pop": 562,
+    "winBirths": 184,
+    "winDeaths": 182,
+    "halted": false,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 25,
+     "atBalance": 24,
+     "crowdMin": 14,
+     "crowdMax": 15
+    }
+   }
+  ],
+  "A3_noise": [
+   {
+    "seed": 107,
+    "cuts": {
+     "10000": {
+      "stable": 53,
+      "pop": 763,
+      "prog": 2.81
+     },
+     "20000": {
+      "stable": 77,
+      "pop": 925,
+      "prog": 3.16
+     },
+     "30000": {
+      "stable": 108,
+      "pop": 1200,
+      "prog": 3.5
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 108,
+    "pop": 1200,
+    "winBirths": 67890,
+    "winDeaths": 67615,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 68,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 207,
+    "cuts": {
+     "10000": {
+      "stable": 67,
+      "pop": 857,
+      "prog": 3.44
+     },
+     "20000": {
+      "stable": 80,
+      "pop": 1007,
+      "prog": 3.65
+     },
+     "30000": {
+      "stable": 93,
+      "pop": 1152,
+      "prog": 3.81
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 93,
+    "pop": 1152,
+    "winBirths": 14664,
+    "winDeaths": 14519,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 43,
+     "atBalance": null,
+     "crowdMin": 2,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 307,
+    "cuts": {
+     "10000": {
+      "stable": 34,
+      "pop": 525,
+      "prog": 2.33
+     },
+     "20000": {
+      "stable": 37,
+      "pop": 574,
+      "prog": 2.47
+     },
+     "30000": {
+      "stable": 40,
+      "pop": 599,
+      "prog": 2.55
+     }
+    },
+    "lastEvent": 29981,
+    "stable": 40,
+    "pop": 599,
+    "winBirths": 1600,
+    "winDeaths": 1575,
+    "halted": false,
+    "fate": "frozen",
+    "census": {
+     "exposedKeys": 26,
+     "atBalance": null,
+     "crowdMin": 17,
+     "crowdMax": 18
+    }
+   },
+   {
+    "seed": 407,
+    "cuts": {
+     "10000": {
+      "stable": 89,
+      "pop": 1008,
+      "prog": 3.73
+     },
+     "20000": {
+      "stable": 101,
+      "pop": 1232,
+      "prog": 3.84
+     },
+     "30000": {
+      "stable": 104,
+      "pop": 1342,
+      "prog": 3.86
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 104,
+    "pop": 1342,
+    "winBirths": 19378,
+    "winDeaths": 19268,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 44,
+     "atBalance": null,
+     "crowdMin": 4,
+     "crowdMax": 19
+    }
+   },
+   {
+    "seed": 507,
+    "cuts": {
+     "10000": {
+      "stable": 67,
+      "pop": 881,
+      "prog": 2.78
+     },
+     "20000": {
+      "stable": 79,
+      "pop": 1008,
+      "prog": 2.85
+     },
+     "30000": {
+      "stable": 87,
+      "pop": 1145,
+      "prog": 3.04
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 87,
+    "pop": 1145,
+    "winBirths": 27192,
+    "winDeaths": 27055,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 59,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 21
+    }
+   },
+   {
+    "seed": 607,
+    "cuts": {
+     "10000": {
+      "stable": 81,
+      "pop": 998,
+      "prog": 3.42
+     },
+     "20000": {
+      "stable": 98,
+      "pop": 1195,
+      "prog": 3.56
+     },
+     "30000": {
+      "stable": 107,
+      "pop": 1380,
+      "prog": 3.69
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 107,
+    "pop": 1380,
+    "winBirths": 30343,
+    "winDeaths": 30158,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 55,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 707,
+    "cuts": {
+     "10000": {
+      "stable": 44,
+      "pop": 656,
+      "prog": 2.47
+     },
+     "20000": {
+      "stable": 66,
+      "pop": 842,
+      "prog": 2.95
+     },
+     "30000": {
+      "stable": 89,
+      "pop": 1048,
+      "prog": 3.17
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 89,
+    "pop": 1048,
+    "winBirths": 32387,
+    "winDeaths": 32181,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 56,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 20
+    }
+   },
+   {
+    "seed": 807,
+    "cuts": {
+     "10000": {
+      "stable": 63,
+      "pop": 863,
+      "prog": 2.99
+     },
+     "20000": {
+      "stable": 76,
+      "pop": 1005,
+      "prog": 3.09
+     },
+     "30000": {
+      "stable": 90,
+      "pop": 1191,
+      "prog": 3.24
+     }
+    },
+    "lastEvent": 30000,
+    "stable": 90,
+    "pop": 1191,
+    "winBirths": 28446,
+    "winDeaths": 28260,
+    "halted": false,
+    "fate": "climber",
+    "census": {
+     "exposedKeys": 55,
+     "atBalance": null,
+     "crowdMin": 1,
+     "crowdMax": 19
+    }
+   }
+  ]
+ },
+ "canary": {
+  "haltedAt18": 5,
+  "of": 5,
+  "pass": true
+ },
+ "decoy": {
+  "halted": 4,
+  "haltedAtNewBalance": 4,
+  "of": 8,
+  "status": "PASS"
+ },
+ "verdicts": {
+  "A1_irrational": {
+   "mechanism": "HALT REMOVED (0/5 known-frozen seeds halt)",
+   "fate": "CLIMBERS (4/5 former-frozen reach ≥65 at 30000)",
+   "halted": 0,
+   "climbed": 4,
+   "meanDrift": 13.6,
+   "stableAt": {
+    "10000": [
+     49,
+     40,
+     55,
+     42,
+     72
+    ],
+    "20000": [
+     74,
+     56,
+     65,
+     51,
+     92
+    ],
+    "30000": [
+     94,
+     64,
+     75,
+     67,
+     106
+    ]
+   },
+   "winEvents": [
+    142109,
+    4977,
+    35039,
+    25298,
+    158681
+   ]
+  },
+  "A3_noise": {
+   "mechanism": "HALT REMOVED (0/5 known-frozen seeds halt)",
+   "fate": "CLIMBERS (4/5 former-frozen reach ≥65 at 30000)",
+   "halted": 0,
+   "climbed": 4,
+   "meanDrift": 12.2,
+   "stableAt": {
+    "10000": [
+     67,
+     34,
+     67,
+     44,
+     63
+    ],
+    "20000": [
+     80,
+     37,
+     79,
+     66,
+     76
+    ],
+    "30000": [
+     93,
+     40,
+     87,
+     89,
+     90
+    ]
+   },
+   "winEvents": [
+    29183,
+    3175,
+    54247,
+    64568,
+    56706
+   ]
+  }
+ }
+}

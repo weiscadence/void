@@ -31,21 +31,23 @@ record of lifting each ceiling and naming the next one.
 | 7 | Driving the world at φ should resist locking. A planted decoy (8/5, 1.1% away in period) shows **0.137%** separation. Four instruments measured drive speed, not rationality | **retraction** | [`RESULT-locking-novelty.md`](RESULT-locking-novelty.md) |
 | 8 | Energetic nesting makes a knockout real: **100%** descendant collapse vs **0%** in a self-feeding control; depth self-limits at ~2 | positive | [`RESULT-energetic-nesting.md`](RESULT-energetic-nesting.md), `energetic-exp.js` |
 | 9 | **New (2026-10-18).** When does a world commit to its fate? Lenski-style replay: fork a world at τ with fresh randomness. Agreement **0.83 → 0.83 → 1.00** at τ = 1k / 3k / 10k (base 0.63). The frozen basin is a **halted demography**: zero births, zero deaths, every exposed key at crowd exactly 18, where `4/(1+18/6) = 1 = upkeep` | late commitment + mechanism | [`RESULT-commitment-time.md`](RESULT-commitment-time.md), [`PREREG-commitment-time.md`](PREREG-commitment-time.md) |
+| 10 | **New (2026-10-18).** Break the fixed point. Move the crowding constant 6 → 6.1 so harvest = upkeep has no integer solution, or add ±5% real-valued yield noise: **0/5** known-frozen seeds halt and **4/5** climb past 65 niches (38 → 94, 52 → 106). A decoy (6 → 5, integer balance 15) still halts, at 15. The bimodal fate of finding 4 was an artifact of an integer-valued law | corrects 4 · pre-stated bet wrong | [`RESULT-break-fixed-point.md`](RESULT-break-fixed-point.md), [`PREREG-break-fixed-point.md`](PREREG-break-fixed-point.md) |
 
 ## The newest result, in one paragraph
 
-Finding 4 left a question open: worlds either freeze low or climb high, and the split looked
-dynamical. So we did what Lenski did with frozen *E. coli*: snapshot a parent world at tick τ, spawn
-replicas that continue with fresh randomness, and ask how often they share the parent's fate at
-30,000 ticks. Three canaries gated the verdict (fresh seeds must disagree at the base rate; an
-identical-twin fork with the parent's exact RNG must reproduce it to the integer; a menu-capped
-world must classify as frozen). Verdict by the pre-registered rule: **late commitment, crossing at
-τ = 10,000**. The unplanned finding is why: forks of frozen parents at τ = 10,000 came back
-`38, 38, 38` — identical under different random streams, because nothing stochastic is left. Every
-frozen world had stopped breathing between tick 3,965 and 9,201, with every exposed niche filled to
-the one integer where frequency-dependent harvest equals upkeep. The "frozen basin" is a quantized
-fixed point of the crowding law, not an ecological plateau. Details, table and limits in
-[`RESULT-commitment-time.md`](RESULT-commitment-time.md).
+Finding 9 ended on an unplanned observation: every frozen world had stopped breathing — zero births,
+zero deaths — with every exposed niche filled to crowd 18, the one integer where frequency-dependent
+harvest `4 / (1 + crowd/6)` equals upkeep 1. Finding 10 tests that as a mechanism. Move the constant
+to 6.1 and the balance point is 18.3: no integer crowd can hold energy constant, so the demography
+cannot switch off. Or keep 6 and multiply each harvest by a real-valued ±5% noise. Either way, the
+five seeds that froze at 37–52 niches under the original law **all keep breathing, and four of five
+climb past 65** (207: 38 → 94; 807: 52 → 106). A decoy moved the constant ten times further, to 5,
+but kept an integer balance (15): four of eight worlds halt there, every exposed key at exactly 15.
+The canary re-ran the original law and reproduced yesterday's five halts to the tick. So the bimodal
+fate of finding 4 — "~55% of worlds freeze" — was a property of integer arithmetic in the yield
+formula, not of open-vocabulary niche construction, and the pre-stated bet (a slow stall would
+remain) was wrong. Whether the continuous law has any ceiling is now the open question. Details,
+table and limits in [`RESULT-break-fixed-point.md`](RESULT-break-fixed-point.md).
 
 ## The correction that matters most
 
@@ -76,6 +78,7 @@ node reinvent-canary.js        # the retracted detector's positive control: fire
 node open-exp.js               # open vocabulary vs fixed menu, pre-registered 3-arm (~2 min)
 node commitment-time.js        # the replay experiment (~9 CPU-min; writes data/commitment-time.json)
 node halt-time.js              # post-hoc halt census for the replay result (~1 min)
+node break-fixed-point.js      # break the fixed point: 4 arms x 8 seeds (~5 CPU-min; writes data/break-fixed-point.json)
 ```
 
 Every `.js` runs standalone from a fresh clone. `index.html` and the other `.html` worlds open
