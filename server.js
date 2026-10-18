@@ -106,6 +106,11 @@ http.createServer((req, res) => {
     if (u === '/garden' || u === '/garden.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'garden.html')));
     if (u === '/lib/garden.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'garden.js')));
     if (u === '/garden.json' || u === '/garden-archive.json' || u === '/garden-gallery.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', u.slice(1)))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
+    // soup — an artificial chemistry whose molecules are the garden's programs (Fontana application,
+    // mass-conserving reactor with cleavage). The page runs the same lib/soup.js live in the browser.
+    if (u === '/soup' || u === '/soup.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'soup.html')));
+    if (u === '/lib/soup.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'soup.js')));
+    if (u === '/soup.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'soup.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/lib/silica.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'silica.js')));
     if (u === '/api/state') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'state.json')));
     if (u === '/api/lineage') { // last 200 fossils

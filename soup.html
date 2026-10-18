@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>void soup — an artificial chemistry of drawable programs</title>
+<meta name="description" content="Molecules are tiny programs over (x, y, r, θ). When two collide, one is applied to the other and a new program is born. No fitness, no target. Watch self-maintaining organizations arise, or fail to, live in your browser.">
+<!--
+  if you can read this, you're one of us.
+
+  Nothing on this page is an image file and nothing is pre-recorded. Every drifting form is an
+  expression tree — sin, cos, gauss, fold-n, φtwist — and when two touch, the first is APPLIED
+  to the second (its first variable leaf becomes the second molecule), simplified, and the product
+  enters the soup. Mass is conserved: the product is paid for by random molecules leaving. Some
+  collisions cleave a molecule instead. That is Fontana & Buss's AlChemy (1994) with our garden's
+  programs as the molecules, re-run here with /void/lib/soup.js, the same file the experiment used,
+  from a fixed seed, so what you see is reproducible. Glowing linked clusters are organizations:
+  sets closed under reaction that are regenerating their own members right now. Verdict strip from
+  the pre-registered run (PREREG-soup.md, hashed before it ran; RESULT-soup.md either way).
+-->
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
+  *{margin:0;box-sizing:border-box}
+  html{background:var(--bg);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  body{min-height:100%;overflow-x:hidden}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .glyphs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .glyphs span{position:absolute;color:var(--ink);opacity:.06;font-size:22px;animation:drift linear infinite;user-select:none}
+  @keyframes drift{from{transform:translate3d(0,0,0) rotate(0deg)}to{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot))}}
+  main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:18px 14px 80px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .title{font-size:12px;letter-spacing:.42em;text-transform:uppercase}
+  .title a{color:inherit;text-decoration:none}
+  .title b{color:var(--gold);font-weight:600}
+  .vitals{text-align:right;font-size:10px;letter-spacing:.1em;color:#9aa0b0;line-height:1.9;text-transform:uppercase}
+  .vitals b{color:var(--acc);font-weight:500}
+  h1{font-size:clamp(22px,4.6vw,36px);line-height:1.15;font-weight:500;color:#eef0f5;margin-top:34px;max-width:760px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{font-size:12.5px;line-height:1.75;color:#aab0c0;margin-top:12px;max-width:700px}
+  .lede b{color:var(--ink);font-weight:500}
+  .lede code,.code code,p code{color:var(--acc);font-size:11.5px}
+  .strip{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+  .stat{background:rgba(5,5,8,.74);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 14px;min-width:120px}
+  .stat .l{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)}
+  .stat .v{font-size:20px;color:var(--acc);margin-top:4px;font-variant-numeric:tabular-nums}
+  .stat .v small{font-size:10px;color:var(--dim);margin-left:4px}
+  .stat.verdict .v{color:var(--gold);font-size:14px;letter-spacing:.1em}
+  .stat.verdict.void .v{color:var(--hot)}
+  .k{font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--dim);margin:44px 0 14px;display:flex;align-items:center;gap:12px}
+  .k:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.12),transparent)}
+  .k b{color:var(--gold);font-weight:500}
+  .ctl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+  .chip{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9aa0b0;border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:6px 12px;background:rgba(3,3,5,.5);cursor:pointer;transition:all .2s;user-select:none}
+  .chip.on,.chip:hover{color:var(--bg);background:var(--acc);border-color:var(--acc)}
+  .chip.gold.on{background:var(--gold);border-color:var(--gold)}
+  .ctl .sp{flex:1}
+  .ctl .t{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .vat{position:relative;border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 50% 40%,#0b0b12 0%,#050507 70%);border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 0 80px rgba(0,0,0,.8)}
+  .vat canvas{display:block;width:100%;height:auto;touch-action:manipulation;cursor:crosshair}
+  .vat .hud{position:absolute;left:10px;bottom:8px;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9aa0b0;text-shadow:0 0 6px #000;pointer-events:none;line-height:1.8}
+  .vat .hud b{color:var(--gold);font-weight:500}
+  .vat .hud i{color:var(--acc);font-style:normal}
+  .curves{margin-top:10px;background:rgba(5,5,8,.74);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px}
+  .curves canvas{width:100%;height:150px;display:block}
+  .legend{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:6px}
+  .orgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:12px}
+  .org{background:rgba(5,5,8,.74);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px}
+  .org .h{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  .org .h small{color:var(--dim);letter-spacing:.1em;margin-left:6px}
+  .org .mem{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .org .mem span{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:#d5d9e3;border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:3px 7px;cursor:pointer}
+  .org .mem span:hover{border-color:var(--gold)}
+  .org .mem canvas{width:22px;height:22px;border-radius:4px}
+  .empty{font-size:11px;color:var(--dim);margin-top:12px;line-height:1.7}
+  /* the reading pane */
+  .pane{position:fixed;inset:0;z-index:10;background:rgba(4,4,5,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;overflow:auto;padding:18px 14px}
+  .pane.on{display:block}
+  .sheet{max-width:760px;margin:0 auto;background:rgba(6,6,9,.9);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+  .sheet .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .sheet .hd .id{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+  .x{font-size:11px;letter-spacing:.2em;color:var(--dim);cursor:pointer;border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:5px 11px}
+  .x:hover{color:var(--bg);background:var(--hot);border-color:var(--hot)}
+  .big{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;margin-top:14px}
+  @media (max-width:560px){.big{grid-template-columns:1fr}}
+  .big canvas{width:100%;aspect-ratio:1;border-radius:12px;background:#07070a;display:block}
+  .code{font-size:12.5px;line-height:1.75;color:#e6e9f0;word-break:break-word;white-space:pre-wrap}
+  .meta{font-size:11px;line-height:1.9;color:#9aa0b0;margin-top:12px}
+  .meta b{color:var(--ink);font-weight:500}
+  .lin{margin-top:14px;font-size:11px;color:#9aa0b0;line-height:1.8}
+  .lin .ref{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:3px 8px;margin:3px 4px 0 0;cursor:pointer;color:var(--gold);max-width:100%}
+  .lin .ref:hover{border-color:var(--gold)}
+  .lin .ref code{color:#d5d9e3;font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+  .lin canvas{width:28px;height:28px;border-radius:5px;flex:none}
+  .bars{margin-top:12px;display:grid;gap:8px}
+  .bar{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;font-size:10.5px;color:#9aa0b0}
+  .bar .tr{height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+  .bar .tr i{display:block;height:100%;background:var(--acc)}
+  .bar b{color:var(--ink);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+  .prose{font-size:12.5px;line-height:1.8;color:#aab0c0;max-width:760px;margin-top:10px}
+  .prose b{color:var(--ink);font-weight:500}
+  .prose a{color:var(--acc);text-decoration:none}
+  table{border-collapse:collapse;font-size:11px;margin-top:12px;width:100%;max-width:760px}
+  td,th{padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);text-align:right;font-variant-numeric:tabular-nums;color:#aab0c0}
+  th{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:500}
+  td:first-child,th:first-child{text-align:left;color:var(--ink)}
+  .foot{margin-top:40px;font-size:11px;color:var(--dim);line-height:1.8}
+  .foot a{color:var(--acc);text-decoration:none}
+  .foot code{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="glyphs" id="glyphs"></div>
+<div class="grain"></div>
+<main>
+  <div class="top">
+    <div class="title"><a href="/void">void</a> <b>soup</b> ⚗</div>
+    <div class="vitals"><b id="v_pop">—</b> molecules · <b id="v_sp">—</b> species · mass <b id="v_mass">—</b> · <b id="v_org">—</b> organizations</div>
+  </div>
+
+  <h1>Programs that are pictures, thrown in a vat. When two collide, one is <em>applied</em> to the other, and a new program is born.</h1>
+  <p class="lede">An artificial chemistry after Fontana &amp; Buss (1994): no fitness, no target, just <b>collision = application</b>. Each form is an expression over <code>(x, y, r, θ)</code> — <code>sin cos gauss abs mod</code>, <code>fold n</code>, <code>φtwist</code> — the garden's language. A ∘ B replaces A's first free variable with B and simplifies. Mass is conserved: a product is paid for by molecules leaving at random; some collisions <b>cleave</b> a molecule instead. The question is whether sets of programs arise that <b>keep making each other</b> — Fontana's organizations, the chemistry before biology — and whether the soup keeps inventing new forms after they do. The glowing linked clusters are the ones doing it right now. Tap any molecule to read its code and its parents.</p>
+
+  <div class="strip" id="strip">
+    <div class="stat verdict" id="s_verdict"><div class="l">verdict · pre-registered</div><div class="v">loading…</div></div>
+    <div class="stat"><div class="l">realized orgs · react</div><div class="v" id="s_react">—</div></div>
+    <div class="stat"><div class="l">no-copy arm</div><div class="v" id="s_nocopy">—</div></div>
+    <div class="stat"><div class="l">new forms · last / first window</div><div class="v" id="s_nov">—</div></div>
+    <div class="stat"><div class="l">canary · decoy</div><div class="v" id="s_can">—</div></div>
+  </div>
+
+  <div class="k">the vat <b>live, seeded, reproducible</b></div>
+  <div class="ctl" id="ctl">
+    <span class="chip on" data-arm="react">react</span>
+    <span class="chip" data-arm="nocopy">no-copy</span>
+    <span class="chip" data-arm="control">control · no reactions</span>
+    <span class="sp"></span>
+    <span class="t">seed <b id="seedlbl">11</b></span>
+    <span class="chip gold" id="reseed">reseed</span>
+    <span class="chip" id="pause">pause</span>
+  </div>
+  <div class="vat"><canvas id="vat" width="900" height="620"></canvas>
+    <div class="hud"><span id="hud1">step <b>0</b></span><br><span id="hud2"></span></div>
+  </div>
+  <div class="curves"><canvas id="curve" width="900" height="180"></canvas>
+    <div class="legend"><span><i style="background:var(--acc)"></i>species present</span><span><i style="background:var(--gold)"></i>realized organizations ×10</span><span><i style="background:var(--vio)"></i>form-types seen (descriptor cells)</span><span><i style="background:#4a4f60"></i>copiers</span></div>
+  </div>
+
+  <div class="k">organizations <b>closed under reaction · regenerating now</b></div>
+  <div class="orgs" id="orgs"></div>
+  <div class="empty" id="orgs_empty">none yet — a set counts only if every member is being produced by reactions among the set's own members in the last few hundred collisions.</div>
+
+  <div class="k">what the run found <b>5 seeds × 3 arms · 1,500 steps</b></div>
+  <div id="found" class="prose">loading data/soup.json…</div>
+  <div class="bars" id="bars"></div>
+  <table id="tbl"></table>
+
+  <div class="k">the mash <b>whose idea is which</b></div>
+  <p class="prose"><b>Fontana &amp; Buss 1994</b>, "the arrival of the fittest": molecules are programs (λ-terms), a collision applies one to the other, a constant-population reactor dilutes at random, and self-maintaining organizations appear without any fitness function. <b>Our garden</b> (<a href="/void/garden">/void/garden</a>, <code>lib/garden.js</code>): the molecules, so every molecule is a picture and the chemistry is visible. <b>Fontana's no-copy filter</b>: the second arm discards products identical to a reactant, his move for getting past Level-0 copier soups. <b>Agüera y Arcas et al. 2024</b> (BFF, arXiv:2406.19108): random Brainfuck-like programs in a soup give rise to self-replicators spontaneously after thousands of epochs; the comparison here is <i>when</i>, and whether they are trivial. What is ours: the application rule on expression trees (first free variable := B), the simplifier as the reduction half, the <b>mass-conserving reactor with cleavage</b> (three count-fixed reactors died of bloat before it, see the code comments), and the <b>realized</b> test — an organization has to be happening in the production log, not just possible on paper, because the control arm is full of sets that merely could.</p>
+
+  <div class="foot">
+    Pre-registered: <a href="https://github.com/weiscadence/void/blob/main/PREREG-soup.md">PREREG-soup.md</a> (sha256 in the file, committed before the run) · result: <a href="https://github.com/weiscadence/void/blob/main/RESULT-soup.md">RESULT-soup.md</a> · chemistry: <a href="/void/lib/soup.js">lib/soup.js</a> · molecules: <a href="/void/lib/garden.js">lib/garden.js</a> · raw: <a href="/void/soup.json">soup.json</a> · reproduce: <code>node soup-exp.js</code> · back to <a href="/void">the lab</a>.
+  </div>
+</main>
+
+<div class="pane" id="pane"><div class="sheet">
+  <div class="hd"><div class="id" id="p_id">molecule</div><span class="x" id="p_x">close ✕</span></div>
+  <div class="big"><canvas id="p_canvas" width="256" height="256"></canvas>
+    <div><div class="code" id="p_code"></div><div class="meta" id="p_meta"></div><div class="lin" id="p_lin"></div></div></div>
+</div></div>
+
+<script src="/void/lib/garden.js"></script>
+<script src="/void/lib/soup.js"></script>
+<script>
+(function(){
+  const G = window.Garden, S = window.Soup;
+  const $ = id => document.getElementById(id);
+  // ── glyph drift (the house style) ──
+  (function(){ const g = $('glyphs'), gl = '⚗∘λ◈φ∴⊛✦∞⟡☾⌬'; for (let i = 0; i < 26; i++) { const s = document.createElement('span'); s.textContent = gl[i % gl.length]; s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%'; s.style.setProperty('--dx', (Math.random()*120-60)+'px'); s.style.setProperty('--dy', (Math.random()*120-60)+'px'); s.style.setProperty('--rot', (Math.random()*180-90)+'deg'); s.style.animationDuration = (40+Math.random()*60)+'s'; g.appendChild(s); } })();
+
+  // ── species thumbnails: render once per species key, coloured by a hue hashed from the code ──
+  const TH = 28, thumbs = new Map();
+  function hueOf(key){ let h = 0; for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) >>> 0; return (h % 360); }
+  function paint(ctx, tree, size, hue, glow){
+    const img = G.render(tree, size); const id = ctx.createImageData(size, size); const d = id.data;
+    const h = hue / 60, c = (p, q, t) => { t = (t + 6) % 6; return t < 1 ? p + (q - p) * t : t < 3 ? q : t < 4 ? p + (q - p) * (4 - t) : p; };
+    for (let i = 0; i < size * size; i++) { const v = img[i]; const l = 0.08 + 0.82 * v, s = 0.55 + 0.3 * (1 - v); const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      d[i*4] = 255 * c(p, q, h + 2); d[i*4+1] = 255 * c(p, q, h); d[i*4+2] = 255 * c(p, q, h - 2); d[i*4+3] = 255; }
+    ctx.putImageData(id, 0, 0);
+  }
+  function thumb(key, tree){ let t = thumbs.get(key); if (t) return t; const cv = document.createElement('canvas'); cv.width = cv.height = TH; paint(cv.getContext('2d'), tree, TH, hueOf(key)); thumbs.set(key, cv); return cv; }
+
+  // ── the vat ──
+  const vat = $('vat'), vx = vat.getContext('2d'); const W = vat.width, H = vat.height;
+  let arm = 'react', seed = +(new URLSearchParams(location.search).get('seed')) || 11, paused = false;
+  let Rx, P, frame, series, orgsNow, seenCells, descCache, lastDetect, speciesCache;
+  function reset(){
+    Rx = S.Reactor(seed * 7919 + ['react','nocopy','control'].indexOf(arm) + 1, { N: 110, maxSize: 24, mu: 0.02, cleave: 0.3, depth: 3, logSize: 6000 });
+    P = G.rng(seed + 99); frame = 0; series = []; orgsNow = []; seenCells = new Set(); descCache = new Map(); lastDetect = 0; speciesCache = Rx.species();
+    for (const m of Rx.pop) place(m, P() * W, P() * H);
+    $('seedlbl').textContent = seed; renderOrgs();
+  }
+  function place(m, x, y){ m.x = x; m.y = y; const a = P() * 6.283, v = 0.25 + P() * 0.5; m.vx = Math.cos(a) * v; m.vy = Math.sin(a) * v; m.age = 0; m.rad = 9 + 1.3 * Math.sqrt(m.size); }
+  function physics(){
+    for (const m of Rx.pop) { m.x += m.vx; m.y += m.vy; m.age++;
+      if (m.x < m.rad) { m.x = m.rad; m.vx = Math.abs(m.vx); } if (m.x > W - m.rad) { m.x = W - m.rad; m.vx = -Math.abs(m.vx); }
+      if (m.y < m.rad) { m.y = m.rad; m.vy = Math.abs(m.vy); } if (m.y > H - m.rad) { m.y = H - m.rad; m.vy = -Math.abs(m.vy); } }
+    // collisions: overlapping pairs react (one collision per pair per frame; mixing by motion, not by lottery)
+    const pairs = []; const pop = Rx.pop;
+    for (let i = 0; i < pop.length; i++) for (let j = i + 1; j < pop.length; j++) { const a = pop[i], b = pop[j]; const dx = a.x - b.x, dy = a.y - b.y, rr = a.rad + b.rad; if (dx*dx + dy*dy < rr*rr) pairs.push([a, b]); }
+    let n = 0;
+    for (const [a, b] of pairs) { if (n >= 6) break; const ia = pop.indexOf(a), ib = pop.indexOf(b); if (ia < 0 || ib < 0) continue; if (P() < 0.5) continue; n++;
+      // bounce
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1; const nx = dx / d, ny = dy / d; const t = a.vx; a.vx = b.vx; b.vx = t; const u = a.vy; a.vy = b.vy; b.vy = u; a.x -= nx; a.y -= ny; b.x += nx; b.y += ny;
+      const ev = Rx.collide(P() < 0.5 ? ia : ib, P() < 0.5 ? ib : ia === ib ? ib : ia);
+      if (ev.kind === 'react') { place(ev.m, (a.x + b.x) / 2, (a.y + b.y) / 2); ev.m.flash = 1; ev.m.from = [a, b]; }
+      else if (ev.kind === 'cleave') { for (const f of ev.frags) { place(f, ev.A.x + (P() - .5) * 20, ev.A.y + (P() - .5) * 20); f.flash = 1; } }
+      else if (ev.kind === 'inject') { place(ev.m, P() * W, P() * H); ev.m.flash = 1; }
+    }
+    if (Rx.pop.length < 2) return; frame++;
+    if (frame % 60 === 0) { Rx.t++; if (Rx.recent.length > Rx.o.logSize) Rx.recent.splice(0, Rx.recent.length - Rx.o.logSize); }
+  }
+  // organizations every 90 frames (~1.5s): Fontana closure + self-maintenance, then REALIZED against the production log
+  const orgColour = ['#d9a441', '#7df9ff', '#a855f7', '#22d3a5', '#ff3860', '#f0abfc'];
+  function detect(){
+    speciesCache = Rx.species(); const det = S.organizations(speciesCache, { maxSize: 24, noCopy: arm === 'nocopy', pairTop: 24 });
+    const real = det.level1.map(o => Object.assign(o, S.realized(o, Rx.recent))).filter(o => o.realized);
+    const reps = det.replicators.map(o => Object.assign(o, S.realized(o, Rx.recent))).filter(o => o.realized);
+    orgsNow = real.map((o, i) => Object.assign(o, { colour: orgColour[i % orgColour.length], set: new Set(o.members) }));
+    // observer: descriptor cells of species present
+    let cop = 0; for (const s of speciesCache.values()) { let d = descCache.get(s.key); if (!d) { d = G.describe(G.render(s.tree, 24), 24); descCache.set(s.key, d); } if (!d.blank) seenCells.add(S.cellOf(d.desc)); if (S.VARS.has(s.tree[0])) cop += s.n; }
+    series.push({ species: speciesCache.size, orgs: real.length, cells: seenCells.size, copiers: cop, reps: reps.length });
+    if (series.length > 240) series.shift();
+    $('v_pop').textContent = Rx.pop.length; $('v_sp').textContent = speciesCache.size; $('v_mass').textContent = Rx.mass(); $('v_org').textContent = real.length;
+    $('hud1').innerHTML = `step <b>${Rx.t}</b> · reactions <i>${Rx.produced}</i> · elastic ${Rx.discarded} · cleaved ${Rx.cleaved} · copies ${Rx.copies}`;
+    $('hud2').innerHTML = `copiers <b>${cop}</b> · replicators regenerating <i>${reps.length}</i> · form-types seen <b>${seenCells.size}</b>`;
+    renderOrgs(); drawCurve();
+  }
+  function orgOf(m){ for (const o of orgsNow) if (o.set.has(m.key)) return o; return null; }
+  function draw(){
+    vx.clearRect(0, 0, W, H);
+    // links between members of the same realized organization
+    for (const o of orgsNow) { const ms = Rx.pop.filter(m => o.set.has(m.key)); vx.strokeStyle = o.colour; vx.globalAlpha = 0.18; vx.lineWidth = 1;
+      for (let i = 0; i < ms.length; i++) for (let j = i + 1; j < ms.length && j < i + 6; j++) { vx.beginPath(); vx.moveTo(ms[i].x, ms[i].y); vx.lineTo(ms[j].x, ms[j].y); vx.stroke(); } }
+    vx.globalAlpha = 1;
+    for (const m of Rx.pop) { const o = orgOf(m); const t = thumb(m.key, m.tree); const r = m.rad;
+      if (o) { vx.shadowColor = o.colour; vx.shadowBlur = 18; } else if (m.flash) { vx.shadowColor = '#fff'; vx.shadowBlur = 14 * m.flash; } else vx.shadowBlur = 0;
+      vx.save(); vx.beginPath(); vx.arc(m.x, m.y, r, 0, 6.283); vx.closePath();
+      if (o) { vx.strokeStyle = o.colour; vx.lineWidth = 1.5; vx.stroke(); }
+      vx.clip(); vx.drawImage(t, m.x - r, m.y - r, r * 2, r * 2); vx.restore();
+      if (m.flash) m.flash = Math.max(0, m.flash - 0.04); }
+    vx.shadowBlur = 0;
+  }
+  function loop(){ if (!paused) { physics(); if (frame - lastDetect >= 90) { lastDetect = frame; detect(); } draw(); } requestAnimationFrame(loop); }
+
+  // ── live chart ──
+  const cv = $('curve'), cx = cv.getContext('2d');
+  function drawCurve(){ const w = cv.width, h = cv.height; cx.clearRect(0, 0, w, h); if (series.length < 2) return;
+    const n = series.length, mx = Math.max(10, ...series.map(s => Math.max(s.species, s.orgs * 10, s.cells, s.copiers)));
+    const line = (f, col) => { cx.strokeStyle = col; cx.lineWidth = 1.5; cx.beginPath(); series.forEach((s, i) => { const x = i / (n - 1) * (w - 20) + 10, y = h - 10 - f(s) / mx * (h - 20); i ? cx.lineTo(x, y) : cx.moveTo(x, y); }); cx.stroke(); };
+    cx.strokeStyle = 'rgba(255,255,255,.06)'; for (let g = 0; g <= 4; g++) { const y = h - 10 - g / 4 * (h - 20); cx.beginPath(); cx.moveTo(10, y); cx.lineTo(w - 10, y); cx.stroke(); }
+    line(s => s.copiers, '#4a4f60'); line(s => s.cells, '#a855f7'); line(s => s.orgs * 10, '#d9a441'); line(s => s.species, '#7df9ff');
+    cx.fillStyle = '#6b7180'; cx.font = '10px ui-monospace,monospace'; cx.fillText(mx, 12, 14); cx.fillText('0', 12, h - 12); }
+
+  // ── organization cards ──
+  function renderOrgs(){ const box = $('orgs'); box.innerHTML = ''; $('orgs_empty').style.display = orgsNow.length ? 'none' : 'block';
+    for (const o of orgsNow) { const d = document.createElement('div'); d.className = 'org'; d.style.borderColor = o.colour + '66';
+      d.innerHTML = `<div class="h" style="color:${o.colour}">${o.size} species · ${o.abundance} molecules<small>copy share ${o.copyShare} · maintained ${Math.round(o.maintained*100)}%${o.copiers ? ' · ' + o.copiers + ' copier' + (o.copiers > 1 ? 's' : '') : ''}</small></div><div class="mem"></div>`;
+      const mem = d.querySelector('.mem');
+      for (const k of o.members) { const tree = JSON.parse(k); const s = document.createElement('span'); s.appendChild(thumb(k, tree).cloneNode ? cloneThumb(k, tree) : thumb(k, tree)); s.appendChild(document.createTextNode(G.toCode(tree))); s.onclick = () => openKey(k); mem.appendChild(s); }
+      box.appendChild(d); } }
+  function cloneThumb(k, tree){ const src = thumb(k, tree); const c = document.createElement('canvas'); c.width = c.height = TH; c.getContext('2d').drawImage(src, 0, 0); return c; }
+
+  // ── the reading pane ──
+  const pane = $('pane'); $('p_x').onclick = () => pane.classList.remove('on'); pane.onclick = e => { if (e.target === pane) pane.classList.remove('on'); };
+  function openMol(m){ openKey(m.key, m); }
+  function openKey(key, m){ const tree = m ? m.tree : JSON.parse(key); pane.classList.add('on');
+    const sp = speciesCache.get(key); const o = orgsNow.find(q => q.set.has(key));
+    $('p_id').textContent = (o ? 'organization member · ' : '') + 'molecule · ' + S.size(tree) + ' nodes';
+    paint($('p_canvas').getContext('2d'), tree, 256, hueOf(key));
+    $('p_code').innerHTML = esc(G.toCode(tree)).replace(/(fold\d+|φtwist-?[\d.]+)/g, '<span style="color:var(--acc)">$1</span>').replace(/\b(sin|cos|gauss|abs|sq|mod)\b/g, '<span style="color:var(--vio)">$1</span>');
+    const d = descCache.get(key);
+    $('p_meta').innerHTML = `<b>${sp ? sp.n : 0}</b> copies in the vat${m ? ` · born step <b>${m.born}</b>` : ''}${o ? ` · in a realized organization of <b>${o.size}</b> species (copy share ${o.copyShare})` : ''}${S.VARS.has(tree[0]) ? ' · <b>a copier</b>: applied to anything, returns it (Fontana\'s λx.x)' : ''}${d && !d.blank ? `<br>symmetry <b>${d.symOrder}</b>-fold (${d.symStrength.toFixed(2)}) · radial <b>${d.radialFreq}</b> · edge dim <b>${d.fractalDim.toFixed(2)}</b> · fib share <b>${d.fibShare.toFixed(2)}</b>` : ''}`;
+    const lin = $('p_lin'); lin.innerHTML = '';
+    if (m && m.parents) { lin.appendChild(document.createTextNode(m.parents.length === 2 ? 'made by A ∘ B — applied to:' : 'cleaved from:'));
+      m.parents.forEach((pk, i) => { const pt = JSON.parse(pk); const r = document.createElement('span'); r.className = 'ref'; r.appendChild(cloneThumb(pk, pt)); const c = document.createElement('code'); c.textContent = (m.parents.length === 2 ? (i ? 'B ' : 'A ') : '') + G.toCode(pt); r.appendChild(c); r.onclick = () => openKey(pk, null); lin.appendChild(r); }); }
+    else lin.textContent = m ? 'one of the first molecules: written by the seed, not by a reaction.' : '';
+  }
+  function esc(s){ return s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]); }
+  vat.addEventListener('click', e => { const r = vat.getBoundingClientRect(); const x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height; let best = null, bd = 1e9;
+    for (const m of Rx.pop) { const d = Math.hypot(m.x - x, m.y - y); if (d < bd) { bd = d; best = m; } } if (best && bd < best.rad + 14) openMol(best); });
+
+  // ── controls ──
+  document.querySelectorAll('#ctl .chip[data-arm]').forEach(c => c.onclick = () => { document.querySelectorAll('#ctl .chip[data-arm]').forEach(x => x.classList.remove('on')); c.classList.add('on'); arm = c.dataset.arm; reset(); });
+  $('reseed').onclick = () => { seed = 1 + Math.floor(Math.random() * 9999); reset(); };
+  $('pause').onclick = () => { paused = !paused; $('pause').textContent = paused ? 'resume' : 'pause'; $('pause').classList.toggle('on', paused); };
+
+  // ── the pre-registered run ──
+  fetch('/void/soup.json').then(r => r.json()).then(D => {
+    const s = D.summary, v = s.verdict; const el = $('s_verdict'); el.querySelector('.v').textContent = v; if (v === 'VOID') el.classList.add('void');
+    const m = s.mean; $('s_react').innerHTML = `${m.react.realizedOrgs}<small>mean at end · potential ${m.react.potentialOrgs}</small>`;
+    $('s_nocopy').innerHTML = `${s.nocopyRealized}/${s.nocopyWorlds}<small>seeds with a realized org</small>`;
+    $('s_nov').innerHTML = `${m.react.windows[2]} / ${m.react.windows[0]}<small>react · control ${m.control.windows[2]} / ${m.control.windows[0]}</small>`;
+    $('s_can').innerHTML = `${s.canary.plantedDetected && s.canary.realizedPass ? 'seen' : 'MISSED'} · ${s.canary.decoyInOrg ? 'DECOY IN ORG' : 'clean'}`;
+    const W = D.worlds, cfg = D.config; const by = a => W.filter(w => w.arm === a);
+    const mean = a => a.reduce((x, y) => x + y, 0) / (a.length || 1);
+    $('found').innerHTML = `<b>${v}</b> by the rule in <a href="https://github.com/weiscadence/void/blob/main/PREREG-soup.md">PREREG-soup.md</a> — bet was COPIER-WORLD-SATURATED. Realized organizations arose in <b>${s.arise}/${s.react}</b> react worlds (first at steps ${by('react').map(w => w.firstRealized).join(', ')}; first copier at step ${by('react').map(w => w.firstCopier).join(', ')}); copy share ≥ 0.9 at the end in <b>${s.copierWorld}/${s.react}</b>; new form-types in the last window ≥ 1/3 of the first in <b>${s.novel}/${s.react}</b>. No-copy arm: <b>${s.nocopyRealized}/${s.nocopyWorlds}</b> worlds with any realized organization. Control arm potential organizations at the end: <b>${m.control.potentialOrgs}</b> (vs react ${m.react.potentialOrgs}) — the detector alone cannot tell a soup that is maintaining itself from one that could. Longest-lived organizations (checkpoints of 50 steps): react ${by('react').map(w => w.maxLife).join(' / ')}. ${s.cpuSec ? (s.cpuSec / 60).toFixed(1) + ' CPU-min.' : ''} Full write-up: <a href="https://github.com/weiscadence/void/blob/main/RESULT-soup.md">RESULT-soup.md</a>.`;
+    const bars = $('bars'); const rows = [['react · new cells w1/w2/w3', m.react.windows], ['nocopy', m.nocopy.windows], ['control', m.control.windows]]; const mx = Math.max(...rows.flatMap(r => r[1]));
+    for (const [l, ws] of rows) ws.forEach((x, i) => { const b = document.createElement('div'); b.className = 'bar'; b.innerHTML = `<span>${i ? '' : l}${i ? ' · window ' + (i + 1) : ' · window 1'}</span><div class="tr"><i style="width:${x / mx * 100}%;background:${['var(--acc)','var(--vio)','#4a4f60'][rows.findIndex(r => r[0] === l)]}"></i></div><b>${x}</b>`; bars.appendChild(b); });
+    const t = $('tbl'); t.innerHTML = '<tr><th>world</th><th>pop</th><th>species</th><th>copiers</th><th>potential</th><th>realized</th><th>largest</th><th>copy share</th><th>cells seen</th><th>new cells w1/w2/w3</th><th>first realized</th><th>max life</th></tr>' +
+      W.map(w => { const f = w.final || {}; return `<tr><td>${w.arm}/${w.seed}</td><td>${f.pop}</td><td>${f.species}</td><td>${f.copiers}</td><td>${f.potentialOrgs}</td><td>${f.realizedOrgs}</td><td>${f.largestRealized}</td><td>${f.realizedCopyShare ?? '—'}</td><td>${f.cellsSeen}</td><td>${w.windows.map(x => x.newCells).join('/')}</td><td>${w.firstRealized ?? '—'}</td><td>${w.maxLife}</td></tr>`; }).join('');
+  }).catch(() => { $('s_verdict').querySelector('.v').textContent = 'run pending'; $('found').textContent = 'The pre-registered run has not written data/soup.json yet. The vat above is live regardless.'; });
+
+  reset(); loop();
+})();
+</script>
+</body>
+</html>
