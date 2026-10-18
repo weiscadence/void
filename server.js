@@ -31,14 +31,31 @@ function loadArchive(){
   }
   return _archCache;
 }
+let _peek = null;
+function gardenPeek(){
+  if (_peek) return _peek;
+  const g = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'garden-gallery.json'), 'utf8'));
+  const forms = (g.gallery || []).filter(e => e && e.tree && (!e.macros || !e.macros.length)).sort((a, b) => (b.novelty || 0) - (a.novelty || 0)).slice(0, 12)
+    .map(e => ({ id: e.id, tree: e.tree, hue: e.hue, gen: e.gen, world: e.world }));
+  _peek = JSON.stringify({ written: g.written, forms });
+  return _peek;
+}
 http.createServer((req, res) => {
   let u = (req.url || '/').split('?')[0].replace(/\/+/g,'/');
   if (u.indexOf('/void') === 0) u = u.slice(5) || '/';  // tolerate nginx prefix
   try {
-    // 2026-10-18 (later the same day): the root is the ORIGINAL living organism again. Jiggy: "I used
-    // to stare and stare at the void page" — the findings landing had replaced it for a few hours and
-    // was "really unpleasing to look at". The organism is the front door; the notebook lives at /lab.
-    if (u === '/' || u === '/index.html' || u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    // 2026-10-18 (third pass): the root is a VISUAL landing — a grid of live mini-worlds (the engines
+    // themselves, drawn small) with tabs worlds · then · lab. Jiggy liked "the little boxes with
+    // animations of previews"; the words had grown. /live is the full-screen organism, /then the time
+    // capsule of the page as it was while the daemon ran, /lab the notebook of findings.
+    if (u === '/' || u === '/index.html' || u === '/landing' || u === '/landing.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'landing.html')));
+    if (u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    // /then — the organism page as it was 2026-07-19 → 2026-08-18, read-only, fed by the archived
+    // state. The daemon is NOT started by this route (CPU; Jiggy's call). See then.html's caption.
+    if (u === '/then' || u === '/then.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'then.html')));
+    // /garden-peek.json — a dozen macro-free forms from the gallery for the landing tile, so the
+    // landing never has to swallow the 1.7 MB gallery. Cached once; the gallery is a build artefact.
+    if (u === '/garden-peek.json') { try { return send(res, 200, 'application/json', gardenPeek()); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     // /lab — the findings as cards + the live open-vocabulary world (was the root for a few hours).
     if (u === '/lab' || u === '/lab.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
     if (u === '/dial-sweep.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'dial-sweep.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
