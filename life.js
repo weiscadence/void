@@ -27,7 +27,7 @@ const fs = require('fs');
 const path = require('path');
 const G = require('./lib/genome.js');
 
-const DIR = '/home/ubuntu/.openclaw/workspace/data/void';
+const DIR = process.env.VOID_DATA || require('path').join(__dirname, 'data'); // set VOID_DATA for a live site
 const STATE = path.join(DIR, 'state.json');
 const ARCH = path.join(DIR, 'archive.json');
 const FOSSIL = path.join(DIR, 'lineage.jsonl');

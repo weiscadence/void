@@ -2,7 +2,7 @@
 // state of the organism. Proxied at drainfun.xyz/void. The creature itself lives
 // in the separate void-life daemon; this just lets the world watch it.
 const http = require('http'), fs = require('fs'), path = require('path');
-const DIR = '/home/ubuntu/.openclaw/workspace/data/void';
+const DIR = process.env.VOID_DATA || path.join(__dirname, 'data'); // live-site data dir; set VOID_DATA to point at your own
 const send = (res, code, type, body) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*' }); res.end(body); };
 
 // ── ARCHIVE CACHE ────────────────────────────────────────────────────────────
@@ -31,6 +31,10 @@ http.createServer((req, res) => {
   if (u.indexOf('/void') === 0) u = u.slice(5) || '/';  // tolerate nginx prefix
   try {
     if (u === '/' || u === '/index.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
+    // 2026-10-18: the root became the lab's front door (findings as cards + a live open-vocabulary
+    // world). The 24/7 organism — body/dream, gallery — moved to /void/live, unchanged.
+    if (u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    if (u === '/commitment-time.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'commitment-time.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     // the creature — reaction-diffusion, real state, carries frame to frame. Lives
     // BESIDE the evolving organism rather than replacing it: two different truths.
     if (u === '/creature' || u === '/creature.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'creature.html')));
@@ -78,6 +82,17 @@ http.createServer((req, res) => {
     if (u === '/edge' || u === '/edge.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'edge.html')));
     // the river and the lake — throughput (not abundance) drives open-endedness; flow-under-scarcity beats infinite source.
     if (u === '/throughput' || u === '/throughput.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'throughput.html')));
+    if (u === '/tower' || u === '/tower.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'tower.html')));
+    // /thread — the honest front door: seven experiments, six negative, one theorem that
+    // explains all six, plus the refuted phi/void seam KEPT on the wall as a refutation.
+    // Every figure traces to a RESULT-*.md file. The story the single live organism never told.
+    if (u === '/thread' || u === '/thread.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'thread.html')));
+    // /horizon — the construction horizon. The file shipped 2026-08-05 but never got a route,
+    // so it 404'd for 26 days while sitting on disk. Found by the 2026-08-31 /map audit.
+    if (u === '/horizon' || u === '/horizon.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'horizon.html')));
+    if (u === '/tower-data.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'tower-data.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
+    if (u === '/spark' || u === '/spark.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'spark.html')));
+    if (u === '/spark-data.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'spark-data.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/lib/graph.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'graph.js')));
     if (u === '/lib/ceiling.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'ceiling.js')));
     if (u === '/lib/niche.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'niche.js')));
@@ -123,6 +138,27 @@ http.createServer((req, res) => {
       // still organisms first — the ones that only survive now that stillness is its own
       // kind rather than a losing score.
       else if (sort === 'motion') all.sort((a, b) => (a.desc[3] ?? 0) - (b.desc[3] ?? 0));
+      // 'alive' — added 2026-09-06 after Jiggy correctly flagged the memorial reel as
+      // "flashy rainbow shit that doesn't move". Measured: top-20-by-quality has mean
+      // motion 0.217, half the archive-wide mean of 0.492 — quality is anti-correlated
+      // with motion, so pure-quality sort was silently curating the stillest slice into
+      // the one place visitors actually watch.
+      // First attempt multiplied quality*motion, which broke the other way: 7.4% of the
+      // archive sits at a motion CEILING of exactly 1.0, so that formula picked only
+      // ceiling-motion organisms regardless of quality (verified: mean motion 1.0 across
+      // the reel, quality no longer discriminating). Fixed by filtering to organisms at
+      // or above the archive's MEDIAN motion (0.4854, ~half the archive, full quality
+      // range still available in that half), then ranking by quality within that pool —
+      // "the best of what actually moves", not "whatever happens to sit at the ceiling".
+      else if (sort === 'alive') {
+        const motionVals = all.map(e => e.desc[3] ?? 0).sort((x, y) => x - y);
+        const medianMotion = motionVals[Math.floor(motionVals.length / 2)] ?? 0;
+        all.sort((a, b) => {
+          const aOk = (a.desc[3] ?? 0) >= medianMotion, bOk = (b.desc[3] ?? 0) >= medianMotion;
+          if (aOk !== bOk) return aOk ? -1 : 1;
+          return b.quality - a.quality;
+        });
+      }
       else all.sort((a, b) => b.quality - a.quality);
       // lineage rank travels with each organism so the client can label families
       // without re-deriving the grouping it did not compute.

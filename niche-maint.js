@@ -3,7 +3,7 @@
 // then ask — does niche construction SUSTAIN coexistence a non-constructing control cannot?
 // This is separate from invasion (niche-exp.js, which found the trait can't bootstrap). Same
 // paired-seed discipline, same pre-registered MIN_EFFECT = 0.30 niches.
-const { Niche } = require('/home/ubuntu/.openclaw/workspace/projects/void/lib/niche.js');
+const { Niche } = require(__dirname + '/lib/niche.js');
 const SEEDS = 8, TICKS = 3000, TAIL = 0.25, MIN_EFFECT = 0.30;
 const REGIME = { resources: 4, window: 2, skew: 0.85, predation: false,
                  buildThresh: 3, buildCost: 3, buildP: 0.5, seedConstructors: true };

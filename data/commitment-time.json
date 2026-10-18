@@ -1,0 +1,853 @@
+{
+ "config": {
+  "PARENTS": 8,
+  "FORKS": 3,
+  "TAUS": [
+   1000,
+   3000,
+   10000
+  ],
+  "H": 30000,
+  "THRESH": 65,
+  "AMBIG": [
+   58,
+   74
+  ],
+  "CFG": {
+   "tol": 2,
+   "construct": true,
+   "stableAge": 400,
+   "menuSize": 0
+  }
+ },
+ "parents": [
+  {
+   "seed": 107,
+   "stable": 90,
+   "prog": 3.09,
+   "pop": 1122,
+   "fate": "climber",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 100,
+      "prog": 3.14,
+      "pop": 1177,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 98,
+      "prog": 3.32,
+      "pop": 1227,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 94,
+      "prog": 3.04,
+      "pop": 1162,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 95,
+      "prog": 3.07,
+      "pop": 1133,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 84,
+      "prog": 2.98,
+      "pop": 1068,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 93,
+      "prog": 3.05,
+      "pop": 1062,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 91,
+      "prog": 3,
+      "pop": 1111,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 96,
+      "prog": 3.12,
+      "pop": 1181,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 85,
+      "prog": 2.98,
+      "pop": 1048,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 207,
+   "stable": 38,
+   "prog": 2.37,
+   "pop": 594,
+   "fate": "frozen",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 40,
+      "prog": 2.28,
+      "pop": 557,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 73,
+      "prog": 3.16,
+      "pop": 942,
+      "fate": "climber",
+      "ambiguous": true,
+      "agree": false
+     },
+     {
+      "stable": 43,
+      "prog": 2.6,
+      "pop": 646,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 38,
+      "prog": 2.32,
+      "pop": 577,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.28,
+      "pop": 580,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 41,
+      "prog": 2.36,
+      "pop": 617,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 38,
+      "prog": 2.37,
+      "pop": 594,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 38,
+      "prog": 2.37,
+      "pop": 594,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 38,
+      "prog": 2.37,
+      "pop": 594,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 307,
+   "stable": 37,
+   "prog": 2.34,
+   "pop": 534,
+   "fate": "frozen",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 40,
+      "prog": 2.56,
+      "pop": 578,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 52,
+      "prog": 3,
+      "pop": 666,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 50,
+      "prog": 2.83,
+      "pop": 626,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 37,
+      "prog": 2.34,
+      "pop": 534,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.34,
+      "pop": 535,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.33,
+      "pop": 533,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 37,
+      "prog": 2.34,
+      "pop": 534,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.34,
+      "pop": 534,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.34,
+      "pop": 534,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 407,
+   "stable": 63,
+   "prog": 2.97,
+   "pop": 830,
+   "fate": "frozen",
+   "ambiguous": true,
+   "forks": {
+    "1000": [
+     {
+      "stable": 71,
+      "prog": 2.72,
+      "pop": 910,
+      "fate": "climber",
+      "ambiguous": true,
+      "agree": false
+     },
+     {
+      "stable": 46,
+      "prog": 2.52,
+      "pop": 666,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 66,
+      "prog": 2.82,
+      "pop": 915,
+      "fate": "climber",
+      "ambiguous": true,
+      "agree": false
+     }
+    ],
+    "3000": [
+     {
+      "stable": 49,
+      "prog": 2.46,
+      "pop": 667,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 45,
+      "prog": 2.5,
+      "pop": 649,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 55,
+      "prog": 2.87,
+      "pop": 751,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 58,
+      "prog": 2.79,
+      "pop": 789,
+      "fate": "frozen",
+      "ambiguous": true,
+      "agree": true
+     },
+     {
+      "stable": 53,
+      "prog": 2.66,
+      "pop": 718,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 52,
+      "prog": 2.64,
+      "pop": 718,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 507,
+   "stable": 40,
+   "prog": 2.34,
+   "pop": 585,
+   "fate": "frozen",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 46,
+      "prog": 2.42,
+      "pop": 628,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 48,
+      "prog": 2.5,
+      "pop": 643,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 51,
+      "prog": 2.82,
+      "pop": 714,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 41,
+      "prog": 2.37,
+      "pop": 597,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 43,
+      "prog": 2.54,
+      "pop": 649,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 47,
+      "prog": 2.46,
+      "pop": 642,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 40,
+      "prog": 2.34,
+      "pop": 585,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 40,
+      "prog": 2.34,
+      "pop": 585,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 40,
+      "prog": 2.34,
+      "pop": 585,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 607,
+   "stable": 81,
+   "prog": 3.29,
+   "pop": 1068,
+   "fate": "climber",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 94,
+      "prog": 3.42,
+      "pop": 1158,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 73,
+      "prog": 3.12,
+      "pop": 894,
+      "fate": "climber",
+      "ambiguous": true,
+      "agree": true
+     },
+     {
+      "stable": 60,
+      "prog": 2.95,
+      "pop": 776,
+      "fate": "frozen",
+      "ambiguous": true,
+      "agree": false
+     }
+    ],
+    "3000": [
+     {
+      "stable": 87,
+      "prog": 3.25,
+      "pop": 1039,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 54,
+      "prog": 2.79,
+      "pop": 701,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": false
+     },
+     {
+      "stable": 52,
+      "prog": 2.77,
+      "pop": 682,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": false
+     }
+    ],
+    "10000": [
+     {
+      "stable": 99,
+      "prog": 3.37,
+      "pop": 1144,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 98,
+      "prog": 3.55,
+      "pop": 1148,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 89,
+      "prog": 3.32,
+      "pop": 1108,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 707,
+   "stable": 37,
+   "prog": 2,
+   "pop": 512,
+   "fate": "frozen",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 39,
+      "prog": 2.07,
+      "pop": 520,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2.05,
+      "pop": 516,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 36,
+      "prog": 2.07,
+      "pop": 518,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 38,
+      "prog": 2.03,
+      "pop": 516,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 38,
+      "prog": 2.04,
+      "pop": 515,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 39,
+      "prog": 2.02,
+      "pop": 530,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "10000": [
+     {
+      "stable": 37,
+      "prog": 2,
+      "pop": 512,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2,
+      "pop": 512,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 37,
+      "prog": 2,
+      "pop": 512,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  },
+  {
+   "seed": 807,
+   "stable": 52,
+   "prog": 2.9,
+   "pop": 712,
+   "fate": "frozen",
+   "ambiguous": false,
+   "forks": {
+    "1000": [
+     {
+      "stable": 45,
+      "prog": 2.66,
+      "pop": 629,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 45,
+      "prog": 2.59,
+      "pop": 624,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 52,
+      "prog": 2.79,
+      "pop": 676,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ],
+    "3000": [
+     {
+      "stable": 91,
+      "prog": 3.35,
+      "pop": 1167,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": false
+     },
+     {
+      "stable": 55,
+      "prog": 2.97,
+      "pop": 743,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 86,
+      "prog": 3.34,
+      "pop": 1066,
+      "fate": "climber",
+      "ambiguous": false,
+      "agree": false
+     }
+    ],
+    "10000": [
+     {
+      "stable": 52,
+      "prog": 2.9,
+      "pop": 712,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 52,
+      "prog": 2.9,
+      "pop": 712,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     },
+     {
+      "stable": 52,
+      "prog": 2.9,
+      "pop": 712,
+      "fate": "frozen",
+      "ambiguous": false,
+      "agree": true
+     }
+    ]
+   }
+  }
+ ],
+ "fresh": [
+  {
+   "seed": 5107,
+   "stable": 100,
+   "prog": 3.23,
+   "fate": "climber",
+   "ambiguous": false
+  },
+  {
+   "seed": 5207,
+   "stable": 50,
+   "prog": 2.61,
+   "fate": "frozen",
+   "ambiguous": false
+  },
+  {
+   "seed": 5307,
+   "stable": 44,
+   "prog": 2.27,
+   "fate": "frozen",
+   "ambiguous": false
+  },
+  {
+   "seed": 5407,
+   "stable": 55,
+   "prog": 2.66,
+   "fate": "frozen",
+   "ambiguous": false
+  },
+  {
+   "seed": 5507,
+   "stable": 55,
+   "prog": 2.66,
+   "fate": "frozen",
+   "ambiguous": false
+  },
+  {
+   "seed": 5607,
+   "stable": 60,
+   "prog": 3.01,
+   "fate": "frozen",
+   "ambiguous": true
+  },
+  {
+   "seed": 5707,
+   "stable": 85,
+   "prog": 3.15,
+   "fate": "climber",
+   "ambiguous": false
+  },
+  {
+   "seed": 5807,
+   "stable": 35,
+   "prog": 2.37,
+   "fate": "frozen",
+   "ambiguous": false
+  }
+ ],
+ "twins": [
+  {
+   "seed": 107,
+   "tau": 1000,
+   "stable": 90,
+   "pop": 1122,
+   "prog": 3.09,
+   "parentStable": 90,
+   "exact": true
+  },
+  {
+   "seed": 207,
+   "tau": 1000,
+   "stable": 38,
+   "pop": 594,
+   "prog": 2.37,
+   "parentStable": 38,
+   "exact": true
+  }
+ ],
+ "menuControl": {
+  "stable": 9,
+  "fate": "frozen"
+ },
+ "agreement": {
+  "1000": {
+   "agree": 0.833,
+   "n": 24,
+   "parentsUnanimous": 5,
+   "frozenForksThatClimbed": 3,
+   "climberForksThatFroze": 1,
+   "ambiguousForks": 5
+  },
+  "3000": {
+   "agree": 0.833,
+   "n": 24,
+   "parentsUnanimous": 6,
+   "frozenForksThatClimbed": 2,
+   "climberForksThatFroze": 2,
+   "ambiguousForks": 0
+  },
+  "10000": {
+   "agree": 1,
+   "n": 24,
+   "parentsUnanimous": 8,
+   "frozenForksThatClimbed": 0,
+   "climberForksThatFroze": 0,
+   "ambiguousForks": 1
+  }
+ },
+ "canaries": {
+  "C1_bothFatesPresent": true,
+  "C1_freshAgree": 0.625,
+  "C1_baseAgreeExpected": 0.625,
+  "C1_pass": true,
+  "C2_twinsExact": true,
+  "C3_menuFrozen": true
+ },
+ "verdict": {
+  "verdict": "LATE COMMITMENT",
+  "reason": "agreement 0.833 → 0.833 → 1 across tau=1000,3000,10000; crosses 0.9 at tau=10000",
+  "parentFates": {
+   "climber": 2,
+   "frozen": 6
+  }
+ }
+}

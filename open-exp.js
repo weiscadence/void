@@ -9,7 +9,7 @@
 //   3. stableNiches keeps rising to t=8000 (slope over the back half > 0), not a plateau.
 // Failure reads honestly: if distinctNiches >> stableNiches → diffusion (silica redux); if open
 // plateaus like everything else → the ceiling moved but didn't lift.
-const { Open } = require('/home/ubuntu/.openclaw/workspace/projects/void/lib/open.js');
+const { Open } = require(__dirname + '/lib/open.js');
 const SEEDS = 4, TICKS = 8000, MARKS = [1000, 2000, 4000, 6000, 8000];
 const ARMS = { 'menu-8 (control)': { menuSize: 8, construct: false },
                'open': { menuSize: 0, construct: false },

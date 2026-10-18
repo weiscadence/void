@@ -1,0 +1,12 @@
+{
+  "generated": "2026-08-13",
+  "source": "intervention-sweep.js — open.js engine, 16 seeds/level to 40k, mutation multiplier sweep. high basin = stable niches >= 65 @40k.",
+  "levels": [
+    {"mult":0.5,"explored2k":43,"aliveFrac":0.00,"mean":32.3,"spread":[14,15,20,25,25,28,30,31,32,34,35,40,40,45,50,53]},
+    {"mult":1.0,"explored2k":94,"aliveFrac":0.44,"mean":66.6,"spread":[39,41,41,42,44,46,50,52,58,74,87,88,95,100,103,105]},
+    {"mult":1.5,"explored2k":117,"aliveFrac":0.69,"mean":89.9,"spread":[41,47,48,55,58,98,101,105,106,107,109,111,111,111,114,117]},
+    {"mult":2.0,"explored2k":168,"aliveFrac":0.94,"mean":102.6,"spread":[53,69,92,101,101,106,106,108,109,110,110,112,114,115,115,121]},
+    {"mult":3.0,"explored2k":200,"aliveFrac":0.94,"mean":107.8,"spread":[58,100,103,105,106,106,107,108,114,114,114,116,116,118,120,120]}
+  ],
+  "aliveThreshold": 65
+}

@@ -374,7 +374,7 @@ if(noiseOpenEnded){
 // ── dump for the /kin page ────────────────────────────────────────────────────
 // Written LAST so a crashed run leaves no half-file for the page to read as truth.
 const fs=require('fs');
-fs.writeFileSync('/home/ubuntu/.openclaw/workspace/data/void/kin.json', JSON.stringify({
+fs.writeFileSync((process.env.VOID_DATA || require('path').join(__dirname, '..', 'data')) + '/kin.json', JSON.stringify({
   generated_at_gen: GENS, reps: REPS,
   snapEvery: SNAP_EVERY,
   arms: ARMS.map(a=>({

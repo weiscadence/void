@@ -3,7 +3,7 @@
 // is overcrowded, and move into the niche you made). Sweep the crowding threshold that triggers
 // building. For each: sample population finely, then autocorrelate to detect a bounded OSCILLATION
 // (the healthy edge-of-chaos regime Jiggy is after) vs steady / runaway / collapse.
-const { Graph } = require('/home/ubuntu/.openclaw/workspace/projects/void/lib/graph.js');
+const { Graph } = require(__dirname + '/lib/graph.js');
 
 function analyze(series) {           // detrend + autocorrelation → dominant period if any
   const n = series.length, mean = series.reduce((a, b) => a + b, 0) / n;

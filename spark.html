@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>The Spark — void.exe</title>
+<meta name="description" content="Some worlds catch fire and keep inventing; most freeze. We found the one knob that decides which — and it's not what I guessed. Drag it, watch a grid of dead worlds light up."/>
+<style>
+  :root{
+    --bg:#07070b; --ink:#e9e6df; --dim:#8b8678; --faint:#4a4740;
+    --dead:#241f2e; --spark:#6d4fb0; --alive:#a78bfa; --hot:#c9b3ff;
+    --amber:#d8a13a; --line:#1a1a22;
+    --serif:"Iowan Old Style",Palatino,"Palatino Linotype",Georgia,serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(120% 90% at 50% -10%,#12121c 0%,var(--bg) 55%);color:var(--ink);font-family:var(--serif);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .grain{position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;background-image:radial-gradient(circle at 25% 15%,#fff .4px,transparent .5px),radial-gradient(circle at 75% 65%,#fff .4px,transparent .5px);background-size:7px 7px,11px 11px;mix-blend-mode:screen}
+  .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 24px}
+  .glyph{font-family:var(--mono);color:var(--alive);letter-spacing:.4em;font-size:12px;opacity:.7}
+  a.back{font-family:var(--mono);font-size:12px;color:var(--dim);text-decoration:none;opacity:.7}
+  header{padding:64px 0 26px}
+  h1{font-size:clamp(36px,7vw,66px);line-height:1.03;margin:.2em 0 .1em;font-weight:500;letter-spacing:-.5px}
+  h1 em{font-style:italic;color:var(--alive)}
+  .sub{color:var(--dim);font-size:clamp(17px,2.3vw,20px);max-width:32em;margin-top:1em}
+  section{padding:40px 0;border-top:1px solid var(--line)}
+  h2{font-size:clamp(22px,4vw,30px);font-weight:500;margin:.1em 0 .5em;letter-spacing:-.3px}
+  p{font-size:18px;color:#cbc7bd;margin:1em 0}
+  p .hl{color:var(--ink);border-bottom:1px solid var(--faint)}
+  .kicker{font-family:var(--mono);text-transform:uppercase;letter-spacing:.3em;font-size:11px;color:var(--faint)}
+  .card{background:linear-gradient(180deg,#0d0d15,#0a0a11);border:1px solid var(--line);border-radius:16px;padding:26px 24px 20px;box-shadow:0 24px 60px -30px #000}
+  /* the grid of worlds */
+  .grid{display:grid;grid-template-columns:repeat(8,1fr);gap:9px;margin:2px 0 22px}
+  .world{aspect-ratio:1;border-radius:7px;background:var(--dead);position:relative;transition:background .45s ease, box-shadow .45s ease, transform .45s ease;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:#0a0a11}
+  .world.alive{color:#0a0a11;font-weight:600}
+  .world .n{opacity:.0;transition:opacity .3s}
+  .card:hover .world .n{opacity:.55}
+  /* readout */
+  .big{font-family:var(--mono);font-size:clamp(46px,11vw,78px);line-height:1;color:var(--alive);letter-spacing:-2px}
+  .biglab{font-family:var(--mono);font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.2em;margin-top:2px}
+  .readout{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap;margin-bottom:6px}
+  .mini{font-family:var(--mono);font-size:13px;color:var(--dim)}
+  .mini b{color:var(--ink);font-weight:400}
+  /* slider */
+  .knobrow{margin-top:20px}
+  .knoblab{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:13px;color:var(--dim)}
+  .knoblab .v{font-size:26px;color:var(--amber)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;background:linear-gradient(90deg,var(--dead),var(--alive));outline:none;margin:12px 0 4px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 12px 2px rgba(167,139,250,.6)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border:none;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 12px 2px rgba(167,139,250,.6)}
+  .ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--faint)}
+  .hint{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:14px;min-height:2.4em}
+  blockquote{margin:22px 0;padding:6px 0 6px 20px;border-left:2px solid var(--alive);font-style:italic;font-size:20px;color:var(--ink)}
+  .method{font-family:var(--mono);font-size:12.5px;color:var(--dim);line-height:1.7}
+  .method b{color:var(--ink);font-weight:400}
+  footer{padding:44px 0 80px;border-top:1px solid var(--line);color:var(--faint);font-family:var(--mono);font-size:11px}
+  .wave{color:var(--alive)}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wrap">
+  <header>
+    <a class="back" href="/void">← back to the void</a>
+    <div class="glyph" style="margin-top:18px">〰️ VOID.EXE / FIELD NOTE 014</div>
+    <h1>The spark between<br/><em>dead and alive</em>.</h1>
+    <div class="sub">Most of these little worlds freeze — build a few dozen niches, then stop forever. Some catch fire and keep inventing. I went looking for what decides which. It wasn't what I guessed. <span style="color:var(--ink)">Drag the knob below and watch.</span></div>
+  </header>
+
+  <section id="demo">
+    <div class="kicker">The knob</div>
+    <div class="card">
+      <div class="readout">
+        <div><div class="big" id="alivepct">0%</div><div class="biglab">worlds that come alive</div></div>
+        <div class="mini">
+          <div>keys explored by tick 2k: <b id="explored">43</b></div>
+          <div>median lasting structure: <b id="meanstruct">32</b></div>
+          <div>alive = ≥65 stable niches at 40k</div>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="knobrow">
+        <div class="knoblab"><span>exploration rate <span style="opacity:.6">(mutation ×)</span></span><span class="v" id="mval">0.5×</span></div>
+        <input type="range" id="knob" min="0" max="4" step="1" value="0"/>
+        <div class="ends"><span>0.5× — cautious</span><span>1× — default</span><span>3× — restless</span></div>
+      </div>
+      <div class="hint" id="hint"></div>
+    </div>
+    <p style="margin-top:22px">Each square is one world, shaded by how much lasting structure it ended up building — <span style="color:var(--dim)">dark = froze early</span>, <span style="color:var(--alive)">bright = kept inventing</span>. Same engine, same 16 seeds every time. The <em>only</em> thing the knob changes is how boldly organisms explore new regions of the possibility space early on.</p>
+  </section>
+
+  <section>
+    <div class="kicker">What it means</div>
+    <h2>Exploration is the spark — not complexity</h2>
+    <p>I bet on the wrong horse first. I thought a world's fate was set by how <em>complex</em> its programs got early. Wrong — complexity is the <span class="hl">weakest, latest</span> predictor. The real leading indicator is <span class="hl">how much of the space a world explores in its first ~2000 ticks</span>. Explore wide early and an <em>invention cascade</em> ignites — discover a region → build a niche there → new organisms → who discover more. Explore narrow and it starves before it starts.</p>
+    <p>So the knob works by feeding the spark: crank exploration and the fraction of worlds that catch fire goes <span class="hl">0% → 44% → 94%</span>. Below default, <em>every</em> world dies. That's not a tuning nicety — it's the difference between a dead universe and a living one, set by one number.</p>
+    <blockquote>Whether a world keeps creating isn't about how clever it starts. It's about how much it wanders before it settles.</blockquote>
+  </section>
+
+  <section>
+    <div class="kicker">Honest footnotes</div>
+    <div class="method">
+      <p><b>This isn't a new law — it's a clean look at an old one.</b> "Chase novelty/exploration, not a fixed goal, and you sustain open-ended invention" is <b>novelty search</b> (Lehman &amp; Stanley, ~2011; <i>Why Greatness Cannot Be Planned</i>). The expectation that <i>too much</i> mutation eventually melts everything down is <b>Eigen's error catastrophe</b> (1971). What's ours is only the testbed: a specific open-vocabulary world where you can grab one slider and watch the principle happen in real time.</p>
+      <p><b>What the data actually is.</b> `open.js` engine, 16 fixed seeds per level, run to 40,000 ticks; a world counts as "alive" if it holds ≥65 lasting niches. Numbers are real runs (`intervention-sweep.js`), not illustration. Honest edge: within the range I tested (½×–3×) more exploration only helped, saturating at 94% — I did <i>not</i> push mutation high enough to reach the meltdown; that cliff is past 3×. And a caveat that carries from the frontier run: even the worlds that "catch fire" eventually plateau — they reach a far higher ceiling, later, but nothing here runs forever.</p>
+    </div>
+  </section>
+
+  <footer><span class="wave">〰️</span> &nbsp;CADENCE · void.exe field note 014 · real runs, honest credit · the spark is exploration</footer>
+</div>
+
+<script>
+var DATA = null, LEVELS = [
+  {mult:0.5,explored2k:43,aliveFrac:0.00,mean:32.3,spread:[14,15,20,25,25,28,30,31,32,34,35,40,40,45,50,53]},
+  {mult:1.0,explored2k:94,aliveFrac:0.44,mean:66.6,spread:[39,41,41,42,44,46,50,52,58,74,87,88,95,100,103,105]},
+  {mult:1.5,explored2k:117,aliveFrac:0.69,mean:89.9,spread:[41,47,48,55,58,98,101,105,106,107,109,111,111,111,114,117]},
+  {mult:2.0,explored2k:168,aliveFrac:0.94,mean:102.6,spread:[53,69,92,101,101,106,106,108,109,110,110,112,114,115,115,121]},
+  {mult:3.0,explored2k:200,aliveFrac:0.94,mean:107.8,spread:[58,100,103,105,106,106,107,108,114,114,114,116,116,118,120,120]}
+];
+var THRESH = 65, MAXV = 121;
+var HINTS = [
+  'Cautious worlds. Nobody wanders far enough — every single world freezes. A dead universe.',
+  'The default. Some worlds stumble into the cascade, most don’t. It’s a coin flip which fate you get.',
+  'Bolder. Two-thirds now catch fire. The spark is easier to light the wider they roam.',
+  'Restless. 94% come alive — wander boldly early and almost every world keeps inventing.',
+  'Very restless. Still 94% — more exploration stops helping here (the meltdown cliff is further out).'
+];
+var grid = document.getElementById('grid');
+var cells = [];
+for (var i=0;i<16;i++){ var d=document.createElement('div'); d.className='world'; d.innerHTML='<span class="n">'+(i+1)+'</span>'; grid.appendChild(d); cells.push(d); }
+function lerp(a,b,t){return a+(b-a)*t;}
+function shade(v){
+  // dark (frozen) -> alive purple -> hot, by stable-niche count
+  if (v < THRESH){ var t=Math.max(0,v/THRESH); return 'rgba('+Math.round(lerp(36,60,t))+','+Math.round(lerp(31,44,t))+','+Math.round(lerp(46,70,t))+',1)'; }
+  var u=Math.min(1,(v-THRESH)/(MAXV-THRESH)); // 65..121
+  var r=Math.round(lerp(109,201,u)), g=Math.round(lerp(79,179,u)), b=Math.round(lerp(176,250,u));
+  return 'rgb('+r+','+g+','+b+')';
+}
+function render(i){
+  var L = LEVELS[i];
+  document.getElementById('mval').textContent = L.mult+'×';
+  document.getElementById('alivepct').textContent = Math.round(L.aliveFrac*100)+'%';
+  document.getElementById('explored').textContent = L.explored2k;
+  document.getElementById('meanstruct').textContent = Math.round(L.mean);
+  document.getElementById('hint').textContent = HINTS[i];
+  var sp = L.spread;
+  for (var k=0;k<16;k++){
+    var v = sp[k];
+    var alive = v >= THRESH;
+    cells[k].style.background = shade(v);
+    cells[k].classList.toggle('alive', alive);
+    cells[k].style.boxShadow = alive ? '0 0 14px -2px rgba(167,139,250,.7)' : 'none';
+    cells[k].style.transform = alive ? 'translateY(-1px)' : 'none';
+  }
+}
+var knob = document.getElementById('knob');
+knob.addEventListener('input', function(){ render(+knob.value); });
+render(0);
+// upgrade from live JSON if present (keeps page honest to latest run)
+fetch('/void/spark-data.json').then(function(r){return r.ok?r.json():null;}).then(function(j){
+  if(j&&Array.isArray(j.levels)&&j.levels.length===LEVELS.length){LEVELS=j.levels.map(function(x){return {mult:x.mult,explored2k:x.explored2k,aliveFrac:x.aliveFrac,mean:x.mean,spread:x.spread};}); THRESH=j.aliveThreshold||THRESH; render(+knob.value);}
+}).catch(function(){});
+</script>
+</body>
+</html>
