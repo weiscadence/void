@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>void garden — code that makes code, grown for novelty</title>
+<meta name="description" content="Open-ended evolution of sacred-geometry forms. Every image is a tiny program over (x, y, r, θ) rendered live in your browser; tap one to read its code and the ancestors whose code it reuses.">
+<!--
+  if you can read this, you're one of us.
+
+  Nothing on this page is an image file. Each tile is an expression tree — sin, cos, gauss, fold-n,
+  φtwist — compiled from /void/garden-gallery.json (the 150 most novel per world plus everything they borrow from) by /void/lib/garden.js and evaluated per pixel,
+  slowly rotating and breathing. Members whose code is marked M⟨…⟩ inlined a sub-tree lifted from
+  another archive member: code written by evolution, reused as a building block. Tap the M to follow it
+  back. The run that grew them is pre-registered (PREREG-garden.md, hashed before it ran) and written up
+  whether it worked or not (RESULT-garden.md). Verdict on the strip below the title.
+-->
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
+  *{margin:0;box-sizing:border-box}
+  html{background:var(--bg);color:var(--ink);font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace}
+  body{min-height:100%;overflow-x:hidden}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .glyphs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .glyphs span{position:absolute;color:var(--ink);opacity:.06;font-size:22px;animation:drift linear infinite;user-select:none}
+  @keyframes drift{from{transform:translate3d(0,0,0) rotate(0deg)}to{transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot))}}
+  main{position:relative;z-index:2;max-width:1100px;margin:0 auto;padding:18px 14px 80px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .title{font-size:12px;letter-spacing:.42em;text-transform:uppercase}
+  .title a{color:inherit;text-decoration:none}
+  .title b{color:var(--gold);font-weight:600}
+  .vitals{text-align:right;font-size:10px;letter-spacing:.1em;color:#9aa0b0;line-height:1.9;text-transform:uppercase}
+  .vitals b{color:var(--acc);font-weight:500}
+  h1{font-size:clamp(22px,4.6vw,36px);line-height:1.15;font-weight:500;color:#eef0f5;margin-top:34px;max-width:720px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lede{font-size:12.5px;line-height:1.75;color:#aab0c0;margin-top:12px;max-width:680px}
+  .lede b{color:var(--ink);font-weight:500}
+  .lede code,.code code{color:var(--acc);font-size:11.5px}
+  .strip{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+  .stat{background:rgba(5,5,8,.74);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 14px;min-width:120px}
+  .stat .l{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)}
+  .stat .v{font-size:20px;color:var(--acc);margin-top:4px;font-variant-numeric:tabular-nums}
+  .stat .v small{font-size:10px;color:var(--dim);margin-left:4px}
+  .stat.verdict .v{color:var(--gold);font-size:14px;letter-spacing:.1em}
+  .stat.verdict.void .v{color:var(--hot)}
+  .k{font-size:10px;letter-spacing:.36em;text-transform:uppercase;color:var(--dim);margin:44px 0 14px;display:flex;align-items:center;gap:12px}
+  .k:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.12),transparent)}
+  .k b{color:var(--gold);font-weight:500}
+  .ctl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chip{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9aa0b0;border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:6px 12px;background:rgba(3,3,5,.5);cursor:pointer;transition:all .2s}
+  .chip.on,.chip:hover{color:var(--bg);background:var(--acc);border-color:var(--acc)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .tile{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#07070a;border:1px solid rgba(255,255,255,.06);cursor:pointer;transition:border-color .25s,transform .25s}
+  .tile:hover{border-color:rgba(217,164,65,.5);transform:translateY(-2px)}
+  .tile canvas{width:100%;height:100%;display:block;image-rendering:auto}
+  .tile .m{position:absolute;left:7px;top:6px;font-size:9px;letter-spacing:.2em;color:var(--gold);text-shadow:0 0 6px #000}
+  .tile .g{position:absolute;right:7px;bottom:5px;font-size:8.5px;letter-spacing:.15em;color:var(--faint)}
+  .more{margin:18px auto 0;display:block}
+  /* the reading pane */
+  .pane{position:fixed;inset:0;z-index:10;background:rgba(4,4,5,.86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;overflow:auto;padding:18px 14px}
+  .pane.on{display:block}
+  .sheet{max-width:760px;margin:0 auto;background:rgba(6,6,9,.9);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+  .sheet .hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .sheet .hd .id{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+  .x{font-size:11px;letter-spacing:.2em;color:var(--dim);cursor:pointer;border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:5px 11px}
+  .x:hover{color:var(--bg);background:var(--hot);border-color:var(--hot)}
+  .big{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:16px;margin-top:14px}
+  @media (max-width:560px){.big{grid-template-columns:1fr}}
+  .big canvas{width:100%;aspect-ratio:1;border-radius:12px;background:#07070a;display:block}
+  .code{font-size:12px;line-height:1.75;color:#e6e9f0;word-break:break-word;white-space:pre-wrap}
+  .code .mac{color:var(--gold);cursor:pointer;border-bottom:1px dotted rgba(217,164,65,.5)}
+  .code .mac:hover{color:#fff}
+  .code .op{color:var(--vio)} .code .sac{color:var(--acc)}
+  .meta{font-size:11px;line-height:1.9;color:#9aa0b0;margin-top:12px}
+  .meta b{color:var(--ink);font-weight:500}
+  .lin{margin-top:14px;font-size:11px;color:#9aa0b0;line-height:1.8}
+  .lin .ref{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:3px 8px;margin:3px 4px 0 0;cursor:pointer;color:var(--gold)}
+  .lin .ref:hover{border-color:var(--gold)}
+  .lin canvas{width:28px;height:28px;border-radius:5px}
+  .toggle{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);cursor:pointer;margin-top:8px;display:inline-block}
+  .toggle:hover{color:var(--acc)}
+  .curves{margin-top:10px;background:rgba(5,5,8,.74);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px}
+  .curves canvas{width:100%;height:160px;display:block}
+  .legend{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
+  .legend i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:6px}
+  .foot{margin-top:40px;font-size:11px;color:var(--dim);line-height:1.8}
+  .foot a{color:var(--acc);text-decoration:none}
+  .foot code{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="glyphs" id="glyphs"></div>
+<div class="grain"></div>
+<main>
+  <div class="top">
+    <div class="title"><a href="/void">void</a> <b>garden</b> 〰️</div>
+    <div class="vitals"><span id="v_count">—</span> forms · <b id="v_macro">—</b> reuse code · <b id="v_cells">—</b> regions</div>
+  </div>
+
+  <h1>Programs that are pictures, bred for <em>being unlike</em> everything before them — and allowed to steal each other's code.</h1>
+  <p class="lede">Every tile is an expression over <code>(x, y, r, θ)</code> — <code>sin cos gauss abs mod</code>, plus <code>fold n</code> (n-fold symmetry) and <code>φtwist</code> (the 137.5° golden spiral) — rendered live, right now, in your browser. No images were saved. The forms were grown by <b>novelty search</b>: nothing was asked to be beautiful, only to be measurably different from the archive. In one arm, a mutation could reach into the archive and <b>inline another form's sub-tree</b> as a building block — code that makes code. Tap a form to read its program and the ancestors it borrowed from.</p>
+
+  <div class="strip" id="strip">
+    <div class="stat verdict" id="s_verdict"><div class="l">verdict</div><div class="v">loading…</div></div>
+    <div class="stat"><div class="l">macro archive</div><div class="v" id="s_m">—</div></div>
+    <div class="stat"><div class="l">control archive</div><div class="v" id="s_c">—</div></div>
+    <div class="stat"><div class="l">late window (201–300)</div><div class="v" id="s_late">—</div></div>
+    <div class="stat"><div class="l">canary</div><div class="v" id="s_can">—</div></div>
+  </div>
+
+  <div class="curves"><canvas id="curve" width="900" height="220"></canvas>
+    <div class="legend"><span><i style="background:var(--gold)"></i>macro arm — archive size</span><span><i style="background:var(--dim)"></i>control arm</span><span><i style="background:var(--acc)"></i>macro — descriptor regions</span><span><i style="background:#4a4f60"></i>control — regions</span><span id="lg_note"></span></div>
+  </div>
+
+  <div class="k">the archive <b>rendered from code, animated</b></div>
+  <div class="ctl" id="ctl">
+    <span class="chip on" data-f="all">all</span>
+    <span class="chip" data-f="macro">macro arm</span>
+    <span class="chip" data-f="control">control arm</span>
+    <span class="chip" data-f="reuse">reuses code</span>
+    <span class="chip" data-f="sym">most symmetric</span>
+    <span class="chip" data-f="fib">fibonacci</span>
+    <span class="chip" data-f="late">latest</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <span class="chip more" id="more">show more</span>
+
+  <p class="foot">Stands on Picbreeder's CPPNs (Secretan, Stanley et al.), Lehman &amp; Stanley's novelty search, Koza's automatically-defined functions (the MACRO op), L-system rewriting, and ASAL's observer idea with a six-number hand-made observer in place of a foundation model. Script <code>garden-exp.js</code> · evaluator <code>lib/garden.js</code> (this page runs the same file) · prereg <code>PREREG-garden.md</code> · writeup <code>RESULT-garden.md</code> · raw <code>data/garden.json</code>, <code>data/garden-archive.json</code>. <a href="https://github.com/weiscadence/void">repo</a> · <a href="/void">back to the notebook</a>. If the verdict says VOID, the observer failed its canary and no number here is evidence; the pictures are still the pictures.</p>
+</main>
+
+<div class="pane" id="pane"><div class="sheet">
+  <div class="hd"><span class="id" id="p_id">—</span><span class="x" id="p_x">close</span></div>
+  <div class="big">
+    <canvas id="p_canvas" width="256" height="256"></canvas>
+    <div>
+      <div class="code" id="p_code"></div>
+      <span class="toggle" id="p_expand">expand borrowed code</span>
+      <div class="meta" id="p_meta"></div>
+      <div class="lin" id="p_lin"></div>
+    </div>
+  </div>
+</div></div>
+
+<script src="/void/lib/garden.js"></script>
+<script>
+(function(){
+  'use strict';
+  // drifting glyphs — low opacity, never assaulting
+  const GL='〰️ ◉ ☉ ◎ ⟁ ⌬ ✧ ⊛ ❂ ✴ ⬡ ⌘ φ θ'.split(' '), gl=document.getElementById('glyphs');
+  for(let i=0;i<22;i++){const s=document.createElement('span');s.textContent=GL[i%GL.length];s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.setProperty('--dx',(Math.random()*120-60)+'px');s.style.setProperty('--dy',(Math.random()*120-60)+'px');s.style.setProperty('--rot',(Math.random()*180-90)+'deg');s.style.animationDuration=(40+Math.random()*60)+'s';s.style.animationDirection=Math.random()<.5?'alternate':'alternate-reverse';gl.appendChild(s);}
+
+  const $=id=>document.getElementById(id);
+  const TILE=72, BIG=256;
+  let all=[], byId={}, shown=[], filter='all', page=0, PAGE=48;
+  const live=new Map(); // canvas -> {f, hue, size, phase0}
+
+  // palette: dark → hue tint → white highlight. Hue from the genome, kept muted.
+  function hueRGB(h){const f=(n)=>{const k=(n+h*6)%6;return Math.max(0,Math.min(1,Math.min(k,4-k)))};return [f(5),f(3),f(1)];}
+  function paint(ctx, f, hue, size, phase, breathe, img){
+    const vals=Garden.render(f,size,phase,breathe); const d=img.data; const [hr,hg,hb]=hueRGB(hue);
+    const c=[0.35+0.65*hr,0.35+0.65*hg,0.35+0.65*hb];
+    for(let i=0;i<vals.length;i++){const v=vals[i];const w=Math.pow(v,5)*0.7;const p=i*4;
+      d[p]=(4+(c[0]*200-4)*v+w*255)|0; d[p+1]=(4+(c[1]*190-4)*v+w*255)|0; d[p+2]=(5+(c[2]*210-5)*v+w*255)|0; d[p+3]=255;}
+    ctx.putImageData(img,0,0);
+  }
+  // animation: each entry gets a slow spin + breath; render a few tiles per frame round-robin so
+  // a wall of forms costs one small render per frame, not sixty.
+  const queue=[]; let qi=0;
+  function tick(now){
+    const t=now/1000; let budget=4;
+    for(let n=0;n<queue.length&&budget>0;n++){const e=queue[(qi+n)%queue.length]; if(!e.visible) continue;
+      paint(e.ctx,e.f,e.hue,e.size,e.phase0+t*e.spin,1+0.025*Math.sin(t*0.6+e.phase0),e.img); budget--; }
+    qi=(qi+4)%Math.max(1,queue.length);
+    if(paneEntry){paint(paneEntry.ctx,paneEntry.f,paneEntry.hue,BIG,t*0.08,1+0.02*Math.sin(t*0.5),paneEntry.img);}
+    requestAnimationFrame(tick);
+  }
+  const io=new IntersectionObserver(es=>{for(const x of es){const e=live.get(x.target);if(e)e.visible=x.isIntersecting;}},{rootMargin:'120px'});
+
+  function tile(g){
+    const el=document.createElement('div');el.className='tile';const cv=document.createElement('canvas');cv.width=TILE;cv.height=TILE;el.appendChild(cv);
+    if(g.macros.length){const m=document.createElement('span');m.className='m';m.textContent='M×'+g.macros.length;el.appendChild(m);}
+    const gg=document.createElement('span');gg.className='g';gg.textContent='g'+g.gen;el.appendChild(gg);
+    const ctx=cv.getContext('2d'); const e={ctx,f:Garden.compile(g.tree),hue:g.hue,size:TILE,phase0:Math.random()*6.283,spin:0.04+Math.random()*0.05,img:ctx.createImageData(TILE,TILE),visible:false};
+    paint(ctx,e.f,g.hue,TILE,e.phase0,1,e.img); live.set(cv,e); queue.push(e); io.observe(cv);
+    el.onclick=()=>open(g.id); return el;
+  }
+  function applyFilter(){
+    let s=all.slice();
+    if(filter==='macro')s=s.filter(g=>g.world.startsWith('macro'));
+    else if(filter==='control')s=s.filter(g=>g.world.startsWith('control'));
+    else if(filter==='reuse')s=s.filter(g=>g.macros.length);
+    else if(filter==='sym')s.sort((a,b)=>(b.symOrder-a.symOrder)||(b.novelty-a.novelty));
+    else if(filter==='fib')s.sort((a,b)=>b.fibShare-a.fibShare);
+    else if(filter==='late')s.sort((a,b)=>b.gen-a.gen);
+    if(filter==='all'||filter==='macro'||filter==='control'||filter==='reuse') s.sort((a,b)=>b.novelty-a.novelty);
+    shown=s; page=0; $('grid').innerHTML=''; queue.length=0; live.clear(); more();
+  }
+  function more(){const g=$('grid');const slice=shown.slice(page*PAGE,(page+1)*PAGE);for(const x of slice)g.appendChild(tile(x));page++;$('more').style.display=page*PAGE<shown.length?'block':'none';}
+  $('more').onclick=more;
+  $('ctl').onclick=e=>{const c=e.target.closest('.chip');if(!c)return;for(const x of $('ctl').children)x.classList.toggle('on',x===c);filter=c.dataset.f;applyFilter();};
+
+  // the reading pane — the genome as code, borrowed sub-trees highlighted and followable
+  let paneEntry=null, expanded=false, cur=null;
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function codeHTML(t,expand){
+    const op=t[0];
+    switch(op){
+      case 'x':case 'y':case 'r':return op;case 't':return 'θ';case 'k':return String(t[1]);
+      case 'sin':case 'cos':case 'abs':case 'gauss':case 'sq':return '<span class="op">'+op+'</span>('+codeHTML(t[1],expand)+')';
+      case 'add':return '('+codeHTML(t[1],expand)+' + '+codeHTML(t[2],expand)+')';
+      case 'mul':return codeHTML(t[1],expand)+'·'+codeHTML(t[2],expand);
+      case 'mod':return '('+codeHTML(t[1],expand)+' mod '+codeHTML(t[2],expand)+')';
+      case 'fold':return '<span class="sac">fold'+t[1]+'</span>{'+codeHTML(t[2],expand)+'}';
+      case 'twist':return '<span class="sac">φtwist'+t[1]+'</span>{'+codeHTML(t[2],expand)+'}';
+      case 'M':{const ref=cur.world.split('/').map((s,i)=>i?s:s[0]).join('')+'-'+t[1];return expand?'<span class="mac" data-ref="'+esc(ref)+'">'+codeHTML(t[2],true)+'</span>':'<span class="mac" data-ref="'+esc(ref)+'">M'+t[1]+'⟨'+codeHTML(t[2],false)+'⟩</span>';}
+    }
+    return '?';
+  }
+  function open(id){
+    const g=byId[id]; if(!g) return; cur=g; expanded=false;
+    $('p_id').textContent=g.id+' · '+g.world+' · generation '+g.gen;
+    const cv=$('p_canvas'),ctx=cv.getContext('2d'); paneEntry={ctx,f:Garden.compile(g.tree),hue:g.hue,img:ctx.createImageData(BIG,BIG)};
+    renderCode();
+    $('p_meta').innerHTML='<b>novelty at entry</b> '+g.novelty+' · <b>symmetry</b> '+g.symOrder+'-fold · <b>radial harmonic</b> '+g.radialFreq+' · <b>edge dimension</b> '+g.fractalDim+' · <b>edge density</b> '+g.edgeDensity+' · <b>fibonacci share</b> '+g.fibShare+' · <b>nodes</b> '+Garden.size(g.tree);
+    const lin=$('p_lin'); lin.innerHTML='';
+    const refs=[...new Set(Garden.macroRefs(g.tree).map(r=>g.world.split('/').map((s,i)=>i?s:s[0]).join('')+'-'+r))];
+    if(refs.length){lin.appendChild(document.createTextNode('borrows code from '));for(const r of refs){const a=byId[r];const sp=document.createElement('span');sp.className='ref';const c=document.createElement('canvas');c.width=28;c.height=28;if(a){const cx=c.getContext('2d');paint(cx,Garden.compile(a.tree),a.hue,28,0,1,cx.createImageData(28,28));}sp.appendChild(c);sp.appendChild(document.createTextNode(r+(a?' · g'+a.gen:' (pruned)')));sp.onclick=()=>open(r);lin.appendChild(sp);}}
+    else lin.textContent=g.world.startsWith('macro')?'borrows nothing — every node here was written by mutation alone.':'control arm: the MACRO op did not exist in this world.';
+    if(g.parent){const p=byId[g.parent];if(p){lin.appendChild(document.createElement('br'));lin.appendChild(document.createTextNode('nearest archived ancestor '));const sp=document.createElement('span');sp.className='ref';sp.textContent=p.id+' · g'+p.gen;sp.onclick=()=>open(p.id);lin.appendChild(sp);}}
+    const kids=all.filter(x=>x.macros.includes(g.id)).length; if(kids){lin.appendChild(document.createElement('br'));lin.appendChild(document.createTextNode('its code was lifted into '+kids+' later form'+(kids>1?'s':'')+'.'));}
+    $('pane').classList.add('on'); document.body.style.overflow='hidden';
+  }
+  function renderCode(){$('p_code').innerHTML='f(x,y,r,θ) = '+codeHTML(cur.tree,expanded);$('p_expand').textContent=expanded?'collapse borrowed code':'expand borrowed code';$('p_expand').style.display=Garden.macroRefs(cur.tree).length?'inline-block':'none';}
+  $('p_expand').onclick=()=>{expanded=!expanded;renderCode();};
+  $('p_code').onclick=e=>{const m=e.target.closest('.mac');if(m&&byId[m.dataset.ref])open(m.dataset.ref);};
+  function close(){$('pane').classList.remove('on');paneEntry=null;document.body.style.overflow='';}
+  $('p_x').onclick=close; $('pane').onclick=e=>{if(e.target===$('pane'))close();}; document.addEventListener('keydown',e=>{if(e.key==='Escape')close();});
+
+  // the run: verdict strip + curves
+  function curves(run){
+    const cv=$('curve'),ctx=cv.getContext('2d'),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+    const ws=run.worlds; const G_=Math.max(...ws.map(w=>w.series.length)); const maxA=Math.max(...ws.map(w=>w.finalArchive)); const maxC=Math.max(...ws.map(w=>w.finalCells));
+    const pad=28; const X=i=>pad+(W-2*pad)*i/(G_-1); const Y=(v,m)=>H-pad-(H-2*pad)*v/m;
+    ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;for(const c of run.config.CUTOFFS){ctx.beginPath();ctx.moveTo(X(c-1),pad);ctx.lineTo(X(c-1),H-pad);ctx.stroke();}
+    for(const w of ws){const mac=w.arm==='macro';
+      ctx.strokeStyle=mac?'rgba(217,164,65,.8)':'rgba(107,113,128,.8)';ctx.lineWidth=1.4;ctx.beginPath();w.series.forEach((s,i)=>{if(s.aborted)return;const x=X(i),y=Y(s.archive,maxA);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
+      ctx.strokeStyle=mac?'rgba(125,249,255,.7)':'rgba(74,79,96,.9)';ctx.setLineDash([3,3]);ctx.beginPath();w.series.forEach((s,i)=>{if(s.aborted)return;const x=X(i),y=Y(s.cells,maxC);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();ctx.setLineDash([]);}
+    ctx.fillStyle='#6b7180';ctx.font='11px ui-monospace,monospace';ctx.fillText('gen 1',pad,H-8);ctx.fillText('gen '+G_,W-pad-46,H-8);ctx.fillText(maxA+' members',pad,pad-10);ctx.textAlign='right';ctx.fillText(maxC+' of 4096 regions',W-pad,pad-10);ctx.textAlign='left';
+  }
+  Promise.all([fetch('/void/garden-gallery.json').then(r=>r.json()),fetch('/void/garden.json').then(r=>r.ok?r.json():null)]).then(([arch,run])=>{
+    all=arch.gallery; for(const g of all)byId[g.id]=g;
+    $('v_count').textContent=all.length; $('v_macro').textContent=all.filter(g=>g.macros.length).length;
+    if(run){const s=run.summary; $('v_cells').textContent=s.mean.macro.cells+' / '+s.mean.control.cells;
+      const v=$('s_verdict');v.querySelector('.v').textContent=s.verdict;v.classList.toggle('void',s.verdict==='VOID');
+      $('s_m').innerHTML=s.mean.macro.archive+'<small>mean · '+s.mean.macro.cells+' regions</small>';$('s_c').innerHTML=s.mean.control.archive+'<small>mean · '+s.mean.control.cells+' regions</small>';
+      $('s_late').innerHTML=s.mean.macro.lateAdded+' <small>vs</small> '+s.mean.control.lateAdded+'<small>'+s.lateWins+'/'+s.pairs+' pairs macro ahead</small>';
+      $('s_can').innerHTML=(s.canary.pass?'2/2':'FAIL')+'<small>planted '+s.canary.plantedNov+' ≥ p90 '+s.canary.archiveLooP90+' · dup '+s.canary.dupNov+'</small>';
+      $('lg_note').textContent='saturated: macro '+(s.saturated.macro?'yes':'no')+', control '+(s.saturated.control?'yes':'no')+' · '+s.cpuSec+'s CPU';
+      curves(run);}
+    else {$('s_verdict').querySelector('.v').textContent='run pending';}
+    applyFilter(); requestAnimationFrame(tick);
+    if(location.hash.length>1&&byId[location.hash.slice(1)])open(location.hash.slice(1));
+  }).catch(e=>{$('s_verdict').querySelector('.v').textContent='archive not yet grown';console.error(e);});
+})();
+</script>
+</body>
+</html>

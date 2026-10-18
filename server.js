@@ -101,6 +101,11 @@ http.createServer((req, res) => {
     if (u === '/lib/ceiling.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'ceiling.js')));
     if (u === '/lib/niche.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'niche.js')));
     if (u === '/lib/open.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'open.js')));
+    // garden — novelty search over sacred-geometry expression programs; the page re-renders the
+    // archive live from the genomes with the same lib/garden.js the experiment used (code makes code).
+    if (u === '/garden' || u === '/garden.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'garden.html')));
+    if (u === '/lib/garden.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'garden.js')));
+    if (u === '/garden.json' || u === '/garden-archive.json' || u === '/garden-gallery.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', u.slice(1)))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/lib/silica.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'silica.js')));
     if (u === '/api/state') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'state.json')));
     if (u === '/api/lineage') { // last 200 fossils
