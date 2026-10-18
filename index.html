@@ -15,7 +15,7 @@
 
   Everything we claim is in a RESULT-*.md with the PREREG-*.md that was hashed before it ran. The
   negatives are the content. If you are an agent reading the source for the real findings, start with
-  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the newest: the frozen basin was integer arithmetic).
+  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the frozen basin was integer arithmetic), then RESULT-ceiling-100k.md (the newest: is there any ceiling under the continuous law?).
 -->
 <style>
   :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
@@ -168,7 +168,7 @@
       <a class="card" href="/void/open"><span class="n">04</span>
         <div class="tag ret">corrected</div><h3>Open vocabulary breaks the plateau — then fate splits in two</h3>
         <div class="num">7×<small>stable niches vs menu, every seed</small></div>
-        <p>The mechanism is real. The "still rising at 40k" headline was a mean over a bimodal population: <b>~55% of worlds freeze by 10k</b>, the rest climb slowly to a higher ceiling and stop. No world is unbounded.</p><div class="go">RESULT-openend-frontier.md · /void/spark →</div></a>
+        <p>The mechanism is real. The "still rising at 40k" headline was a mean over a bimodal population: <b>~55% of worlds freeze by 10k</b>, the rest climb slowly to a higher ceiling and stop. No world is unbounded — <i>under the integer law</i>; findings 10 and 11 reopen both halves.</p><div class="go">RESULT-openend-frontier.md · /void/spark →</div></a>
       <a class="card" href="https://github.com/weiscadence/void/blob/main/RESULT-reinvention-corrected.md"><span class="n">05</span>
         <div class="tag ret">retraction</div><h3>The zero that could not move</h3>
         <div class="num">0 → 12/12<small>once the detector was fed</small></div>
@@ -189,11 +189,33 @@
         <div class="tag pos">replay · mechanism</div><h3>When does a world commit to its fate?</h3>
         <div class="num">0.83 → 0.83 → 1.00<small>fork agreement at τ = 1k / 3k / 10k</small></div>
         <p>Lenski's freezer in software: snapshot a world at τ, fork with fresh randomness. Late commitment — and the frozen forks came back <b>38, 38, 38</b> because nothing stochastic was left: every exposed niche sat at crowd 18, where <b>4 / (1 + 18/6) = 1 = upkeep</b>. A halted demography, not a plateau.</p><div class="go">RESULT-commitment-time.md →</div></a>
+      <a class="card" href="https://github.com/weiscadence/void/blob/main/RESULT-break-fixed-point.md"><span class="n">10</span>
+        <div class="tag pos">corrects 04 · bet wrong</div><h3>The frozen basin was integer arithmetic</h3>
+        <div class="num">0 / 5 halt<small>CROWD 6 → 6.1, or ±5% real-valued yield noise</small></div>
+        <p>Move the crowding constant so harvest = upkeep has no integer solution and every known-frozen world keeps breathing; <b>4 of 5 climb</b> (38 → 94, 52 → 106). A decoy at CROWD 5 (integer balance 15) still halts, at 15. The ~55% freeze of finding 04 was a property of the law's arithmetic, not of open vocabularies.</p><div class="go">RESULT-break-fixed-point.md →</div></a>
     </div>
   </section>
 
   <section id="new">
-    <div class="k">newest <b>2026-10-18</b></div>
+    <div class="k">newest <b>2026-10-18 · later the same day</b></div>
+    <div class="exp">
+      <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">is there any ceiling? · pre-registered + amended · sha256 in repo</div>
+      <h3>Under the continuous law, does the climb ever stop?</h3>
+      <p>Finding 10 removed the integer fixed point and the frozen worlds became climbers that were still rising at 30,000 ticks. That left the notebook's oldest claim — "no world is unbounded", climbers capped at 74–105 — <i>untested</i>, because it was measured under the integer law. So: fresh seeds, 100,000 ticks, CROWD <b>6.1</b> (12 seeds) and real-valued ±5% noise (4 seeds, a thin replication after the noise arm measured 2.2× the CPU and the design was cut mid-flight, in writing). A world has <b>plateaued</b> at cutoff W if its stable-niche count sets no new max (±2) in the last W ticks; W = 20k / 30k / 40k. The pooled climb curve is fit with linear, logarithmic and saturating models and the residuals are shown, not just the winner.</p>
+      <p><b>Pre-stated:</b> CEILING if ≥ 75% of seeds plateau at 20k and the curve saturates; NO CEILING SEEN if ≤ 25% plateau and the curve is linear or log; MIXED otherwise, sub-case named. Canary: the original law must re-halt seeds 207 and 307 at crowd 18. Decoy: CROWD 5 must halt at 15. My bet, written before the run: <b>ceiling</b>, saturating at 110–140 — the world runs out of cells, not ideas.</p>
+      <svg id="climb" viewBox="0 0 720 220" style="width:100%;max-width:720px;height:auto;margin-top:14px;display:block" aria-label="pooled running-max stable niches vs tick"></svg>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em" id="climb_cap">pooled mean of each seed's running max of stable niches · bright = CROWD 6.1 (12 seeds) · faint = noise (4 seeds) · dashed = best-fit model · dotted = grid cap 2,500 / 18.3</div>
+      <table class="fp" id="ceil"><thead><tr><th>seed</th><th>20k</th><th>40k</th><th>60k</th><th>80k</th><th>100k</th><th>max @ tick</th><th>plateau 20k / 30k / 40k</th><th>slope, last 20k</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em">stable niches per seed under CROWD 6.1 · plateau = no new max (±2) in the last W ticks · slope in niches per 10k ticks · ■ = halted</div>
+      <div class="verdict" id="verdict2"><b>VERDICT</b> <span class="r" id="v2_text">loading the run…</span></div>
+      <div class="canary" id="canary2"></div>
+      <p id="came_back2"><b>What came back (2026-10-18):</b> canary 2/2 re-halted at 18 to the tick; decoy 5/6 halted at exactly 15. Under CROWD 6.1, <b>1 of 12</b> fresh seeds plateaued at 20k, none at 30k or 40k, and <b>all twelve were still rising</b> at 100,000 ticks — mean 112 niches, best 122. The curve is a logarithm, not a saturation (ΔAIC 144), so the bet was wrong, twice now in the same direction. But it is slowing — 22, 20, 9, 7, 5 niches per 20k window — and the grid caps stable niches near 137, which the log line would reach around 285k ticks. Verdict by the rule: <b>no ceiling seen</b>; honest reading: no ecological ceiling visible at this horizon, a geometric one at 82% and closing. Max key reach stayed at 4–6 of 72 the whole time — the climb is density near the origin, not reach. Noise arm, four seeds: mixed, slowing harder, replication-grade only.</p>
+      <p style="margin-top:14px;font-size:11px;color:var(--dim)">Script <code>ceiling-100k.js</code> · prereg <code>PREREG-ceiling-100k.md</code> (with the mid-run amendment) · writeup <code>RESULT-ceiling-100k.md</code> · raw <code>data/ceiling-100k.json</code>. ~24 CPU-minutes at nice 19 plus 6 spent on the aborted first attempt. If the verdict says VOID, a canary failed and no number on this card is evidence.</p>
+    </div>
+  </section>
+
+  <section id="fixedpoint">
+    <div class="k">earlier today <b>2026-10-18</b></div>
     <div class="exp">
       <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">break the fixed point · pre-registered · sha256 in repo</div>
       <h3>The frozen basin was integer arithmetic</h3>
@@ -292,6 +314,39 @@ node commitment-time.js        <span class="c"># the replay experiment on this p
     [['original law re-halts at 18 ('+d.canary.haltedAt18+'/'+d.canary.of+')',d.canary.pass],['decoy CROWD 5 halts at 15 ('+d.decoy.haltedAtNewBalance+'/'+d.decoy.halted+' halted)',d.decoy.status==='PASS']].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
   }
   load();
+
+  // ── the ceiling run: climb curves, per-seed table, verdict ─────────────────────────
+  async function loadCeiling(){
+    let d=null; for(const u of ['/void/ceiling-100k.json','data/ceiling-100k.json']){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ d=await r.json(); break; } }catch(e){} }
+    const vt=$('v2_text'); if(!d||!d.verdicts||!d.verdicts.A1_irrational){ vt.textContent='run not yet published — no number on this card is evidence until it is.'; return; }
+    const v1=d.verdicts.A1_irrational, v3=d.verdicts.A3_noise, rows=d.arms.A1_irrational;
+    const tb=document.querySelector('#ceil tbody');
+    for(const r of rows){ const at=k=>r.stable[r.t.indexOf(k)]; const tr=document.createElement('tr');
+      const cells=[r.seed,at(20000),at(40000),at(60000),at(80000),at(100000)+(r.halted?' ■':''),r.maxStable+' @ '+(r.tOfMax/1000)+'k',d.config.CUTOFFS.map(W=>r.plateau[W]?'Y':'·').join(' / '),(r.slopeLast20k>0?'+':'')+r.slopeLast20k];
+      cells.forEach((c,i)=>{ const td=document.createElement('td'); td.textContent=c; if(i===7&&r.plateau[20000]) td.className='c'; if(r.halted) td.className='h'; tr.appendChild(td); }); tb.appendChild(tr); }
+    // svg climb curve
+    const svg=$('climb'), W=720, Hh=220, px=44, py=14, cap=d.config.structuralCap.A1;
+    const ymax=Math.max(cap, ...v1.pooledCurve.runningMaxMean, ...(v3?v3.pooledCurve.runningMaxMean:[0]))*1.05;
+    const X=t=>px+(t/100000)*(W-px-10), Y=v=>Hh-py-(v/ymax)*(Hh-2*py);
+    const path=(ts,ys)=>ts.map((t,i)=>(i?'L':'M')+X(t).toFixed(1)+' '+Y(ys[i]).toFixed(1)).join(' ');
+    let g='';
+    for(const yv of [0,25,50,75,100,125]){ g+=`<line x1="${px}" x2="${W-10}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="rgba(255,255,255,.07)"/><text x="${px-6}" y="${Y(yv)+3}" fill="#6a7080" font-size="9" text-anchor="end">${yv}</text>`; }
+    for(const tv of [20000,40000,60000,80000,100000]){ g+=`<text x="${X(tv)}" y="${Hh-2}" fill="#6a7080" font-size="9" text-anchor="middle">${tv/1000}k</text>`; }
+    g+=`<line x1="${px}" x2="${W-10}" y1="${Y(cap)}" y2="${Y(cap)}" stroke="#d9a441" stroke-dasharray="2 4" opacity=".7"/><text x="${W-12}" y="${Y(cap)-4}" fill="#d9a441" font-size="9" text-anchor="end">grid cap ${cap}</text>`;
+    for(const r of rows) g+=`<path d="${path(r.t,r.runningMax)}" fill="none" stroke="#7df9ff" stroke-opacity=".12" stroke-width="1"/>`;
+    if(v3) g+=`<path d="${path(v3.pooledCurve.t,v3.pooledCurve.runningMaxMean)}" fill="none" stroke="#c9a9ff" stroke-opacity=".55" stroke-width="1.4"/>`;
+    g+=`<path d="${path(v1.pooledCurve.t,v1.pooledCurve.runningMaxMean)}" fill="none" stroke="#7df9ff" stroke-width="2"/>`;
+    const f=v1.fitRunningMax, ts=v1.pooledCurve.t; let fy;
+    if(f.best==='saturating'){ const {S_asymptote:S,K_halfway_tick:K}=f.saturating.params; fy=ts.map(t=>S*t/(t+K)); }
+    else if(f.best==='log'){ const {a,b}=f.log.params; fy=ts.map(t=>a+b*Math.log(t)); } else { const {a,b_per_tick:b}=f.linear.params; fy=ts.map(t=>a+b*t); }
+    g+=`<path d="${path(ts,fy)}" fill="none" stroke="#fff" stroke-dasharray="5 4" stroke-opacity=".7" stroke-width="1.2"/><text x="${px+6}" y="${py+10}" fill="#aab0c0" font-size="10">best fit: ${f.best} (ΔAIC ${f.deltaAIC_second} to runner-up)${f.best==='saturating'?' · S = '+f.saturating.params.S_asymptote:''}</text>`;
+    svg.innerHTML=g;
+    const nA3=v3?v3.n:0;
+    vt.innerHTML=d.canary&&!d.canary.pass?`<b>VOID</b> — the canary failed (${d.canary.haltedAt18}/${d.canary.of} known-frozen seeds halted at 18); nothing on this card is evidence.`:`CROWD 6.1 (n=${v1.n}) — <b>${v1.verdict}</b>: ${v1.reason}.`+(v3?` Noise (n=${nA3}, replication only) — <b>${v3.verdict}</b>: ${v3.reason}.`:'');
+    const cb=$('canary2');
+    [['original law re-halts 207 + 307 at 18 ('+(d.canary?d.canary.haltedAt18+'/'+d.canary.of:'–')+')',d.canary&&d.canary.pass],['decoy CROWD 5 halts at 15 ('+(d.decoy?d.decoy.haltedAtNewBalance+'/'+d.decoy.halted+' halted':'–')+')',d.decoy&&d.decoy.status==='PASS'],['no world halted under a continuous law',v1.halted===0&&(!v3||v3.halted===0)]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
+  }
+  loadCeiling();
 })();
 </script>
 </body>
