@@ -33,9 +33,26 @@ record of lifting each ceiling and naming the next one.
 | 9 | **New (2026-10-18).** When does a world commit to its fate? Lenski-style replay: fork a world at τ with fresh randomness. Agreement **0.83 → 0.83 → 1.00** at τ = 1k / 3k / 10k (base 0.63). The frozen basin is a **halted demography**: zero births, zero deaths, every exposed key at crowd exactly 18, where `4/(1+18/6) = 1 = upkeep` | late commitment + mechanism | [`RESULT-commitment-time.md`](RESULT-commitment-time.md), [`PREREG-commitment-time.md`](PREREG-commitment-time.md) |
 | 10 | **New (2026-10-18).** Break the fixed point. Move the crowding constant 6 → 6.1 so harvest = upkeep has no integer solution, or add ±5% real-valued yield noise: **0/5** known-frozen seeds halt and **4/5** climb past 65 niches (38 → 94, 52 → 106). A decoy (6 → 5, integer balance 15) still halts, at 15. The bimodal fate of finding 4 was an artifact of an integer-valued law | corrects 4 · pre-stated bet wrong | [`RESULT-break-fixed-point.md`](RESULT-break-fixed-point.md), [`PREREG-break-fixed-point.md`](PREREG-break-fixed-point.md) |
 | 11 | **New (2026-10-18, later).** Is there any ceiling under the continuous law? 12 fresh seeds, CROWD 6.1, 100k ticks: **1/12** plateau (±2) in the last 20k, 0/12 at 30k/40k, **12/12 still rising**; pooled climb is **logarithmic** (ΔAIC 144 over saturating). Mean 112 niches = 82% of the grid's ~137 cap, so a ceiling exists geometrically and 100k cannot see it — the geometric reading is retired by 12. Max key reach flat at 4–6 of 72. Noise arm (n = 4) MIXED. Budget overran mid-run; design cut 16+16 → 12+4 in a written amendment before any verdict | no ceiling seen · pre-stated bet wrong · mechanism superseded by 12 | [`RESULT-ceiling-100k.md`](RESULT-ceiling-100k.md), [`PREREG-ceiling-100k.md`](PREREG-ceiling-100k.md) |
-| 12 | **New (2026-10-18, latest).** Geometric or ecological? Same seeds, same law, grids of 1× / 1.49× / 2.02× / 3.03× the area to 40k. Stable niches at 40k **91 / 95 / 100 / 98** — exponent on area **α = 0.07** (0.17 at 20k, 0.13 at 30k: converging). Population **1,139 / 1,211 / 1,219 / 1,149** on 2,500 → 7,569 cells: the count ignores the room. The three twins that gained on the 2× grid were the three lowest 1× worlds. Reach pinned at 5–6. Verdict by rule MIXED (rule disagreement: α ecological, 3/8 twins ≥ 1.25 vs the 2/8 allowed); reading: **ecological**. 8.9 CPU-min | ecological · pre-stated bet (GEOMETRIC) wrong — first miss in the over-estimating direction | [`RESULT-grid-scaling.md`](RESULT-grid-scaling.md), [`PREREG-grid-scaling.md`](PREREG-grid-scaling.md) |
+| 12 | **New (2026-10-18).** Geometric or ecological? Same seeds, same law, grids of 1× / 1.49× / 2.02× / 3.03× the area to 40k. Stable niches at 40k **91 / 95 / 100 / 98** — exponent on area **α = 0.07** (0.17 at 20k, 0.13 at 30k: converging). Population **1,139 / 1,211 / 1,219 / 1,149** on 2,500 → 7,569 cells: the count ignores the room. The three twins that gained on the 2× grid were the three lowest 1× worlds. Reach pinned at 5–6. Verdict by rule MIXED (rule disagreement: α ecological, 3/8 twins ≥ 1.25 vs the 2/8 allowed); reading: **ecological**. 8.9 CPU-min | ecological · pre-stated bet (GEOMETRIC) wrong — first miss in the over-estimating direction | [`RESULT-grid-scaling.md`](RESULT-grid-scaling.md), [`PREREG-grid-scaling.md`](PREREG-grid-scaling.md) |
+| 13 | **New (2026-10-18, latest).** What sets the level? One dial at a time on the 1× grid, 4 seeds, 40k. Yield 3 / 4 / 5 / 6: stable niches **79 / 90 / 81 / 83** (elasticity on energy **0.02**) while population goes **687 / 1,126 / 1,308 / 1,653** (elasticity 0.93) — energy fills keys, it does not make them. Mutation load ×0.25 / ×0.5 / ×1 / ×2: niches **38.5 / 64 / 90 / 111**, ~25 per doubling, 4/4 seeds one-sided at every level; population follows the key count. STABLE_AGE lens flat (held ≥100 ≈ held ≥3,200): a held key is permanent. Reach pinned 4–6 in every arm. Canary 2/2 at 18; decoy (inert `influx`) reproduced the baseline 0/40 mismatches. ~9.3 CPU-min | yield ARITHMETIC-INVARIANT · mutation MIXED by rule, origination-limited in prose · pre-stated bet (ENERGY-LIMITED, mutation lowers niches) wrong on both halves — fourth miss running | [`RESULT-dial-sweep.md`](RESULT-dial-sweep.md), [`PREREG-dial-sweep.md`](PREREG-dial-sweep.md) |
 
 ## The newest result, in one paragraph
+
+Finding 12 left a level — about 100 stable niches and about 1,200 organisms at 40k — that ignores room. Finding 13 asks which part
+of the law sets it, one dial at a time: total energy (yield 3 → 6, which moves the harvest actually taken per tick from 716 to
+1,910) and mutation load (×0.25 → ×2). **Energy does nothing to the niche count** (79 / 90 / 81 / 83, elasticity 0.02) while it
+multiplies the population by 2.4 (elasticity 0.93): organisms per key go 8.7 → 20, tracking the balance crowd. **Mutation does
+everything**: 38.5 / 64 / 90 / 111 niches, roughly 25 more per doubling, every seed on the same side of the baseline at every
+level, with population following the key count rather than leading it. The STABLE_AGE threshold is a lens, not a dial, and the
+lens is flat — a key held 100 ticks is held 3,200 — so the level is not an artefact of the 400 cutoff; held means permanent, and
+turnover happens at arrival, not departure. Of Hubbell's θ = 2Jν this world keeps ν and drops J; the more-individuals hypothesis
+runs backwards here (keys → individuals). By the pre-registered rules the yield dial is ARITHMETIC-INVARIANT and the mutation dial
+is MIXED, because the rule demanded population stay within 10% and in a world where population = keys × organisms-per-key it
+cannot. The bet (ENERGY-LIMITED; double mutation lowers niches) was wrong on both halves — the fourth miss in a row, each time
+betting on the arithmetic limit I could see rather than on what generates novelty. Canary re-halted at 18 to the tick; the decoy — an
+energy-sounding constant the engine never reads in this mode — reproduced the baseline sample for sample. ~9.3 CPU-minutes.
+
+## Finding 12, in one paragraph
 
 Finding 11 ended on a logarithm — twelve worlds still climbing at 100,000 ticks, mean 112 stable niches, 82% of the 50×50
 grid's arithmetic cap of ~137 — and said the climb was *probably* bending because the world was running out of cells. Finding
@@ -84,6 +101,7 @@ node halt-time.js              # post-hoc halt census for the replay result (~1 
 node break-fixed-point.js      # break the fixed point: 4 arms x 8 seeds (~5 CPU-min; writes data/break-fixed-point.json)
 node ceiling-100k.js           # any ceiling under the continuous law? 12 + 4 seeds x 100k ticks (~25 CPU-min; writes data/ceiling-100k.json)
 node grid-scaling.js           # geometric or ecological? grids 61/71/87 vs the stored 50x50 baseline, 40k ticks (~9 CPU-min; writes data/grid-scaling.json)
+node dial-sweep.js             # what sets the level? yield 3/5/6 + mutation x0.25/0.5/2 vs the stored baseline, 40k ticks (~9 CPU-min; writes data/dial-sweep.json)
 ```
 
 Every `.js` runs standalone from a fresh clone. `index.html` and the other `.html` worlds open

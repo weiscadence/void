@@ -15,7 +15,7 @@
 
   Everything we claim is in a RESULT-*.md with the PREREG-*.md that was hashed before it ran. The
   negatives are the content. If you are an agent reading the source for the real findings, start with
-  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the frozen basin was integer arithmetic), then RESULT-ceiling-100k.md (is there any ceiling under the continuous law?), then RESULT-grid-scaling.md (the newest: the deceleration is ecological, not geometric).
+  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the frozen basin was integer arithmetic), then RESULT-ceiling-100k.md (is there any ceiling under the continuous law?), then RESULT-grid-scaling.md (the deceleration is ecological, not geometric), then RESULT-dial-sweep.md (the newest: what sets the level — mutation makes keys, energy fills them).
 -->
 <style>
   :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
@@ -197,11 +197,33 @@
         <div class="tag pos">no ceiling seen · bet wrong</div><h3>Under the continuous law, nothing stops by 100k</h3>
         <div class="num">12 / 12 rising<small>fresh seeds, CROWD 6.1, 100,000 ticks</small></div>
         <p>One of twelve plateaus (±2) in the last 20k, none at 30k or 40k; the pooled climb is a logarithm (ΔAIC 144 over saturating), mean 112 niches. The card's own guess — that it was bending toward the grid's ~137-cell cap — is retired by finding 12. Max key reach 4–6 of 72 throughout.</p><div class="go">RESULT-ceiling-100k.md →</div></a>
+      <a class="card" href="https://github.com/weiscadence/void/blob/main/RESULT-grid-scaling.md"><span class="n">12</span>
+        <div class="tag pos">ecological · bet wrong</div><h3>Three times the room buys seven niches</h3>
+        <div class="num">α = 0.07<small>stable niches on area, 1× to 3× grids, 40k</small></div>
+        <p>Same seeds, same law, grids of 1× / 1.49× / 2.02× / 3.03× the area: 91 / 95 / 100 / 98 stable niches and 1,139–1,219 organisms on every grid. The count ignores the room, so the level is the law's — finding 13 asks which part of the law.</p><div class="go">RESULT-grid-scaling.md →</div></a>
     </div>
   </section>
 
   <section id="newest">
     <div class="k">newest <b>2026-10-18 · latest</b></div>
+    <div class="exp">
+      <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">what sets the level? · one dial at a time · pre-registered · sha256 in repo</div>
+      <h3>Is the ~100-niche level an energy budget, a crowd arithmetic, or a turnover balance?</h3>
+      <p>Finding 12 showed the level ignores room. Ecology offers three controllers of niche <i>number</i>: <b>energy</b> (the more-individuals hypothesis — richness tracks how many individuals the energy supply holds), <b>balance arithmetic</b> (a full key holds CROWD·(YIELD−1) organisms, so if energy fills keys rather than making them, population moves and niches do not), and <b>turnover</b> (Hubbell's θ = 2Jν — richness is community size × origination rate, so mutation load moves niches without moving population). Test: the 1× grid, CROWD 6.1, 40k ticks, 4 seeds, one dial at a time — yield <b>3 / 4 / 5 / 6</b> (balance crowds 12.2 / 18.3 / 24.4 / 30.5, none integer) and mutation load <b>×0.25 / ×0.5 / ×1 / ×2</b>; yield 4 / ×1 is the stored finding-11 baseline. The STABLE_AGE threshold is a lens, not a world dial, so it is reported as a curve (held ≥ 100 … ≥ 3,200 ticks) at no cost.</p>
+      <p><b>Pre-stated:</b> ENERGY-LIMITED if the niche elasticity on (yield−1) is ≥ 0.5, at least half the population's, and monotone; ARITHMETIC-INVARIANT if |niche elasticity| ≤ 0.2 while population's ≥ 0.5; INVERSE if ≤ −0.3; MIXED otherwise. TURNOVER-LIMITED if a mutation level moves niches ≥ 15% with population within 10%; MUTATION-INERT if all levels move niches &lt; 10%. Canary: the original law must re-halt 207 and 307 at 18. Decoy: <code>influx</code> reads like an energy dial but the engine only uses it in conserved mode, so influx = 100 must reproduce the stored baseline <i>sample for sample</i> (this doubles as the harness check). My bet, written before the run: <b>ENERGY-LIMITED</b>, and double mutation <i>lowers</i> niches. The last three bets missed.</p>
+      <svg id="dials" viewBox="0 0 720 230" style="width:100%;max-width:720px;height:auto;margin-top:14px;display:block" aria-label="stable niches and population per arm, relative to the baseline"></svg>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em" id="dials_cap">each arm relative to the yield-4 / ×1 baseline (matched seeds) · bright = stable niches · faint = population · a dial that moves only the faint bar fills keys; one that moves the bright bar makes keys</div>
+      <table class="fp" id="dialt"><thead><tr><th>arm</th><th>dial</th><th>n</th><th>stable @20k</th><th>@30k</th><th>@40k</th><th>vs base</th><th>pop @40k</th><th>vs base</th><th>energy / tick</th><th>reach</th><th>keys ever</th><th>held ≥100 · ≥3200</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em">one row per arm · base = the finding-11 worlds for the same four seeds (its 12-seed mean in the last row) · energy = harvest actually taken per tick, mean over the last 10k · lens columns: stable count if the age threshold were 100 or 3,200 instead of 400</div>
+      <div class="verdict" id="verdict4"><b>VERDICT</b> <span class="r" id="v4_text">loading the run…</span></div>
+      <div class="canary" id="canary4"></div>
+      <p id="came_back4"><b>What came back (2026-10-18):</b> <span id="cb4">canary 2/2 re-halted at 18 to the tick; the decoy reproduced the baseline <b>0 mismatches over 40 samples</b> on both seeds. <b>Energy does nothing to the niche count.</b> Yield 3 / 4 / 5 / 6 gives <b>79 / 90 / 81 / 83</b> stable niches (elasticity on energy <b>0.02</b>, shrinking from 0.15 at 20k) while the population goes <b>687 / 1,126 / 1,308 / 1,653</b> (elasticity 0.93) and organisms per key go 8.7 → 20, tracking the balance crowd. <b>Mutation does everything</b>: ×0.25 / ×0.5 / ×1 / ×2 gives <b>38.5 / 64 / 90 / 111</b> niches — about 25 per doubling, every seed on the same side of the baseline at every level — with population following the key count (organisms per key fall 15.6 → 10.8). The lens is flat: a key held 100 ticks is held 3,200, so the level is not the 400 cutoff's; held means permanent. Reach pinned at 4–6 in every arm. By the rules: yield <b>ARITHMETIC-INVARIANT</b>; mutation <b>MIXED</b>, because the rule demanded population stay within 10% and in a world where population = keys × organisms-per-key it cannot — in prose, the level is <b>origination-limited</b>. Of Hubbell's θ = 2Jν this world keeps ν and drops J. The bet was wrong on both halves — the fourth miss in a row.</span></p>
+      <p style="margin-top:14px;font-size:11px;color:var(--dim)">Script <code>dial-sweep.js</code> · prereg <code>PREREG-dial-sweep.md</code> · writeup <code>RESULT-dial-sweep.md</code> · raw <code>data/dial-sweep.json</code>. ~9.3 CPU-minutes, run serially at nice 19 under a CPU-pressure watchdog (54 pauses in the first shard; a gateway browser was already saturating a core). If the verdict says VOID, a control failed and no number on this card is evidence.</p>
+    </div>
+  </section>
+
+  <section id="grid12">
+    <div class="k">finding 12 <b>2026-10-18 · earlier the same day</b></div>
     <div class="exp">
       <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">geometric or ecological? · pre-registered · sha256 in repo</div>
       <h3>Is the climb slowing because the world is running out of room?</h3>
@@ -396,6 +418,32 @@ node commitment-time.js        <span class="c"># the replay experiment on this p
     [['original law re-halts 207 + 307 at 18 ('+(d.canary?d.canary.haltedAt18+'/'+d.canary.of:'–')+')',d.canary&&d.canary.pass],['50×50 re-run matches the stored baseline ('+(d.harness?d.harness.mismatches+' mismatches / '+d.harness.samples+' samples':'–')+')',d.harness&&d.harness.pass]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
   }
   loadGrid();
+
+  // ── the dial sweep: one bar pair per arm (niches / population vs baseline), per-arm table, verdict ──
+  async function loadDials(){
+    let d=null; for(const u of ['/void/dial-sweep.json','data/dial-sweep.json']){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ d=await r.json(); break; } }catch(e){} }
+    const vt=$('v4_text'); if(!d||!d.verdicts||!d.verdicts.main){ vt.textContent='run not yet published — no number on this card is evidence until it is.'; return; }
+    const H=d.config.H, cuts=d.config.CUTOFFS, by=d.verdicts.byCutoff, last=by[H], per=last.per, B=per.BASE4;
+    const order=[['M025','mutation ×0.25'],['M05','mutation ×0.5'],['Y3','yield 3'],['BASE4','yield 4 · ×1 (base)'],['Y5','yield 5'],['Y6','yield 6'],['M2','mutation ×2'],['DECOY','influx 100 (decoy)'],['BASE12','base, all 12 seeds']].filter(([a])=>per[a]);
+    const tb=document.querySelector('#dialt tbody'), pct=v=>(v>=0?'+':'')+Math.round(v*100)+'%';
+    for(const [a,label] of order){ const p=per[a]; const tr=document.createElement('tr');
+      [a, label, p.n, by[cuts[0]].per[a].stable, by[cuts[1]].per[a].stable, p.stable, a.startsWith('BASE')?'—':pct(p.stable/B.stable-1), p.pop.toLocaleString(), a.startsWith('BASE')?'—':pct(p.pop/B.pop-1), p.energy==null?'—':p.energy.toLocaleString(), p.reach+' · '+p.maxReach, p.vocab, p.lens?p.lens[100]+' · '+p.lens[3200]:'—'].forEach((c,i)=>{ const td=document.createElement('td'); td.textContent=c; if(i===5) td.className='c'; tr.appendChild(td); }); tb.appendChild(tr); }
+    const svg=$('dials'), W=720, Hh=230, px=44, py=16, arms=order.filter(([a])=>!a.startsWith('BASE1')&&a!=='DECOY');
+    const vals=arms.map(([a])=>[per[a].stable/B.stable, per[a].pop/B.pop]), ymax=Math.max(1.6,...vals.flat())*1.08;
+    const bw=(W-px-16)/arms.length, Y=v=>Hh-py-14-(v/ymax)*(Hh-2*py-14);
+    let g='';
+    for(const yv of [0.5,1,1.5]){ g+=`<line x1="${px}" x2="${W-10}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="rgba(255,255,255,${yv===1?.22:.07})" ${yv===1?'stroke-dasharray="3 4"':''}/><text x="${px-6}" y="${Y(yv)+3}" fill="#6a7080" font-size="9" text-anchor="end">${yv}×</text>`; }
+    arms.forEach(([a,label],i)=>{ const [n,p]=vals[i], x0=px+i*bw+bw*0.12, w=bw*0.33; const col=a.startsWith('Y')?'#ffd37d':a.startsWith('M')?'#c9a9ff':'#7df9ff';
+      g+=`<rect x="${x0}" y="${Y(n)}" width="${w}" height="${Y(0)-Y(n)}" fill="${col}"/><rect x="${x0+w+4}" y="${Y(p)}" width="${w}" height="${Y(0)-Y(p)}" fill="${col}" fill-opacity=".32"/>`;
+      g+=`<text x="${x0+w+2}" y="${Y(Math.max(n,p))-4}" fill="${col}" font-size="9" text-anchor="middle">${per[a].stable} · ${per[a].pop.toLocaleString()}</text>`;
+      g+=`<text x="${px+i*bw+bw/2}" y="${Hh-4}" fill="#9aa0b0" font-size="9" text-anchor="middle">${label.replace(' · ×1 (base)','')}</text>`; });
+    svg.innerHTML=g;
+    const m=d.verdicts.main, mu=d.verdicts.mutation, rc=d.verdicts.reach, yv=last.yield;
+    vt.innerHTML=(d.canary&&!d.canary.pass)||(d.decoy&&!d.decoy.pass)?`<b>VOID</b> — ${m.reason}; nothing on this card is evidence.`:`Yield dial — <b>${m.verdict}</b>: ${m.reason}. Elasticities by cutoff ${cuts.map(k=>k/1000+'k niches '+by[k].yield.eNiches+' / pop '+by[k].yield.ePop).join(' · ')}. Mutation dial — <b>${mu.verdict}</b>: ${mu.reason}. <b>${rc.verdict}</b>: ${rc.reason}.`;
+    const cb=$('canary4');
+    [['original law re-halts 207 + 307 at 18 ('+(d.canary?d.canary.haltedAt18+'/'+d.canary.of:'–')+')',d.canary&&d.canary.pass],['decoy influx=100 reproduces the baseline ('+(d.decoy?d.decoy.checks.map(c=>c.seed+': '+c.mismatches+' mismatches / '+c.samples).join(', '):'–')+')',d.decoy&&d.decoy.pass]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
+  }
+  loadDials();
 })();
 </script>
 </body>

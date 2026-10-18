@@ -34,6 +34,7 @@ http.createServer((req, res) => {
     // 2026-10-18: the root became the lab's front door (findings as cards + a live open-vocabulary
     // world). The 24/7 organism — body/dream, gallery — moved to /void/live, unchanged.
     if (u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    if (u === '/dial-sweep.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'dial-sweep.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/grid-scaling.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'grid-scaling.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/ceiling-100k.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'ceiling-100k.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/break-fixed-point.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'break-fixed-point.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
