@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>void.exe 〰️ synergy — parts that change each other</title>
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#565b6b; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; }
+  *{margin:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overscroll-behavior:none}
+  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block;filter:contrast(1.05) saturate(1.04)}
+  .scan{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.14;mix-blend-mode:overlay;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
+  .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .scrim-t,.scrim-b{position:fixed;left:0;right:0;z-index:2;pointer-events:none;height:30vh}
+  .scrim-t{top:0;background:linear-gradient(to bottom,rgba(2,2,4,.78),rgba(2,2,4,0))}
+  .scrim-b{bottom:0;background:linear-gradient(to top,rgba(2,2,4,.84),rgba(2,2,4,0))}
+  .hud{position:fixed;inset:0;z-index:4;pointer-events:none;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;transition:opacity .45s}
+  .hud.hidden{opacity:0}
+  .hud.hidden ~ .scrim-t,.hud.hidden ~ .scrim-b{opacity:0;transition:opacity .45s}
+  .panel{background:rgba(3,3,5,.72);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:11px 14px;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+  .title{font-size:13px;letter-spacing:.4em;text-transform:uppercase}
+  .title b{color:var(--hot)} .title a{color:inherit;text-decoration:none}
+  .sub{font-size:10px;color:#9aa0b0;letter-spacing:.14em;margin-top:7px;max-width:38ch;line-height:1.7;text-transform:uppercase}
+  .vitals{text-align:right;font-size:10.5px;letter-spacing:.1em;color:#9aa0b0;line-height:1.95;text-transform:uppercase;max-width:min(62vw,340px);margin-left:auto}
+  .vitals b{color:var(--acc);font-weight:500} .vitals .a{color:var(--up);font-weight:500}
+  .btm{display:flex;flex-direction:column;gap:9px;align-items:flex-start;width:100%;padding-bottom:34px}
+  .gene{position:relative;max-width:min(94vw,720px);max-height:30vh;overflow:hidden;pointer-events:auto;
+    font-size:10.5px;line-height:1.62;color:#aab0c0;word-break:break-word;
+    -webkit-mask-image:linear-gradient(to bottom,#000 80%,transparent 100%);mask-image:linear-gradient(to bottom,#000 80%,transparent 100%)}
+  .gene .k{color:var(--gold)} .gene .f{color:var(--acc)} .gene .s{color:var(--up)} .gene .d{color:var(--dim)}
+  .gene .p{display:inline-block;margin:2px 10px 2px 0}
+  .foot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;width:100%;font-size:9.5px;letter-spacing:.16em;color:#8a90a2;text-transform:uppercase}
+  .foot .m{color:var(--hot);letter-spacing:.24em}
+  .hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:5;pointer-events:auto;cursor:pointer;
+    font-size:9px;letter-spacing:.22em;color:#6b7180;text-transform:uppercase;background:rgba(3,3,5,.6);
+    border:1px solid rgba(255,255,255,.07);border-radius:99px;padding:6px 14px;transition:color .3s;white-space:nowrap}
+  .hint:hover{color:var(--ink)}
+  .labq{position:fixed;right:12px;bottom:12px;z-index:6;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#6b7180;opacity:.35;text-decoration:none;padding:4px 6px;transition:opacity .3s}
+  .labq:hover{opacity:.9}
+  .stats{position:fixed;left:12px;bottom:12px;z-index:6;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#6b7180;opacity:.45;line-height:1.8}
+  .stats b{color:#9aa0b0;font-weight:500}
+  @media (max-width:640px){
+    .hud{padding:12px}
+    .title{font-size:11px;letter-spacing:.3em}
+    .sub{font-size:9px;max-width:30ch}
+    .vitals{font-size:9px;max-width:50vw}
+    .foot{font-size:8px;letter-spacing:.1em;flex-direction:column;align-items:flex-start;gap:3px}
+    .stats{display:none}
+  }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<div class="scan"></div><div class="grain"></div>
+<div class="hud" id="hud">
+  <div class="top">
+    <div class="panel"><div class="title"><a href="/void">void</a><b>.exe</b> synergy</div>
+      <div class="sub" id="sub">creatures made of parts that change what the other parts do. nothing here was written down as a combo. no single part can reach the far food.</div></div>
+    <div class="vitals panel" id="vitals">waking…</div>
+  </div>
+  <div class="btm">
+    <div class="gene panel" id="gene"><span class="d">tap a creature to read its parts and what they make together.</span></div>
+    <div class="foot panel"><span class="m" id="footm">an item is not a stat. it is a change to the other items.</span><span id="tag"></span></div>
+  </div>
+</div>
+<div class="scrim-t"></div><div class="scrim-b"></div>
+<div class="hint" id="hint">tap to see it bare</div>
+<a class="labq" href="/void/lab" title="the lab notebook">lab</a>
+<div class="stats" id="stats"></div>
+<script src="/void/lib/synergy.js"></script>
+<script>
+const S = window.VoidSynergy;
+const cv = document.getElementById('art'), ctx = cv.getContext('2d');
+let W, H, DPR, CX, CY, RAD;
+function resize(){
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  W = cv.width = Math.floor(innerWidth * DPR); H = cv.height = Math.floor(innerHeight * DPR);
+  cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px';
+  CX = W / 2; CY = H / 2; RAD = Math.min(W, H) * 0.47;
+  ctx.fillStyle = '#040405'; ctx.fillRect(0, 0, W, H);
+}
+addEventListener('resize', resize); resize();
+
+// ── the world: same engine the experiment ran, seeded so a reload is the same life ──
+const q = new URLSearchParams(location.search);
+const SEED = +q.get('seed') || 11;
+const ARM = q.get('arm') === 'additive' ? 'additive' : 'compose';
+const world = S.World(SEED * 104729 + (ARM === 'compose' ? 1 : 2), { arm: ARM });
+for (let i = 0; i < 40; i++) { const n = 1 + world.R.int(2); const ps = []; for (let k = 0; k < n; k++) ps.push(world.R.pick(S.IDS)); const a = world.R() * Math.PI * 2, r = world.R() * 0.3; world.spawn(ps, r * Math.cos(a), r * Math.sin(a), 2); }
+for (let k = 0; k < 60; k++) { const a = world.R() * Math.PI * 2, r = world.R() * 0.3; world.addFood(0, r * Math.cos(a), r * Math.sin(a)); }
+
+// ── the observer, in the browser, a few genomes per frame so the picture never hitches ──
+const cache = new Map(), cells = new Set(), syn = new Map(), queue = [];
+let lastScan = 0, farWindow = 0;
+function scan(){
+  const seen = new Set();
+  for (const c of world.creatures) if (!seen.has(c.key)) { seen.add(c.key); if (!cache.has(ARM + ':' + c.key)) queue.push(c.key); }
+}
+function observeSome(n){
+  while (n-- > 0 && queue.length) {
+    const key = queue.shift(); const parts = key.split('+');
+    const r = S.synergy(parts, ARM, cache);
+    r.words = S.words({ norm: r.actual }); cache.set(ARM + ':' + key, Object.assign(cache.get(ARM + ':' + key) || {}, { syn: r }));
+    cells.add(r.cell);
+    if (r.isSynergy) { const sk = parts.slice().sort().join('+'); if (!syn.has(sk)) syn.set(sk, r); }
+  }
+}
+function info(key){ const d = cache.get(ARM + ':' + key); return d && d.syn; }
+
+// ── colour: a creature's hue is a hash of its part SET, so kin look alike ──
+function hueOf(parts){ let h = 0; for (const p of parts.slice().sort()) for (let i = 0; i < p.length; i++) h = (h * 31 + p.charCodeAt(i)) >>> 0; return h % 360; }
+function X(x){ return CX + x * RAD; } function Y(y){ return CY + y * RAD; }
+
+// glyphs: one tiny drawn mark per part, orbiting the body — subtle, no font
+function glyph(g, x, y, s, a){
+  ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.lineWidth = Math.max(1, s * 0.22); ctx.beginPath();
+  switch (g) {
+    case 'ray': ctx.moveTo(0, -s); ctx.lineTo(0, s); break;
+    case 'eye': ctx.arc(0, 0, s * .6, 0, 6.283); break;
+    case 'wave': ctx.moveTo(-s, 0); ctx.quadraticCurveTo(-s / 2, -s, 0, 0); ctx.quadraticCurveTo(s / 2, s, s, 0); break;
+    case 'bar': ctx.moveTo(-s, 0); ctx.lineTo(s, 0); break;
+    case 'dash': ctx.moveTo(-s, 0); ctx.lineTo(-s / 3, 0); ctx.moveTo(s / 3, 0); ctx.lineTo(s, 0); break;
+    case 'coil': ctx.arc(0, 0, s * .7, 0, 4.5); break;
+    case 'ring': ctx.arc(0, 0, s * .8, 0, 6.283); break;
+    case 'twin': ctx.arc(-s / 2, 0, s * .3, 0, 6.283); ctx.moveTo(s / 2 + s * .3, 0); ctx.arc(s / 2, 0, s * .3, 0, 6.283); break;
+    case 'chev': ctx.moveTo(-s, s / 2); ctx.lineTo(0, -s / 2); ctx.lineTo(s, s / 2); break;
+    case 'dot': ctx.arc(0, 0, s * .35, 0, 6.283); ctx.fill(); break;
+    case 'tri': ctx.moveTo(0, -s); ctx.lineTo(s * .8, s * .6); ctx.lineTo(-s * .8, s * .6); ctx.closePath(); break;
+    case 'fan': ctx.moveTo(0, s); ctx.lineTo(0, -s); ctx.moveTo(0, s); ctx.lineTo(-s, -s / 2); ctx.moveTo(0, s); ctx.lineTo(s, -s / 2); break;
+    case 'arc': ctx.arc(0, s / 2, s, 3.6, 5.8); break;
+    case 'fork': ctx.moveTo(0, s); ctx.lineTo(0, 0); ctx.lineTo(-s * .7, -s); ctx.moveTo(0, 0); ctx.lineTo(s * .7, -s); break;
+    case 'link': ctx.arc(-s * .4, 0, s * .45, 0, 6.283); ctx.moveTo(s * .85, 0); ctx.arc(s * .4, 0, s * .45, 0, 6.283); break;
+    case 'line': ctx.moveTo(-s, s); ctx.lineTo(s, -s); break;
+    case 'spark': for (let i = 0; i < 3; i++) { const t = i * 1.047; ctx.moveTo(Math.cos(t) * s, Math.sin(t) * s); ctx.lineTo(-Math.cos(t) * s, -Math.sin(t) * s); } break;
+    case 'cross': ctx.moveTo(-s, -s); ctx.lineTo(s, s); ctx.moveTo(s, -s); ctx.lineTo(-s, s); break;
+    case 'seed': ctx.arc(0, 0, s * .5, 0, 6.283); ctx.fill(); ctx.beginPath(); ctx.arc(0, 0, s * .9, 0, 6.283); break;
+    case 'leaf': ctx.ellipse(0, 0, s, s * .45, .7, 0, 6.283); break;
+    case 'pull': ctx.moveTo(0, -s); ctx.lineTo(0, s); ctx.moveTo(-s * .6, s * .4); ctx.lineTo(0, s); ctx.lineTo(s * .6, s * .4); break;
+    case 'push': ctx.moveTo(0, s); ctx.lineTo(0, -s); ctx.moveTo(-s * .6, -s * .4); ctx.lineTo(0, -s); ctx.lineTo(s * .6, -s * .4); break;
+  }
+  ctx.stroke(); ctx.restore();
+}
+
+let selected = null, bare = false, t0 = performance.now(), frames = 0;
+const trails = new Map();
+function draw(now){
+  // ground: the disc fades slowly, so motion leaves a breath of itself
+  ctx.fillStyle = 'rgba(4,4,5,0.22)'; ctx.fillRect(0, 0, W, H);
+  // the three tiers, drawn as the faintest rings
+  ctx.lineWidth = 1 * DPR;
+  for (const [r, a] of [[0.35, .05], [0.62, .07], [0.86, .09], [0.98, .06]]) { ctx.strokeStyle = `rgba(200,204,214,${a})`; ctx.beginPath(); ctx.arc(CX, CY, r * RAD, 0, 6.283); ctx.stroke(); }
+  // the current: a slow, barely-there inward drift drawn as ticks that creep toward the centre
+  const ph = (now / 9000) % 1;
+  ctx.strokeStyle = 'rgba(125,249,255,0.035)';
+  for (let i = 0; i < 36; i++) { const a = i / 36 * 6.283 + Math.sin(i) * .1; for (let k = 0; k < 3; k++) { const r = 0.98 - ((ph + k / 3 + i * .013) % 1) * 0.7; ctx.beginPath(); ctx.moveTo(X(Math.cos(a) * r), Y(Math.sin(a) * r)); ctx.lineTo(X(Math.cos(a) * (r - .02)), Y(Math.sin(a) * (r - .02))); ctx.stroke(); } }
+  // food
+  for (const f of world.food) {
+    const s = [1.3, 2.0, 2.8][f.tier] * DPR, col = ['rgba(200,204,214,.45)', 'rgba(34,211,165,.6)', 'rgba(217,164,65,.8)'][f.tier];
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(X(f.x), Y(f.y), s, 0, 6.283); ctx.fill();
+    if (f.tier === 2) { const g = ctx.createRadialGradient(X(f.x), Y(f.y), 0, X(f.x), Y(f.y), 9 * DPR); g.addColorStop(0, 'rgba(217,164,65,.22)'); g.addColorStop(1, 'rgba(217,164,65,0)'); ctx.fillStyle = g; ctx.fillRect(X(f.x) - 9 * DPR, Y(f.y) - 9 * DPR, 18 * DPR, 18 * DPR); }
+  }
+  // projectiles
+  for (const p of world.proj) {
+    const o = world.creatures.find(c => c.id === p.owner); const hue = o ? hueOf(o.parts) : 200;
+    ctx.strokeStyle = `hsla(${hue},70%,70%,.55)`; ctx.lineWidth = 1 * DPR; ctx.beginPath(); ctx.moveTo(X(p.x - p.vx * 3), Y(p.y - p.vy * 3)); ctx.lineTo(X(p.x), Y(p.y)); ctx.stroke();
+    if (p.mods.tether && o) { ctx.strokeStyle = `hsla(${hue},60%,60%,.07)`; ctx.beginPath(); ctx.moveTo(X(o.x), Y(o.y)); ctx.lineTo(X(p.x), Y(p.y)); ctx.stroke(); }
+  }
+  // creatures: a soft body, a halo of part-glyphs that turns slowly, kin share a hue
+  for (const c of world.creatures) {
+    const hue = hueOf(c.parts), x = X(c.x), y = Y(c.y), e = Math.max(0, Math.min(1, c.e / S.ENERGY_REPRO));
+    const rr = (3.2 + c.parts.length * 0.5 + e * 1.6) * DPR;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rr * 4);
+    g.addColorStop(0, `hsla(${hue},80%,70%,${.35 + e * .3})`); g.addColorStop(.35, `hsla(${hue},80%,55%,.12)`); g.addColorStop(1, `hsla(${hue},80%,50%,0)`);
+    ctx.fillStyle = g; ctx.fillRect(x - rr * 4, y - rr * 4, rr * 8, rr * 8);
+    ctx.fillStyle = `hsla(${hue},85%,${60 + e * 25}%,.9)`; ctx.beginPath(); ctx.arc(x, y, rr * .55, 0, 6.283); ctx.fill();
+    const inf = info(c.key); const isSyn = inf && inf.isSynergy;
+    const n = c.parts.length, hr = rr * 1.9 + n * DPR, spin = now / 6000 + c.phase;
+    ctx.strokeStyle = ctx.fillStyle = isSyn ? `hsla(${hue},70%,80%,.42)` : `hsla(${hue},40%,75%,.22)`;
+    for (let i = 0; i < n; i++) { const a = spin + i / n * 6.283; glyph(S.BY_ID[c.parts[i]].glyph, x + Math.cos(a) * hr, y + Math.sin(a) * hr, 2.3 * DPR, a + 1.5708); }
+    if (isSyn) { ctx.strokeStyle = `hsla(${hue},70%,80%,.13)`; ctx.lineWidth = 1 * DPR; ctx.beginPath(); ctx.arc(x, y, hr, 0, 6.283); ctx.stroke(); }
+    if (c === selected) { ctx.strokeStyle = 'rgba(255,56,96,.6)'; ctx.lineWidth = 1 * DPR; ctx.beginPath(); ctx.arc(x, y, hr + 5 * DPR, 0, 6.283); ctx.stroke(); }
+  }
+}
+
+function fmtParts(parts){ return parts.map(p => `<span class="p"><span class="f">${p}</span> <span class="d">${S.BY_ID[p].txt}</span></span>`).join(''); }
+function renderSelected(){
+  const g = document.getElementById('gene');
+  if (!selected || !world.creatures.includes(selected)) { selected = null; g.innerHTML = '<span class="d">tap a creature to read its parts and what they make together.</span>'; return; }
+  const c = selected; const inf = info(c.key);
+  let html = `<span class="k">creature</span> #${c.id} <span class="f">${c.parts.length} parts</span> · energy ${c.e.toFixed(2)} · age ${c.age} · children ${c.children} {<br>${fmtParts(c.parts)}}<br>`;
+  if (!inf) { html += `<span class="d">reading what it does…</span>`; if (!queue.includes(c.key)) queue.unshift(c.key); }
+  else {
+    html += `<span class="k">does</span> ${inf.words}<br>`;
+    html += inf.isSynergy ? `<span class="s">synergy</span> — ${inf.axisName} is ${inf.score} scale-units off the sum of its parts (predicted ${inf.predicted[inf.axis]}, measured ${inf.actual[inf.axis]})`
+                          : `<span class="d">no synergy — within ${inf.score} of the sum of its parts${c.parts.length < 2 ? ' (one part is only itself)' : ''}</span>`;
+  }
+  g.innerHTML = html;
+}
+function pick(px, py){
+  let best = null, bd = (22 * DPR) ** 2;
+  for (const c of world.creatures) { const d = (X(c.x) - px) ** 2 + (Y(c.y) - py) ** 2; if (d < bd) { bd = d; best = c; } }
+  return best;
+}
+cv.addEventListener('click', e => {
+  const r = cv.getBoundingClientRect(); const px = (e.clientX - r.left) * DPR, py = (e.clientY - r.top) * DPR;
+  const c = pick(px, py);
+  if (c) { selected = c; if (bare) toggleHud(); renderSelected(); } else toggleHud();
+});
+const hud = document.getElementById('hud'), hint = document.getElementById('hint');
+function toggleHud(){ bare = hud.classList.toggle('hidden'); hint.textContent = bare ? 'tap to read it' : 'tap to see it bare'; }
+hint.addEventListener('click', e => { e.stopPropagation(); toggleHud(); });
+addEventListener('keydown', e => { if (e.key === 'h' || e.key === ' ') toggleHud(); });
+
+function vitals(){
+  const np = world.creatures.map(c => c.parts.length); const mean = np.length ? (np.reduce((a, b) => a + b, 0) / np.length).toFixed(1) : '0';
+  const keys = new Set(world.creatures.map(c => c.key));
+  document.getElementById('vitals').innerHTML =
+    `tick <b>${world.t.toLocaleString()}</b> · alive <b>${world.creatures.length}</b> · kinds <b>${keys.size}</b><br>` +
+    `behaviours seen <b>${cells.size}</b> · synergies <b>${syn.size}</b><br>` +
+    `parts <b>${mean}</b> mean · far food eaten <b>${world.eaten[2]}</b><br>` +
+    `<span class="a">${world.creatures.length ? (world.eaten[2] ? 'reaching the far food' : 'feeding near the centre') : 'EXTINCT'}</span>`;
+  document.getElementById('tag').textContent = `seed ${SEED} · ${ARM} · births ${world.births} · deaths ${world.deaths}`;
+  document.getElementById('stats').innerHTML = `near <b>${world.eaten[0]}</b> · mid <b>${world.eaten[1]}</b> · far <b>${world.eaten[2]}</b> · planted <b>${world.planted}</b> · ${queue.length ? 'reading ' + queue.length : 'observer idle'}`;
+}
+
+function frame(now){
+  frames++;
+  for (let k = 0; k < 2; k++) world.step();
+  if (world.t - lastScan >= 150) { lastScan = world.t; scan(); }
+  observeSome(2);
+  draw(now);
+  if (frames % 20 === 0) { vitals(); if (selected) renderSelected(); }
+  requestAnimationFrame(frame);
+}
+vitals();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

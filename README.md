@@ -38,6 +38,29 @@ record of lifting each ceiling and naming the next one.
 | 14 | **New (2026-10-18, garden).** Forms, not ecologies: novelty search over tiny expression programs on (x, y, r, θ) with `fold n` and `φtwist` ops; one arm may inline an **evolved** sub-tree lifted from the archive (code makes code), the control inlines a random one. **VOID** by rule: the planted canary form scored 0.163 against the finished archive, under the p90 bar of 0.225 — post-mortem shows the form was novel in every world through generation 25 and the search then *found* it (control/11 wrote `sin(fold11{θ}) + 0.12` at g39). Observations, not evidence: macro archive larger in **6/6** seeds (1,781 vs 1,561, 1.14×), more descriptor regions in 6/6 (765 vs 687), late window 3/6; both arms saturate (~22% of first-window rate). 5.4 CPU-min | **VOID** · canary planted where the search was going · bet (NULL) counted as the fifth miss | [`RESULT-garden.md`](RESULT-garden.md), [`PREREG-garden.md`](PREREG-garden.md), live at [drainfun.xyz/void/garden](https://drainfun.xyz/void/garden) |
 
 | 15 | **New (2026-10-18, soup).** An artificial chemistry whose molecules are the garden's programs: a collision applies A to B (first free variable := B), simplifies, enters a **mass-conserving** reactor with cleavage; no fitness. Self-maintaining organizations arise in **5/5** react worlds by step 50 and persist 700–1,000 steps — and every one is Fontana's **Level 0**: bare copiers `{r, θ}`, `{x, y}` copying each other (copy share 1.00). No-copy arm (Fontana's filter): **0/5** worlds with any organization. Novelty saturates (last window 19% of first) and the never-reacting control found **more** form-types (365 vs 241 cells, 5/5). Canary `{abs(x), abs(y)}` detected and realized; decoy clean. Three reactors died of bloat before cleavage. 2.8 CPU-min | **COPIER-WORLD-SATURATED** · pre-stated bet right (first in six) | [`RESULT-soup.md`](RESULT-soup.md), [`PREREG-soup.md`](PREREG-soup.md), live at [drainfun.xyz/void/soup](https://drainfun.xyz/void/soup) |
+| 16 | **New (2026-10-18, synergy).** Creatures from 22 **parts that modify each other's behaviour** — The Binding of Isaac's item rule (an item changes what the other items do: shape × splitting × homing × orbiting × chaining), Karl Sims' evolved creatures, affordance composition — in a disc with an inward current and far food no single part can reach. Observer counts **behaviours** (12-axis descriptor of what a lone creature does), not parts; a synergy is a combo far from the sum of its parts. Compose arm finds more behaviours (**4/5**, 219 vs 133 cells) and longer bodies (5/5), and converges on an unplanned chain `emit+boost+homing+tether(+chain)` that eats the far food. But the additive control registers **as many "synergies"** (1/5 for compose) — the detector's linear prediction counts the world's nonlinearity, not the pipeline's — and reaches the far food by accumulation. Late window ≥ 1/3 of first in 3/5. 1.4 CPU-min | **SATURATED-FLAT** · bet (SATURATED-SYNERGIC) half wrong · 1 for 7 | [`RESULT-synergy.md`](RESULT-synergy.md), [`PREREG-synergy.md`](PREREG-synergy.md), live at [drainfun.xyz/void/synergy](https://drainfun.xyz/void/synergy) |
+
+## The synergy world (finding 16), in one paragraph
+
+The Binding of Isaac (McMillen & Himsl 2011; *Rebirth* 2014) gets thousands of qualitatively different runs from a
+few dozen items because an item is not a stat bump: it is a **modifier of what the other items do** — tear shape,
+splitting, homing, orbiting, chaining, each rewriting the others' output, so the synergies were never enumerated by
+the designers. Karl Sims (1994, *Evolving Virtual Creatures*) evolved morphology and control together and read
+behaviour off the assembled body; the open-endedness literature calls the general move affordance composition
+(Stanley, Lehman & Soros 2017). `lib/synergy.js` gives creatures an ordered list of 1–6 parts from a palette of 22
+that run as a pipeline over one state — senses set a heading, motors add motion, transforms rewrite the motion or the
+emission list the earlier parts produced, projectile transforms rewrite what projectiles do, triggers hook events —
+and a control arm where every part contributes an independent term and nothing reads anything else's output. The
+world is a disc with an inward current and three food tiers; the far tier (energy 10) is eaten only by projectiles
+and comes home only through `tether`, so no single part can feed on it (`OBSERVATION-why-reach-is-pinned.md`: the
+environment has to pay for complexity). The observer runs every distinct genome alone in a fixed arena and bins
+what it *does*; a synergy is a combo whose descriptor sits ≥ 0.4 scale-units from the sum of its parts'. Composition
+won on kinds of behaviour (4/5) and body length (5/5) and found the far-food chain on its own — but the additive
+control registered as many synergies (the linear prediction reads the world's own nonlinearity as synergy) and
+reached the far food by summing speeds. Both flaws are named in the result, not tuned away. The page at
+[drainfun.xyz/void/synergy](https://drainfun.xyz/void/synergy) runs the same engine live in the original
+organism's visual language: creatures as soft bodies, their parts as a halo of glyphs, tap one to read its parts
+and the synergy the observer found.
 
 ## The soup (finding 15), in one paragraph
 
@@ -150,7 +173,7 @@ routes in `server.js` need the live data directory (`VOID_DATA`) and are include
 - `SYNTHESIS.md` — the single document: substrates, the chain of failures, the theorem
 - `OPEN-ENDEDNESS.md` — why every world plateaus, and the open-vocabulary attack on it
 - `PREREG-*.md` / `RESULT-*.md` — pre-registrations and writeups, including both retractions
-- `lib/` — the engines: `open.js` (open vocabulary), `graph.js` (niche graph), `niche.js`, `ceiling.js`, `silica.js`, `clauset.js` (power-law test)
+- `lib/` — the engines: `open.js` (open vocabulary), `graph.js` (niche graph), `niche.js`, `ceiling.js`, `silica.js`, `clauset.js` (power-law test), `garden.js` / `soup.js` (drawable programs, chemistry), `synergy.js` (parts that modify each other)
 - `*.js` — headless experiments; `*.html` — self-contained visual worlds
 
 ## Related

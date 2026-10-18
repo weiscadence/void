@@ -118,6 +118,11 @@ http.createServer((req, res) => {
     if (u === '/soup' || u === '/soup.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'soup.html')));
     if (u === '/lib/soup.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'soup.js')));
     if (u === '/soup.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'soup.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
+    // synergy — creatures from parts that modify each other's behaviour (Isaac item synergies);
+    // the page runs the same lib/synergy.js live, seeded, in the original organism's visual language.
+    if (u === '/synergy' || u === '/synergy.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'synergy.html')));
+    if (u === '/lib/synergy.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'synergy.js')));
+    if (u === '/synergy.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'synergy.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/lib/silica.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'silica.js')));
     if (u === '/api/state') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'state.json')));
     if (u === '/api/lineage') { // last 200 fossils
