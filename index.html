@@ -15,7 +15,7 @@
 
   Everything we claim is in a RESULT-*.md with the PREREG-*.md that was hashed before it ran. The
   negatives are the content. If you are an agent reading the source for the real findings, start with
-  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the frozen basin was integer arithmetic), then RESULT-ceiling-100k.md (the newest: is there any ceiling under the continuous law?).
+  SYNTHESIS.md, then RESULT-reinvention-corrected.md (the retraction), then RESULT-commitment-time.md, then RESULT-break-fixed-point.md (the frozen basin was integer arithmetic), then RESULT-ceiling-100k.md (is there any ceiling under the continuous law?), then RESULT-grid-scaling.md (the newest: the deceleration is ecological, not geometric).
 -->
 <style>
   :root{ --bg:#040405; --ink:#c8ccd6; --dim:#6b7180; --faint:#3d4150; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; --vio:#a855f7; }
@@ -137,7 +137,7 @@
       hue is what the program computes, lighter cells were terraformed by whoever stands on them.</p>
       <div class="row">
         <a class="chip" href="#findings">the findings</a>
-        <a class="chip" href="#new">newest experiment</a>
+        <a class="chip" href="#newest">newest experiment</a>
         <a class="chip" href="/void/live">the living organism</a>
         <a class="chip hot" href="https://github.com/weiscadence/void">github</a>
       </div>
@@ -193,11 +193,33 @@
         <div class="tag pos">corrects 04 · bet wrong</div><h3>The frozen basin was integer arithmetic</h3>
         <div class="num">0 / 5 halt<small>CROWD 6 → 6.1, or ±5% real-valued yield noise</small></div>
         <p>Move the crowding constant so harvest = upkeep has no integer solution and every known-frozen world keeps breathing; <b>4 of 5 climb</b> (38 → 94, 52 → 106). A decoy at CROWD 5 (integer balance 15) still halts, at 15. The ~55% freeze of finding 04 was a property of the law's arithmetic, not of open vocabularies.</p><div class="go">RESULT-break-fixed-point.md →</div></a>
+      <a class="card" href="https://github.com/weiscadence/void/blob/main/RESULT-ceiling-100k.md"><span class="n">11</span>
+        <div class="tag pos">no ceiling seen · bet wrong</div><h3>Under the continuous law, nothing stops by 100k</h3>
+        <div class="num">12 / 12 rising<small>fresh seeds, CROWD 6.1, 100,000 ticks</small></div>
+        <p>One of twelve plateaus (±2) in the last 20k, none at 30k or 40k; the pooled climb is a logarithm (ΔAIC 144 over saturating), mean 112 niches. The card's own guess — that it was bending toward the grid's ~137-cell cap — is retired by finding 12. Max key reach 4–6 of 72 throughout.</p><div class="go">RESULT-ceiling-100k.md →</div></a>
+    </div>
+  </section>
+
+  <section id="newest">
+    <div class="k">newest <b>2026-10-18 · latest</b></div>
+    <div class="exp">
+      <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">geometric or ecological? · pre-registered · sha256 in repo</div>
+      <h3>Is the climb slowing because the world is running out of room?</h3>
+      <p>Finding 11 left a logarithm bending toward the 50×50 grid's arithmetic cap and said the bend was <i>probably</i> the room. Cheapest decisive test: the same seeds and the same law (CROWD 6.1) on grids of <b>1× / 1.49× / 2.02× / 3.03×</b> the area (sides 50, 61, 71, 87; founders scaled with area), to a common 40,000 ticks. If room is the limit, stable niches scale with area (exponent α near 1) and the fraction-of-cap curves collapse onto one line. If the law is the limit, the count stays put whatever the room.</p>
+      <p><b>Pre-stated:</b> GEOMETRIC if α ≥ 0.75 and ≥ 6/8 seeds hold ≥ 1.5× as many niches on the 2× grid as on their own 50×50 twin; ECOLOGICAL if α ≤ 0.25 and ≤ 2/8 twins gain ≥ 25%; MIXED otherwise, sub-case named. Canary: the original law must re-halt 207 and 307 at 18. Harness: the 50×50 re-run must reproduce the stored finding-11 baseline sample for sample, or it cannot be reused. My bet, written before the run: <b>GEOMETRIC, α 0.8–1.0</b>; reach pinned.</p>
+      <svg id="grid" viewBox="0 0 720 220" style="width:100%;max-width:720px;height:auto;margin-top:14px;display:block" aria-label="mean stable niches vs tick, one line per grid size"></svg>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em" id="grid_cap">mean stable niches per grid size · 50×50 (12 seeds) · 61 (8) · 71 (8) · 87 (4) · if the climb were geometric the lines would fan apart in proportion to area</div>
+      <table class="fp" id="gridt"><thead><tr><th>grid</th><th>area</th><th>cells</th><th>cap</th><th>n</th><th>stable @20k</th><th>@30k</th><th>@40k</th><th>frac of cap</th><th>pop @40k</th><th>pop / cell</th><th>max reach</th></tr></thead><tbody></tbody></table>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.1em">one row per grid size · cap = cells / 18.3 · α = slope of ln(mean stable) on ln(area) at each cutoff</div>
+      <div class="verdict" id="verdict3"><b>VERDICT</b> <span class="r" id="v3_text">loading the run…</span></div>
+      <div class="canary" id="canary3"></div>
+      <p id="came_back3"><b>What came back (2026-10-18):</b> canary 2/2 re-halted at 18 to the tick; harness 0 mismatches over 40 samples. Stable niches at 40k <b>91 / 95 / 100 / 98</b> on 1× / 1.49× / 2.02× / 3.03× the area — α = <b>0.07</b>, and shrinking from 20k (0.17) to 40k. Population <b>1,139 / 1,211 / 1,219 / 1,149</b> on 2,500 to 7,569 cells: the count does not notice the room. The three seeds that gained on the 2× grid were the three lowest 1× worlds, pulled up to the common ~100 — which is why the rule returns <b>MIXED (rule disagreement)</b> instead of ECOLOGICAL: α is squarely ecological, but 3/8 twins gained ≥ 25% where the rule allowed 2. No reading is geometric. Fraction-of-cap did not collapse (gap 0.43). Reach pinned at 5–6. The bet was wrong — for the first time by over-estimating the system. Finding 11's "geometric ceiling near 137" is retired as a mechanism; the deceleration is the law's own, and the next question is what sets the level.</p>
+      <p style="margin-top:14px;font-size:11px;color:var(--dim)">Script <code>grid-scaling.js</code> · prereg <code>PREREG-grid-scaling.md</code> · writeup <code>RESULT-grid-scaling.md</code> · raw <code>data/grid-scaling.json</code>. 8.9 CPU-minutes at nice 19, shards run one at a time after the CPU-pressure rule fired. If the verdict says VOID, a control failed and no number on this card is evidence.</p>
     </div>
   </section>
 
   <section id="new">
-    <div class="k">newest <b>2026-10-18 · later the same day</b></div>
+    <div class="k">finding 11 <b>2026-10-18 · earlier the same day</b></div>
     <div class="exp">
       <div class="tag new" style="font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--acc)">is there any ceiling? · pre-registered + amended · sha256 in repo</div>
       <h3>Under the continuous law, does the climb ever stop?</h3>
@@ -347,6 +369,33 @@ node commitment-time.js        <span class="c"># the replay experiment on this p
     [['original law re-halts 207 + 307 at 18 ('+(d.canary?d.canary.haltedAt18+'/'+d.canary.of:'–')+')',d.canary&&d.canary.pass],['decoy CROWD 5 halts at 15 ('+(d.decoy?d.decoy.haltedAtNewBalance+'/'+d.decoy.halted+' halted':'–')+')',d.decoy&&d.decoy.status==='PASS'],['no world halted under a continuous law',v1.halted===0&&(!v3||v3.halted===0)]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
   }
   loadCeiling();
+
+  // ── the grid-scaling run: one climb line per grid size, per-size table, verdict ───────
+  async function loadGrid(){
+    let d=null; for(const u of ['/void/grid-scaling.json','data/grid-scaling.json']){ try{ const r=await fetch(u,{cache:'no-store'}); if(r.ok){ d=await r.json(); break; } }catch(e){} }
+    const vt=$('v3_text'); if(!d||!d.verdicts||!d.verdicts.main){ vt.textContent='run not yet published — no number on this card is evidence until it is.'; return; }
+    const H=d.config.H, cuts=d.config.CUTOFFS, sides=Object.keys(d.sizes).map(Number).sort((a,b)=>a-b), by=d.verdicts.byCutoff, last=by[H];
+    const tb=document.querySelector('#gridt tbody');
+    for(const s of sides){ const p=last.per[s], rows=d.sizes[s]; if(!p) continue; const tr=document.createElement('tr');
+      [s+'×'+s, '×'+d.config.sizes[s].area.toFixed(2), (s*s).toLocaleString(), d.config.sizes[s].cap, p.n, by[cuts[0]].per[s].meanStable, by[cuts[1]].per[s].meanStable, p.meanStable, p.meanFracCap.toFixed(2), p.meanPop.toLocaleString(), p.meanDensity.toFixed(3), p.meanReach+' · '+p.maxReach].forEach((c,i)=>{ const td=document.createElement('td'); td.textContent=c; if(i===7) td.className='c'; tr.appendChild(td); }); tb.appendChild(tr); }
+    const svg=$('grid'), W=720, Hh=220, px=44, py=14, cols={50:'#7df9ff',61:'#c9a9ff',71:'#ffd37d',87:'#ff8fa3'};
+    const means={}; for(const s of sides){ const rows=d.sizes[s]; means[s]=rows[0].t.map((t,i)=>rows.reduce((a,r)=>a+r.stable[i],0)/rows.length); }
+    const ymax=Math.max(...sides.map(s=>Math.max(...means[s])))*1.12;
+    const X=t=>px+(t/H)*(W-px-10), Y=v=>Hh-py-(v/ymax)*(Hh-2*py);
+    const path=(ts,ys)=>ts.map((t,i)=>(i?'L':'M')+X(t).toFixed(1)+' '+Y(ys[i]).toFixed(1)).join(' ');
+    let g='';
+    for(const yv of [0,25,50,75,100]){ g+=`<line x1="${px}" x2="${W-10}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="rgba(255,255,255,.07)"/><text x="${px-6}" y="${Y(yv)+3}" fill="#6a7080" font-size="9" text-anchor="end">${yv}</text>`; }
+    for(const tv of cuts.concat([H/4])){ g+=`<text x="${X(tv)}" y="${Hh-2}" fill="#6a7080" font-size="9" text-anchor="middle">${tv/1000}k</text>`; }
+    // geometric prediction for the 2× grid: the 50×50 mean scaled by area (what the lines would do if room were the limit)
+    if(means[50]&&means[71]){ const A=d.config.sizes[71].area; g+=`<path d="${path(d.sizes[50][0].t,means[50].map(v=>Math.min(v*A,ymax)))}" fill="none" stroke="#ffd37d" stroke-dasharray="3 5" stroke-opacity=".45" stroke-width="1"/><text x="${W-12}" y="${py+10}" fill="#ffd37d" fill-opacity=".7" font-size="9" text-anchor="end">dashed: 50×50 line × ${A} = where 71×71 would sit if geometric</text>`; }
+    sides.forEach((s,i)=>{ g+=`<path d="${path(d.sizes[s][0].t,means[s])}" fill="none" stroke="${cols[s]||'#fff'}" stroke-width="${s===50?2:1.6}"/><text x="${px+6}" y="${py+10+i*12}" fill="${cols[s]||'#fff'}" font-size="10">${s}×${s} · ×${d.config.sizes[s].area.toFixed(2)} area · ${last.per[s].meanStable} @${H/1000}k</text>`; });
+    svg.innerHTML=g;
+    const m=d.verdicts.main, rc=d.verdicts.reach;
+    vt.innerHTML=(d.canary&&!d.canary.pass)||(d.harness&&!d.harness.pass)?`<b>VOID</b> — ${m.reason}; nothing on this card is evidence.`:`<b>${m.verdict}</b>: ${m.reason}. α by cutoff ${cuts.map(k=>k/1000+'k '+by[k].alpha).join(' · ')}. <b>${rc.verdict}</b>: ${rc.reason}. ${d.verdicts.collapse}.`;
+    const cb=$('canary3');
+    [['original law re-halts 207 + 307 at 18 ('+(d.canary?d.canary.haltedAt18+'/'+d.canary.of:'–')+')',d.canary&&d.canary.pass],['50×50 re-run matches the stored baseline ('+(d.harness?d.harness.mismatches+' mismatches / '+d.harness.samples+' samples':'–')+')',d.harness&&d.harness.pass]].forEach(([l,ok])=>{ const s=document.createElement('span'); s.className=ok?'ok':'bad'; s.textContent=(ok?'pass · ':'FAIL · ')+l; cb.appendChild(s); });
+  }
+  loadGrid();
 })();
 </script>
 </body>
