@@ -37,6 +37,24 @@ record of lifting each ceiling and naming the next one.
 | 13 | **New (2026-10-18, latest).** What sets the level? One dial at a time on the 1× grid, 4 seeds, 40k. Yield 3 / 4 / 5 / 6: stable niches **79 / 90 / 81 / 83** (elasticity on energy **0.02**) while population goes **687 / 1,126 / 1,308 / 1,653** (elasticity 0.93) — energy fills keys, it does not make them. Mutation load ×0.25 / ×0.5 / ×1 / ×2: niches **38.5 / 64 / 90 / 111**, ~25 per doubling, 4/4 seeds one-sided at every level; population follows the key count. STABLE_AGE lens flat (held ≥100 ≈ held ≥3,200): a held key is permanent. Reach pinned 4–6 in every arm. Canary 2/2 at 18; decoy (inert `influx`) reproduced the baseline 0/40 mismatches. ~9.3 CPU-min | yield ARITHMETIC-INVARIANT · mutation MIXED by rule, origination-limited in prose · pre-stated bet (ENERGY-LIMITED, mutation lowers niches) wrong on both halves — fourth miss running | [`RESULT-dial-sweep.md`](RESULT-dial-sweep.md), [`PREREG-dial-sweep.md`](PREREG-dial-sweep.md) |
 | 14 | **New (2026-10-18, garden).** Forms, not ecologies: novelty search over tiny expression programs on (x, y, r, θ) with `fold n` and `φtwist` ops; one arm may inline an **evolved** sub-tree lifted from the archive (code makes code), the control inlines a random one. **VOID** by rule: the planted canary form scored 0.163 against the finished archive, under the p90 bar of 0.225 — post-mortem shows the form was novel in every world through generation 25 and the search then *found* it (control/11 wrote `sin(fold11{θ}) + 0.12` at g39). Observations, not evidence: macro archive larger in **6/6** seeds (1,781 vs 1,561, 1.14×), more descriptor regions in 6/6 (765 vs 687), late window 3/6; both arms saturate (~22% of first-window rate). 5.4 CPU-min | **VOID** · canary planted where the search was going · bet (NULL) counted as the fifth miss | [`RESULT-garden.md`](RESULT-garden.md), [`PREREG-garden.md`](PREREG-garden.md), live at [drainfun.xyz/void/garden](https://drainfun.xyz/void/garden) |
 
+| 15 | **New (2026-10-18, soup).** An artificial chemistry whose molecules are the garden's programs: a collision applies A to B (first free variable := B), simplifies, enters a **mass-conserving** reactor with cleavage; no fitness. Self-maintaining organizations arise in **5/5** react worlds by step 50 and persist 700–1,000 steps — and every one is Fontana's **Level 0**: bare copiers `{r, θ}`, `{x, y}` copying each other (copy share 1.00). No-copy arm (Fontana's filter): **0/5** worlds with any organization. Novelty saturates (last window 19% of first) and the never-reacting control found **more** form-types (365 vs 241 cells, 5/5). Canary `{abs(x), abs(y)}` detected and realized; decoy clean. Three reactors died of bloat before cleavage. 2.8 CPU-min | **COPIER-WORLD-SATURATED** · pre-stated bet right (first in six) | [`RESULT-soup.md`](RESULT-soup.md), [`PREREG-soup.md`](PREREG-soup.md), live at [drainfun.xyz/void/soup](https://drainfun.xyz/void/soup) |
+
+## The soup (finding 15), in one paragraph
+
+Fontana & Buss (1994, "the arrival of the fittest") put λ-terms in a flow reactor, let collisions apply one to the
+other, and got self-maintaining organizations with no fitness function. We did the same with the garden's drawable
+programs as the molecules, so the chemistry is a picture (`lib/soup.js`): A ∘ B replaces A's first variable leaf with
+B, a small simplifier plays the reduction half, products past 24 nodes or folding to a constant precipitate out.
+Fontana's count-fixed reactor ratcheted to the size cap and went inert (application is additive in size; λ-reduction
+shrank his products, our simplifier does not), so the reactor conserves node mass and cleaves molecules at a random
+edge 30% of the time. That keeps it alive, and it also hands out identity functions (a cut leaf is `x`, and `x ∘ B =
+B`) at step 1 — where BFF (Agüera y Arcas et al. 2024, arXiv:2406.19108) needed thousands of epochs for its first
+self-replicator. Organizations (closure + self-maintenance, then a **realized** test against the production log —
+the never-reacting control is full of sets that merely *could*) arise in every seed and are all copier pairs; with
+copy products discarded, nothing arises. The diagnosis is in `RESULT-soup.md` §3: Level 1 needs a reduction with
+cycles in it. The page [drainfun.xyz/void/soup](https://drainfun.xyz/void/soup) runs the vat live from the same
+file, seeded, with organizations lit as they are realized. Reproduce: `node soup-exp.js` (2.8 CPU-min).
+
 ## The garden (finding 14), in one paragraph
 
 A side door out of ecologies into forms. A genome is an expression over (x, y, r, θ) from {sin, cos, abs, gauss,

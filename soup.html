@@ -185,7 +185,7 @@
   function paint(ctx, tree, size, hue, glow){
     const img = G.render(tree, size); const id = ctx.createImageData(size, size); const d = id.data;
     const h = hue / 60, c = (p, q, t) => { t = (t + 6) % 6; return t < 1 ? p + (q - p) * t : t < 3 ? q : t < 4 ? p + (q - p) * (4 - t) : p; };
-    for (let i = 0; i < size * size; i++) { const v = img[i]; const l = 0.08 + 0.82 * v, s = 0.55 + 0.3 * (1 - v); const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    for (let i = 0; i < size * size; i++) { const v = img[i]; const l = 0.16 + 0.74 * v, s = 0.6 + 0.3 * (1 - v); const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
       d[i*4] = 255 * c(p, q, h + 2); d[i*4+1] = 255 * c(p, q, h); d[i*4+2] = 255 * c(p, q, h - 2); d[i*4+3] = 255; }
     ctx.putImageData(id, 0, 0);
   }
@@ -247,7 +247,7 @@
     for (const m of Rx.pop) { const o = orgOf(m); const t = thumb(m.key, m.tree); const r = m.rad;
       if (o) { vx.shadowColor = o.colour; vx.shadowBlur = 18; } else if (m.flash) { vx.shadowColor = '#fff'; vx.shadowBlur = 14 * m.flash; } else vx.shadowBlur = 0;
       vx.save(); vx.beginPath(); vx.arc(m.x, m.y, r, 0, 6.283); vx.closePath();
-      if (o) { vx.strokeStyle = o.colour; vx.lineWidth = 1.5; vx.stroke(); }
+      vx.strokeStyle = o ? o.colour : 'rgba(255,255,255,.14)'; vx.lineWidth = o ? 1.5 : 1; vx.stroke();
       vx.clip(); vx.drawImage(t, m.x - r, m.y - r, r * 2, r * 2); vx.restore();
       if (m.flash) m.flash = Math.max(0, m.flash - 0.04); }
     vx.shadowBlur = 0;
@@ -268,7 +268,7 @@
     for (const o of orgsNow) { const d = document.createElement('div'); d.className = 'org'; d.style.borderColor = o.colour + '66';
       d.innerHTML = `<div class="h" style="color:${o.colour}">${o.size} species · ${o.abundance} molecules<small>copy share ${o.copyShare} · maintained ${Math.round(o.maintained*100)}%${o.copiers ? ' · ' + o.copiers + ' copier' + (o.copiers > 1 ? 's' : '') : ''}</small></div><div class="mem"></div>`;
       const mem = d.querySelector('.mem');
-      for (const k of o.members) { const tree = JSON.parse(k); const s = document.createElement('span'); s.appendChild(thumb(k, tree).cloneNode ? cloneThumb(k, tree) : thumb(k, tree)); s.appendChild(document.createTextNode(G.toCode(tree))); s.onclick = () => openKey(k); mem.appendChild(s); }
+      for (const k of o.members) { const tree = JSON.parse(k); const s = document.createElement('span'); s.appendChild(cloneThumb(k, tree)); s.appendChild(document.createTextNode(G.toCode(tree))); s.onclick = () => openKey(k); mem.appendChild(s); }
       box.appendChild(d); } }
   function cloneThumb(k, tree){ const src = thumb(k, tree); const c = document.createElement('canvas'); c.width = c.height = TH; c.getContext('2d').drawImage(src, 0, 0); return c; }
 
