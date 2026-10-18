@@ -6,7 +6,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 // 2026-10-18: a refactor pointed this at ./data (the experiment-results dir) — the organism page went
 // black for a few hours because /api/state and /api/archive 500'd. The live site's data lives in the
 // workspace data dir; set VOID_DATA to point at your own copy.
-const LIVE_DIR = '/home/ubuntu/.openclaw/workspace/data/void';
+const LIVE_DIR = path.resolve(__dirname, '..', '..', 'data', 'void'); // workspace/data/void beside workspace/projects/void
 const DIR = process.env.VOID_DATA || (fs.existsSync(path.join(LIVE_DIR, 'archive.json')) ? LIVE_DIR : path.join(__dirname, 'data'));
 const send = (res, code, type, body) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*' }); res.end(body); };
 
