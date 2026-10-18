@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>void.exe 〰️ — as it was (2026-07-19 → 2026-08-18)</title>
+<style>
+  :root{ --bg:#040405; --ink:#c8ccd6; --dim:#565b6b; --acc:#7df9ff; --hot:#ff3860; --gold:#d9a441; --up:#22d3a5; }
+  *{margin:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;overscroll-behavior:none}
+  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block;filter:contrast(1.07) saturate(1.06)}
+  .scan{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.16;mix-blend-mode:overlay;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
+  .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 140 140' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  /* scrims: darken only the top/bottom bands so the art's midsection stays untouched */
+  .scrim-t,.scrim-b{position:fixed;left:0;right:0;z-index:2;pointer-events:none;height:34vh}
+  .scrim-t{top:0;background:linear-gradient(to bottom,rgba(2,2,4,.80),rgba(2,2,4,0))}
+  .scrim-b{bottom:0;background:linear-gradient(to top,rgba(2,2,4,.86),rgba(2,2,4,0))}
+  .hud{position:fixed;inset:0;z-index:4;pointer-events:none;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;transition:opacity .45s}
+  .hud.hidden{opacity:0}
+  .hud.hidden ~ .scrim-t,.hud.hidden ~ .scrim-b{opacity:0;transition:opacity .45s}
+  /* legibility: every text block sits in its own dark, blurred, readable panel */
+  .panel{background:rgba(3,3,5,.72);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:8px;padding:11px 14px;box-shadow:0 6px 24px rgba(0,0,0,.45)}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+  .title{font-size:13px;letter-spacing:.4em;text-transform:uppercase}
+  .title b{color:var(--hot)} .title .cur{display:inline-block;width:8px;height:14px;background:var(--hot);margin-left:4px;vertical-align:-2px;animation:blink 1.1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .sub{font-size:10px;color:#9aa0b0;letter-spacing:.14em;margin-top:7px;max-width:38ch;line-height:1.7;text-transform:uppercase}
+  /* no nowrap: the vitals lines grew when body/dream were split out and ran off the
+     right edge of a phone. Let them wrap and cap the width instead of clipping. */
+  .vitals{text-align:right;font-size:10.5px;letter-spacing:.1em;color:#9aa0b0;line-height:1.95;text-transform:uppercase;max-width:min(62vw,340px);margin-left:auto}
+  .vitals b{color:var(--acc);font-weight:500} .vitals .a{color:var(--up);font-weight:500}
+  .btm{display:flex;flex-direction:column;gap:9px;align-items:flex-start;width:100%}
+  /* the genome is the star, but it must never swallow the organism: capped height + fade-out */
+  .gene{position:relative;max-width:min(94vw,720px);max-height:19vh;overflow:hidden;
+    font-size:10.5px;line-height:1.62;color:#aab0c0;word-break:break-word;
+    -webkit-mask-image:linear-gradient(to bottom,#000 72%,transparent 100%);
+    mask-image:linear-gradient(to bottom,#000 72%,transparent 100%)}
+  .gene .k{color:var(--gold)} .gene .f{color:var(--acc)}
+  .foot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;width:100%;font-size:9.5px;letter-spacing:.16em;color:#8a90a2;text-transform:uppercase}
+  .foot .m{color:var(--hot);letter-spacing:.24em}
+  .hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:5;pointer-events:auto;cursor:pointer;
+    font-size:9px;letter-spacing:.22em;color:#6b7180;text-transform:uppercase;background:rgba(3,3,5,.6);
+    border:1px solid rgba(255,255,255,.07);border-radius:99px;padding:6px 14px;transition:color .3s}
+  .hint:hover{color:var(--ink)}
+  /* the capsule caption: one dated line, and the gaps named. Everything else on this page is the page as it was. */
+  .cap{position:fixed;top:0;left:0;right:0;z-index:7;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#9aa0b0;
+    background:rgba(2,2,4,.78);border-bottom:1px solid rgba(217,164,65,.25);padding:6px 12px;line-height:1.7;text-align:center}
+  .cap b{color:var(--gold);font-weight:500} .cap a{color:#9aa0b0;text-decoration:none} .cap a:hover{color:var(--acc)}
+  .cap .x{display:none} .cap.open .x{display:inline}
+  .cap .more{cursor:pointer;color:var(--acc)}
+  @media(max-width:640px){ .cap{font-size:7.5px;padding:5px 8px} }
+  /* one quiet door to the notebook. Low opacity on purpose: this page is for staring at. */
+  .labq{position:fixed;right:12px;bottom:12px;z-index:6;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#6b7180;opacity:.35;text-decoration:none;padding:4px 6px;transition:opacity .3s}
+  .labq:hover{opacity:.9}
+  /* ── THE GALLERY — the body made visible ──────────────────────────────────
+     void showed one organism while ~8,800 others sat on disk unseen. This is the
+     wall of them. Thumbnails render a single frozen frame (cheap); only the zoomed
+     organism animates, because animating a wall of CPPNs melts a phone. */
+  #gal{position:fixed;inset:0;z-index:8;background:rgba(2,2,4,.97);backdrop-filter:blur(3px);
+    display:none;flex-direction:column;overscroll-behavior:contain}
+  #gal.on{display:flex}
+  .galbar{display:flex;align-items:center;gap:10px;padding:12px 14px;flex-wrap:wrap;
+    border-bottom:1px solid rgba(255,255,255,.07);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#8a90a2}
+  .galbar b{color:var(--acc);font-weight:500}
+  .chip{cursor:pointer;padding:5px 10px;border:1px solid rgba(255,255,255,.1);border-radius:99px;
+    color:#8a90a2;transition:all .2s;background:transparent;font:inherit;letter-spacing:.16em;text-transform:uppercase}
+  .chip:hover{color:var(--ink);border-color:rgba(255,255,255,.24)}
+  .chip.sel{color:var(--bg);background:var(--acc);border-color:var(--acc)}
+  .galgrid{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:12px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:7px;align-content:start}
+  .cellbox{position:relative;aspect-ratio:4/3;border-radius:5px;overflow:hidden;cursor:pointer;
+    border:1px solid rgba(255,255,255,.07);background:#08080c;transition:transform .15s,border-color .15s}
+  .cellbox:hover{transform:scale(1.06);border-color:var(--acc);z-index:2}
+  .cellbox canvas{width:100%;height:100%;display:block;image-rendering:auto}
+  /* family stripe: in lineage view this makes the monoculture VISIBLE — one colour
+     floods the wall. A number said 53%; this shows it. */
+  .fam{position:absolute;left:0;top:0;bottom:0;width:3px;opacity:.9}
+  .qbadge{position:absolute;right:3px;bottom:2px;font-size:7.5px;color:#cfd4e0;
+    background:rgba(0,0,0,.6);border-radius:3px;padding:0 3px;letter-spacing:.04em}
+  .galmore{padding:14px;text-align:center}
+  /* zoom: the one that animates */
+  #zoom{position:fixed;inset:0;z-index:9;background:rgba(2,2,4,.96);display:none;
+    flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
+  #zoom.on{display:flex}
+  #zoom canvas{width:min(88vw,620px);aspect-ratio:4/3;border-radius:8px;border:1px solid rgba(255,255,255,.1);
+    background:#08080c;filter:contrast(1.07) saturate(1.06)}
+  .zmeta{font-size:10px;letter-spacing:.1em;color:#8a90a2;text-transform:uppercase;text-align:center;line-height:1.9}
+  .zmeta b{color:var(--acc);font-weight:500}
+  .zgene{max-width:min(90vw,620px);max-height:22vh;overflow:auto;font-size:9.5px;line-height:1.6;
+    color:#aab0c0;word-break:break-word;background:rgba(3,3,5,.7);border:1px solid rgba(255,255,255,.06);
+    border-radius:7px;padding:10px 12px}
+  .zgene .k{color:var(--gold)} .zgene .f{color:var(--acc)}
+  .zrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  @media(max-width:640px){
+    .galgrid{grid-template-columns:repeat(auto-fill,minmax(66px,1fr));gap:5px;padding:8px}
+    .galbar{font-size:8px;gap:6px;padding:9px 10px}
+    .chip{padding:4px 8px}
+  }
+  @media(max-width:640px){
+    .hud{padding:12px 12px 46px}
+    .gene{font-size:8.5px;line-height:1.55;max-height:15vh;padding:9px 11px}
+    .title{font-size:11px;letter-spacing:.24em}
+    .sub{display:none}
+    .vitals{font-size:9px;line-height:1.8;padding:9px 11px}
+    .foot{font-size:8px;letter-spacing:.1em;flex-direction:column;align-items:flex-start;gap:3px}
+  }
+</style>
+</head>
+<body>
+<canvas id="art"></canvas>
+<div class="scan"></div><div class="grain"></div>
+<div class="cap" id="cap"><b>void.exe as it was, 2026-07-19 → 2026-08-18</b> · recovered from git <a href="https://github.com/weiscadence/void">8cfde2f</a> (server, 08-13) + <a href="https://github.com/weiscadence/void/blob/main/lib/genome.js">9e12f9c</a> (genome engine, 07-26, unchanged since) · read-only, the daemon is not running · <span class="more" id="capmore">what is and is not real ▾</span>
+  <span class="x"><br>the page file itself was never committed before the daemon stopped (checked: monorepo and public repo both first track it 2026-10-18) — this is the surviving page with its memorial branch removed, which restores the strings and panels it showed while alive · the numbers are life.js's own last write, 2026-08-18 23:27 UTC, so "tick" and "age" are frozen at that moment · the picture is the last dream it had (#621862309, a stranger, never accepted), animating as it did, never replaced — while alive a new dream arrived every few seconds; that stream is gone · the gallery is real: all 22,000 survivors from archive.json, with the sorts the server had on 08-13 (no "alive" sort — that was added 09-06) · the Wayback Machine has no capture of drainfun.xyz/void (CDX checked 2026-10-18; only the site root, Feb 2026), so git and disk are the only record · <a href="/void">back to void</a></span></div>
+<div class="hud" id="hud" style="padding-top:44px">
+  <div class="top">
+    <div class="panel"><div class="title">void<b>.exe</b><span class="cur"></span></div>
+      <div class="sub" id="sub">one organism. it lives on the server and evolves whether or not you watch. you and everyone else see the same body at the same moment of its life.</div></div>
+    <div class="vitals panel" id="vitals">finding a pulse…</div>
+  </div>
+  <div class="btm">
+    <div class="gene panel" id="gene"></div>
+    <div class="foot panel"><span class="m" id="footm">it is not being drawn. it is alive.</span><span id="tag"></span></div>
+  </div>
+</div>
+<div class="scrim-t"></div><div class="scrim-b"></div>
+<div class="hint" id="hint">tap to see it bare</div>
+<a class="labq" href="/void" title="back to void">void</a>
+<div class="hint" id="galbtn" style="bottom:auto;top:14px;left:50%">the body · <b id="galn">…</b> organisms</div>
+
+<div id="gal">
+  <div class="galbar">
+    <button class="chip" id="galclose">← back to the dream</button>
+    <span>sort</span>
+    <button class="chip sel" data-sort="quality">best</button>
+    <button class="chip" data-sort="lineage">family</button>
+    <button class="chip" data-sort="recent">newest</button>
+    <button class="chip" data-sort="colour">colour</button>
+    <button class="chip" data-sort="symmetry">symmetry</button>
+    <button class="chip" data-sort="motion">stillest first</button>
+    <button class="chip" id="slidebtn">▶ slideshow</button>
+    <span style="margin-left:auto">showing <b id="galshown">0</b> of <b id="galtot">0</b></span>
+  </div>
+  <div class="galgrid" id="galgrid"></div>
+  <div class="galmore"><button class="chip" id="galmore">load more</button></div>
+</div>
+
+<div id="zoom">
+  <canvas id="zcv"></canvas>
+  <div class="zmeta" id="zmeta"></div>
+  <div class="zgene" id="zgene"></div>
+  <div class="zrow">
+    <button class="chip" id="zprev">← prev</button>
+    <button class="chip" id="zplay">▶ play</button>
+    <button class="chip" id="znext">next →</button>
+    <button class="chip" id="zclose">close</button>
+  </div>
+</div>
+<script src="/void/lib/genome.js"></script>
+<script>
+const G = window.VoidGenome;
+const cv = document.getElementById('art'), ctx = cv.getContext('2d');
+let W,H,img,VW,VH;
+function resize(){
+  const DPR=Math.min(devicePixelRatio||1,2);
+  W=cv.width=Math.floor(innerWidth*DPR); H=cv.height=Math.floor(innerHeight*DPR);
+  cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
+  VW=190; VH=Math.max(90, Math.round(VW/(innerWidth/innerHeight)));
+  img=ctx.createImageData(VW,VH);
+}
+addEventListener('resize',resize); resize();
+
+let body=null, seed=1, meta=null, t0=performance.now();
+
+// ══ THE CAPSULE ══════════════════════════════════════════════════════════════
+// This is the ALIVE branch of the page, as it ran until 2026-08-18 23:27 UTC. On the living
+// page the next block checked d.updatedAt and switched to a memorial reel when the daemon
+// went quiet (added 08-26). Here that check is removed on purpose: /api/state is the daemon's
+// last write and this page shows what the page showed at that moment. Nothing is invented;
+// nothing moves forward. See the caption for every gap.
+const stopped=false, reel=[], ri=0, prev=null, fade=1;
+
+async function pull(){
+  try{
+    const r=await fetch('/void/api/state',{cache:'no-store'}); const d=await r.json();
+    meta=d;
+    // THE TRUTH CHECK. d.updatedAt is life.js's own last write — not our uptime, not the
+    // web server's. If the daemon dies the number simply stops moving, which is exactly
+    // the tell we were failing to look at.
+    body=d.current; seed=body.seed||1;
+    // BODY = the archive (what survives). DREAM = what you're looking at (most novel
+    // child of the tick, almost never accepted). They are different populations — never
+    // print the dream's numbers as the body's. `rate` is the honest health metric:
+    // coverage sits at 100% whether the archive is thriving or sealed; rate tells them
+    // apart. Sustained 0 = sealed = the experiment is over and we should say so.
+    const B = d.body || {}, D = d.dream || {};
+    // VERDICT READS DISCOVERY, NOT PLACEMENT. Placement counts improvements to cells the
+    // archive already owns, so it stays busy long after the last new behaviour was found —
+    // it would print "discovering" over a sealed organism. Discovery is the honest one.
+    // "full" is a distinct, legitimate state: bounded on purpose by the host's memory,
+    // still improving. It is not the same as SEALED, which is failure.
+    const rate = (B.discoveryRate ?? B.placementRate ?? 0);
+    const pol  = (B.placementRate ?? 0);
+    const verdict = B.atCeiling ? `full · refining ${pol.toFixed(0)}/tick`
+                  : rate > 0.5  ? `discovering ${rate.toFixed(1)}/tick`
+                  : rate > 0    ? 'crawling' : 'SEALED';
+    document.getElementById('vitals').innerHTML =
+      `tick <b>${(d.ticks ?? d.generation).toLocaleString()}</b> · age <b>${fmtAge(d.ageSec)}</b><br>`+
+      `body <b>${B.cells ?? d.archiveCells}</b> · depth <b>${B.lineageDepth ?? '?'}</b> · lineages <b>${B.effectiveLineages ?? B.distinctSeeds ?? '?'}</b> · size ${B.meanComplexity ?? d.complexity}<br>`+
+      `<span class="a">${verdict}</span><br>`+
+      `<span style="opacity:.55">dream ${D.inBody ? 'accepted' : '— a stranger'}</span>`;
+    document.getElementById('gene').innerHTML =
+      `<span class="k">organism</span> #${body.id} <span class="f">tick ${(d.ticks ?? d.generation).toLocaleString()}</span> {<br>`+
+      `&nbsp;hue: ${col(G.fmt(body.h))}<br>&nbsp;sat: ${col(G.fmt(body.s))}<br>&nbsp;val: ${col(G.fmt(body.v))} }`;
+    document.getElementById('tag').textContent = `born ${new Date(d.born).toISOString().slice(0,10)} · evolving live · (last write ${new Date(d.updatedAt).toISOString().replace('T',' ').slice(0,16)} UTC)`;
+    const gn = document.getElementById('galn'); if(gn) gn.textContent = (B.cells ?? 0).toLocaleString();
+  }catch(e){}
+}
+
+function fmtAge(s){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return h?`${h}h ${m}m`:`${m}m ${s%60}s`; }
+function col(str){ return str.replace(/([a-z]+)\(/g,'<span class="f">$1</span>('); }
+pull();   // once: the state is a fossil, polling it would only re-read the same write
+
+// bare mode: let the organism be seen with nothing on top of it
+const hud=document.getElementById('hud'), hint=document.getElementById('hint');
+function toggleHud(){
+  const bare=hud.classList.toggle('hidden');
+  hint.textContent = bare ? 'tap to read it' : 'tap to see it bare';
+}
+hint.addEventListener('click',e=>{e.stopPropagation();toggleHud();});
+cv.addEventListener('click',toggleHud);
+addEventListener('keydown',e=>{if(e.key==='h'||e.key===' ')toggleHud();});
+function fitCap(){ const c=document.getElementById('cap'); document.getElementById('hud').style.paddingTop=(c.offsetHeight+10)+'px'; }
+document.getElementById('capmore').onclick=()=>{ const c=document.getElementById('cap'); c.classList.toggle('open'); document.getElementById('capmore').textContent=c.classList.contains('open')?'less ▴':'what is and is not real ▾'; fitCap(); };
+addEventListener('resize',fitCap); fitCap();
+
+// paint one genome into a pixel buffer. Pulled out of frame() so the fossil cycle can
+// blend two of them without duplicating the evaluator loop.
+function paint(d, g, sd, t, mix){
+  for(let py=0;py<VH;py++){ const y=(py/VH)*2-1;
+    for(let px=0;px<VW;px++){ const x=(px/VW)*2-1;
+      const rgb=G.hsv(G.ev(g.h,x,y,t,sd),G.ev(g.s,x,y,t,sd),G.ev(g.v,x,y,t,sd));
+      const i=(py*VW+px)*4;
+      if(mix>=1){ d[i]=rgb[0]; d[i+1]=rgb[1]; d[i+2]=rgb[2]; }
+      else { d[i]+=(rgb[0]-d[i])*mix; d[i+1]+=(rgb[1]-d[i+1])*mix; d[i+2]+=(rgb[2]-d[i+2])*mix; }
+      d[i+3]=255;
+    }
+  }
+}
+
+function frame(now){
+  if(body){
+    const t=(now-t0)/1000*0.25;
+    const d=img.data;
+    paint(d, body, seed, t, 1);
+    frame._t=frame._t||(()=>{const c=document.createElement('canvas');c.width=VW;c.height=VH;return c;})();
+    frame._t.getContext('2d').putImageData(img,0,0);
+    ctx.imageSmoothingEnabled=true; ctx.drawImage(frame._t,0,0,W,H);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ══ GALLERY ══════════════════════════════════════════════════════════════════
+// Renders the archive as a wall. Two performance rules, both learned the hard way
+// tonight when the naive version locked the tab for nine seconds:
+//   1. Thumbnails are ONE frozen frame at t=0. Animating ~120 CPPNs at once is a
+//      space heater; only the zoomed organism gets to move.
+//   2. Rendering is CHUNKED across animation frames. Painting 120 thumbnails in a
+//      single synchronous loop blocks the main thread and the page appears hung —
+//      the organism itself stops breathing, which is the worst possible tell.
+const gal={items:[],sort:'quality',offset:0,total:0,queue:[],busy:false,zi:-1,playing:false,slide:null};
+const TW=56, TH=42;                       // thumbnail render resolution (scaled up by CSS)
+const $=id=>document.getElementById(id);
+
+// stable colour per founding family, so the same lineage looks the same across sorts
+function famColour(seed){ const h=((seed>>>0)*2654435761)%360; return `hsl(${h},72%,58%)`; }
+
+function drawGenome(cvs,g,t,w,h){
+  const c=cvs.getContext('2d'), im=c.createImageData(w,h);
+  for(let py=0;py<h;py++){ const y=(py/h)*2-1;
+    for(let px=0;px<w;px++){ const x=(px/w)*2-1;
+      const rgb=G.hsv(G.ev(g.h,x,y,t,g.seed),G.ev(g.s,x,y,t,g.seed),G.ev(g.v,x,y,t,g.seed));
+      const i=(py*w+px)*4; im.data[i]=rgb[0]; im.data[i+1]=rgb[1]; im.data[i+2]=rgb[2]; im.data[i+3]=255;
+    } }
+  c.putImageData(im,0,0);
+}
+
+// paint queued thumbnails a few per frame — keeps the tab responsive and lets the
+// wall fill in visibly rather than appearing all at once after a freeze
+function pump(){
+  if(!gal.queue.length){ gal.busy=false; return; }
+  gal.busy=true;
+  const budget=6;
+  for(let i=0;i<budget && gal.queue.length;i++){
+    const {cvs,g}=gal.queue.shift();
+    try{ drawGenome(cvs,g,0,TW,TH); }catch(e){}
+  }
+  requestAnimationFrame(pump);
+}
+
+function addTile(e,idx){
+  const box=document.createElement('div'); box.className='cellbox'; box.title=`quality ${e.quality.toFixed(3)} · family of ${e.family}`;
+  const cvs=document.createElement('canvas'); cvs.width=TW; cvs.height=TH; box.appendChild(cvs);
+  const stripe=document.createElement('div'); stripe.className='fam'; stripe.style.background=famColour(e.seed); box.appendChild(stripe);
+  const q=document.createElement('div'); q.className='qbadge'; q.textContent=e.quality.toFixed(2); box.appendChild(q);
+  box.onclick=()=>openZoom(idx);
+  $('galgrid').appendChild(box);
+  gal.queue.push({cvs,g:e});
+  if(!gal.busy) requestAnimationFrame(pump);
+}
+
+async function loadPage(reset){
+  if(reset){ gal.offset=0; gal.items=[]; gal.queue=[]; $('galgrid').innerHTML=''; }
+  const r=await fetch(`/void/api/archive?sort=${gal.sort}&limit=120&offset=${gal.offset}`,{cache:'no-store'});
+  const d=await r.json();
+  gal.total=d.total;
+  for(const e of d.items){ gal.items.push(e); addTile(e,gal.items.length-1); }
+  gal.offset+=d.items.length;
+  $('galshown').textContent=gal.items.length; $('galtot').textContent=gal.total;
+  $('galmore').style.display = gal.offset>=gal.total ? 'none':'';
+}
+
+function openGallery(){ $('gal').classList.add('on'); if(!gal.items.length) loadPage(true); }
+function closeGallery(){ $('gal').classList.remove('on'); stopSlide(); }
+$('galbtn').onclick=openGallery; $('galclose').onclick=closeGallery;
+$('galmore').onclick=()=>loadPage(false);
+document.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-sort]').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel'); gal.sort=b.dataset.sort; loadPage(true);
+});
+
+// ── zoom: the only place anything animates ──
+let zt0=performance.now(), zanim=null;
+function openZoom(i){
+  gal.zi=i; const e=gal.items[i]; if(!e) return;
+  $('zoom').classList.add('on');
+  const cvs=$('zcv'); cvs.width=220; cvs.height=165;
+  $('zmeta').innerHTML=`organism <b>#${e.id}</b> · quality <b>${e.quality.toFixed(3)}</b> · depth <b>${e.gen}</b> · `
+    +`family of <b>${e.family}</b> · cell <b>${e.cell}</b>`;
+  $('zgene').innerHTML=`<span class="k">hue:</span> ${col(G.fmt(e.h))}<br><span class="k">sat:</span> ${col(G.fmt(e.s))}<br><span class="k">val:</span> ${col(G.fmt(e.v))}`;
+  zt0=performance.now();
+  if(!zanim) zanim=requestAnimationFrame(ztick);
+}
+function ztick(){
+  if($('zoom').classList.contains('on')){
+    const e=gal.items[gal.zi];
+    if(e) drawGenome($('zcv'),e,(performance.now()-zt0)/1000,220,165);
+    zanim=requestAnimationFrame(ztick);
+  } else { zanim=null; }
+}
+function closeZoom(){ $('zoom').classList.remove('on'); stopSlide(); }
+$('zclose').onclick=closeZoom;
+$('znext').onclick=()=>step(1); $('zprev').onclick=()=>step(-1);
+async function step(d){
+  let n=gal.zi+d;
+  if(n>=gal.items.length){ if(gal.offset<gal.total){ await loadPage(false); } else n=0; }
+  if(n<0) n=gal.items.length-1;
+  if(n<gal.items.length) openZoom(n);
+}
+// slideshow — the "quick flip through them" mode
+function startSlide(){ gal.playing=true; $('zplay').textContent='❚❚ pause'; $('slidebtn').textContent='❚❚ pause';
+  gal.slide=setInterval(()=>step(1),1400); if(gal.zi<0) openZoom(0); }
+function stopSlide(){ gal.playing=false; clearInterval(gal.slide); gal.slide=null;
+  $('zplay').textContent='▶ play'; $('slidebtn').textContent='▶ slideshow'; }
+$('zplay').onclick=()=>gal.playing?stopSlide():startSlide();
+$('slidebtn').onclick=()=>{ if(gal.playing){stopSlide();return;} if(!gal.items.length) loadPage(true).then(startSlide); else startSlide(); };
+addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('zoom').classList.contains('on')) closeZoom(); else closeGallery(); }
+  if($('zoom').classList.contains('on')){ if(e.key==='ArrowRight') step(1); if(e.key==='ArrowLeft') step(-1); } });
+</script>
+</body>
+</html>
