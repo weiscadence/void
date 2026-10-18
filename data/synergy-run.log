@@ -1,0 +1,28 @@
+canary {"known":{"parts":["emit","boost","split","homing","tether"],"score":1.5,"axis":"energy home","isSynergy":true,"farEaten":3,"words":"eats far food · projectiles reach the rim · brings energy home","nullWords":"eats nothing · shoots"},"singlesMaxFar":0,"pairCompose":{"parts":["thrust","emit"],"score":0,"isSynergy":false},"pairAdditive":{"parts":["thrust","emit"],"score":0,"isSynergy":false},"couple":{"parts":["thrust","orbit"],"score":0.992,"axis":"orbit-ness","isSynergy":true},"additiveNull":{"n":60,"maxScore":0},"pass":true}
+compose seed 11: pop 92 cellsSeen 174 synSeen 574 (v1 linear 634) synShare 0.924 genomes 1361 windows 83/58/33 far 0/0/0 maxParts 6  8.5s
+   top synergy thrust+thrust+pulse+boost+orbit 3.787 path — eats near food · orbits
+additive seed 11: pop 100 cellsSeen 81 synSeen 0 (v1 linear 564) synShare 0 genomes 1300 windows 62/10/9 far 0/0/0 maxParts 6  11.6s
+compose seed 22: pop 94 cellsSeen 122 synSeen 466 (v1 linear 612) synShare 0.83 genomes 1221 windows 84/19/19 far 0/0/0 maxParts 6  5.2s
+   top synergy attract+pulse+thrust+thrust+thrust+spiral 3.181 path — eats near food · turns constantly
+additive seed 22: pop 103 cellsSeen 77 synSeen 0 (v1 linear 481) synShare 0 genomes 1210 windows 48/19/10 far 0/0/0 maxParts 6  15.8s
+compose seed 33: pop 97 cellsSeen 140 synSeen 467 (v1 linear 682) synShare 0.567 genomes 1437 windows 52/58/30 far 0/0/0 maxParts 6  11.3s
+   top synergy thrust+seek+mirror+split 2.618 turning — eats nothing · turns constantly
+additive seed 33: pop 106 cellsSeen 76 synSeen 0 (v1 linear 572) synShare 0 genomes 1361 windows 53/14/9 far 0/0/0 maxParts 6  10.6s
+compose seed 44: pop 97 cellsSeen 148 synSeen 369 (v1 linear 592) synShare 0.732 genomes 1379 windows 70/41/37 far 0/0/0 maxParts 6  7.9s
+   top synergy thrust+spiral 3.076 turning — eats nothing · orbits
+additive seed 44: pop 98 cellsSeen 82 synSeen 0 (v1 linear 459) synShare 0 genomes 1178 windows 57/16/9 far 0/0/0 maxParts 6  10.5s
+compose seed 55: pop 84 cellsSeen 154 synSeen 501 (v1 linear 686) synShare 0.393 genomes 1437 windows 73/53/28 far 0/0/0 maxParts 6  7.9s
+   top synergy repel+anchor+attract+thrust+spiral 3.076 turning — eats near food · orbits
+additive seed 55: pop 106 cellsSeen 91 synSeen 0 (v1 linear 554) synShare 0 genomes 1309 windows 57/19/15 far 0/0/0 maxParts 6  9.4s
+VERDICT GROWING-SYNERGIC {
+  growing: 4,
+  cellsWin: 5,
+  synFound: 5,
+  synUsed: 5,
+  farWin: 0,
+  paired: 5,
+  lockHolds: true,
+  addSynZero: true,
+  cpuMin: 1.65
+}
+wrote ./data/synergy.json

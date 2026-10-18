@@ -60,7 +60,7 @@
 <div class="hud" id="hud">
   <div class="top">
     <div class="panel"><div class="title"><a href="/void">void</a><b>.exe</b> synergy</div>
-      <div class="sub" id="sub">creatures made of parts that change what the other parts do. nothing here was written down as a combo. no single part can reach the far food.</div></div>
+      <div class="sub" id="sub">creatures made of parts that change what the other parts do. nothing here was written down as a combo. no body crosses the barrier; the far food opens only to a projectile that has split and is homing.</div></div>
     <div class="vitals panel" id="vitals">waking…</div>
   </div>
   <div class="btm">
@@ -153,7 +153,7 @@ function draw(now){
   ctx.fillStyle = 'rgba(4,4,5,0.22)'; ctx.fillRect(0, 0, W, H);
   // the three tiers, drawn as the faintest rings
   ctx.lineWidth = 1 * DPR;
-  for (const [r, a] of [[0.35, .05], [0.62, .07], [0.86, .09], [0.98, .06]]) { ctx.strokeStyle = `rgba(200,204,214,${a})`; ctx.beginPath(); ctx.arc(CX, CY, r * RAD, 0, 6.283); ctx.stroke(); }
+  for (const [r, a] of [[0.35, .05], [0.62, .07], [S.R_BODY || 0.70, .11], [0.86, .09], [0.98, .06]]) { ctx.strokeStyle = `rgba(200,204,214,${a})`; ctx.beginPath(); ctx.arc(CX, CY, r * RAD, 0, 6.283); ctx.stroke(); }
   // the current: a slow, barely-there inward drift drawn as ticks that creep toward the centre
   const ph = (now / 9000) % 1;
   ctx.strokeStyle = 'rgba(125,249,255,0.035)';
@@ -196,8 +196,8 @@ function renderSelected(){
   if (!inf) { html += `<span class="d">reading what it does…</span>`; if (!queue.includes(c.key)) queue.unshift(c.key); }
   else {
     html += `<span class="k">does</span> ${inf.words}<br>`;
-    html += inf.isSynergy ? `<span class="s">synergy</span> — ${inf.axisName} is ${inf.score} scale-units off the sum of its parts (predicted ${inf.predicted[inf.axis]}, measured ${inf.actual[inf.axis]})`
-                          : `<span class="d">no synergy — within ${inf.score} of the sum of its parts${c.parts.length < 2 ? ' (one part is only itself)' : ''}</span>`;
+    html += inf.isSynergy ? `<span class="s">synergy</span> — ${inf.axisName} is ${inf.score} scale-units off what these parts do when none can read the others (null: ${inf.nullWords || '—'}; predicted ${inf.predicted[inf.axis]}, measured ${inf.actual[inf.axis]})`
+                          : `<span class="d">no synergy — within ${inf.score} of the same parts kept apart${c.parts.length < 2 ? ' (one part is only itself)' : ''}</span>`;
   }
   g.innerHTML = html;
 }
@@ -221,11 +221,11 @@ function vitals(){
   const keys = new Set(world.creatures.map(c => c.key));
   document.getElementById('vitals').innerHTML =
     `tick <b>${world.t.toLocaleString()}</b> · alive <b>${world.creatures.length}</b> · kinds <b>${keys.size}</b><br>` +
-    `behaviours seen <b>${cells.size}</b> · synergies <b>${syn.size}</b><br>` +
+    `behaviours seen <b>${cells.size}</b> · real synergies <b>${syn.size}</b><br>` +
     `parts <b>${mean}</b> mean · far food eaten <b>${world.eaten[2]}</b><br>` +
-    `<span class="a">${world.creatures.length ? (world.eaten[2] ? 'reaching the far food' : 'feeding near the centre') : 'EXTINCT'}</span>`;
+    `<span class="a">${world.creatures.length ? (world.eaten[2] ? 'opened the far food' : world.eaten[1] ? 'feeding to the barrier' : 'feeding near the centre') : 'EXTINCT'}</span>`;
   document.getElementById('tag').textContent = `seed ${SEED} · ${ARM} · births ${world.births} · deaths ${world.deaths}`;
-  document.getElementById('stats').innerHTML = `near <b>${world.eaten[0]}</b> · mid <b>${world.eaten[1]}</b> · far <b>${world.eaten[2]}</b> · planted <b>${world.planted}</b> · ${queue.length ? 'reading ' + queue.length : 'observer idle'}`;
+  document.getElementById('stats').innerHTML = `near <b>${world.eaten[0]}</b> · mid <b>${world.eaten[1]}</b> · far <b>${world.eaten[2]}</b> · planted <b>${world.planted}</b> · ${queue.length ? 'reading ' + queue.length : 'observer idle'}<br>run v2: growing-synergic · real synergies 369–574 vs control 0 · far food 0/10 worlds · <a href="https://github.com/weiscadence/void/blob/main/RESULT-synergy2.md" style="color:inherit">result</a>`;
 }
 
 function frame(now){

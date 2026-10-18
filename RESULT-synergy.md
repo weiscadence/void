@@ -1,5 +1,7 @@
 # Result: void synergy — SATURATED-FLAT (bet wrong: the control finds as many "synergies")
 
+> **Superseded by [`RESULT-synergy2.md`](RESULT-synergy2.md)** (2026-10-18, later): the two flaws named below — a linear detector that counted the world's nonlinearity, and a far food reachable by stacking speed — are fixed in the engine and the experiment rerun under [`PREREG-synergy2.md`](PREREG-synergy2.md). The synergy counts in this file are not evidence of synergy. Raw run kept at `data/synergy-v1.json`.
+
 **Run 2026-10-18 15:41 UTC**, serial under `nice -n 19`, **1.44 CPU-min** of the 15 budgeted. Pre-registered in
 [`PREREG-synergy.md`](PREREG-synergy.md) (script `synergy-exp.js` sha256
 `eea673c9…fbd90`, engine `lib/synergy.js` `db89cccb…9fe4`, both committed before the run). Raw:
