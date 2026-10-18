@@ -8,7 +8,7 @@ is pre-registered (`PREREG-*.md`, hashed before it runs), written up whether or 
 
 **Two headline results were retracted. The retractions are the best entries.**
 
-Live: [drainfun.xyz/void](https://drainfun.xyz/void) — a world from this repo running in your browser, the findings as cards.
+Live: [drainfun.xyz/void](https://drainfun.xyz/void) — the original organism, alive on the server 24/7 (the page to stare at). The findings as cards + a live open-vocabulary world: [drainfun.xyz/void/lab](https://drainfun.xyz/void/lab).
 
 ## In sixty seconds
 

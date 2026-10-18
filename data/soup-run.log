@@ -1,0 +1,141 @@
+canary {"plantedDetected":true,"plantedOrg":{"size":2,"leak":0,"copyShare":1},"decoyInOrg":false,"realizedMaintained":1,"realizedPass":true,"pass":true}
+[react 11] pop 165 species 122 copiers 25 potential 14 realized 6 (largest 2, copyShare 1) reps 4/4 cells 245 windows 183/45/17 firstCopier 1 firstRealized 50 tracks 169 persisting 10 medianLife 1 10.8s
+[nocopy 11] pop 175 species 141 copiers 18 potential 0 realized 0 (largest 0, copyShare null) reps 0/0 cells 260 windows 185/46/29 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 11.4s
+[control 11] pop 375 species 272 copiers 69 potential 10 realized 0 (largest 0, copyShare null) reps 0/7 cells 364 windows 263/68/33 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 12s
+[react 22] pop 158 species 126 copiers 15 potential 15 realized 5 (largest 2, copyShare 1) reps 4/4 cells 261 windows 165/54/42 firstCopier 1 firstRealized 50 tracks 62 persisting 15 medianLife 1 11.1s
+[nocopy 22] pop 157 species 127 copiers 16 potential 0 realized 0 (largest 0, copyShare null) reps 0/0 cells 212 windows 179/13/20 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 9.7s
+[control 22] pop 336 species 264 copiers 54 potential 9 realized 0 (largest 0, copyShare null) reps 0/7 cells 362 windows 243/71/48 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 10.9s
+[react 33] pop 184 species 138 copiers 17 potential 15 realized 7 (largest 2, copyShare 1) reps 4/4 cells 235 windows 182/31/22 firstCopier 1 firstRealized 50 tracks 107 persisting 15 medianLife 1 11.4s
+[nocopy 33] pop 184 species 100 copiers 24 potential 0 realized 0 (largest 0, copyShare null) reps 0/0 cells 205 windows 159/16/30 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 10.1s
+[control 33] pop 376 species 265 copiers 77 potential 15 realized 0 (largest 0, copyShare null) reps 0/8 cells 359 windows 252/67/40 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 11.7s
+[react 44] pop 150 species 124 copiers 10 potential 11 realized 4 (largest 2, copyShare 1) reps 4/4 cells 230 windows 146/36/48 firstCopier 1 firstRealized 50 tracks 137 persisting 11 medianLife 1 10s
+[nocopy 44] pop 164 species 83 copiers 17 potential 0 realized 0 (largest 0, copyShare null) reps 0/0 cells 172 windows 110/58/4 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 9.9s
+[control 44] pop 396 species 277 copiers 66 potential 15 realized 0 (largest 0, copyShare null) reps 0/8 cells 374 windows 250/73/51 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 15.2s
+[react 55] pop 165 species 124 copiers 21 potential 15 realized 7 (largest 2, copyShare 1) reps 4/5 cells 235 windows 156/48/31 firstCopier 1 firstRealized 50 tracks 120 persisting 9 medianLife 1 10.4s
+[nocopy 55] pop 165 species 107 copiers 15 potential 0 realized 0 (largest 0, copyShare null) reps 0/0 cells 253 windows 185/42/26 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 11.9s
+[control 55] pop 377 species 269 copiers 72 potential 18 realized 0 (largest 0, copyShare null) reps 0/8 cells 367 windows 252/73/42 firstCopier 1 firstRealized null tracks 0 persisting 0 medianLife 0 11.4s
+{
+ "verdict": "COPIER-WORLD-SATURATED",
+ "canary": {
+  "plantedDetected": true,
+  "plantedOrg": {
+   "size": 2,
+   "leak": 0,
+   "copyShare": 1
+  },
+  "decoyInOrg": false,
+  "realizedMaintained": 1,
+  "realizedPass": true,
+  "pass": true
+ },
+ "worlds": 15,
+ "react": 5,
+ "arise": 5,
+ "copierWorld": 5,
+ "novel": 0,
+ "nocopyRealized": 0,
+ "nocopyWorlds": 5,
+ "mean": {
+  "react": {
+   "species": 126.8,
+   "cellsSeen": 241.2,
+   "potentialOrgs": 14,
+   "realizedOrgs": 5.8,
+   "windows": [
+    166.4,
+    42.8,
+    32
+   ],
+   "firstCopier": 1,
+   "firstRealized": [
+    50,
+    50,
+    50,
+    50,
+    50
+   ],
+   "medianLife": [
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "persisting": [
+    10,
+    15,
+    15,
+    11,
+    9
+   ]
+  },
+  "nocopy": {
+   "species": 111.6,
+   "cellsSeen": 220.4,
+   "potentialOrgs": 0,
+   "realizedOrgs": 0,
+   "windows": [
+    163.6,
+    35,
+    21.8
+   ],
+   "firstCopier": 1,
+   "firstRealized": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "medianLife": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "persisting": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "control": {
+   "species": 269.4,
+   "cellsSeen": 365.2,
+   "potentialOrgs": 13.4,
+   "realizedOrgs": 0,
+   "windows": [
+    252,
+    70.4,
+    42.8
+   ],
+   "firstCopier": 1,
+   "firstRealized": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "medianLife": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "persisting": [
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "cpuSec": 167.9
+}
+wrote data/soup.json

@@ -2,7 +2,12 @@
 // state of the organism. Proxied at drainfun.xyz/void. The creature itself lives
 // in the separate void-life daemon; this just lets the world watch it.
 const http = require('http'), fs = require('fs'), path = require('path');
-const DIR = process.env.VOID_DATA || path.join(__dirname, 'data'); // live-site data dir; set VOID_DATA to point at your own
+// The organism's own data dir (state.json, archive.json, lineage.jsonl, written by life.js).
+// 2026-10-18: a refactor pointed this at ./data (the experiment-results dir) — the organism page went
+// black for a few hours because /api/state and /api/archive 500'd. The live site's data lives in the
+// workspace data dir; set VOID_DATA to point at your own copy.
+const LIVE_DIR = '/home/ubuntu/.openclaw/workspace/data/void';
+const DIR = process.env.VOID_DATA || (fs.existsSync(path.join(LIVE_DIR, 'archive.json')) ? LIVE_DIR : path.join(__dirname, 'data'));
 const send = (res, code, type, body) => { res.writeHead(code, { 'Content-Type': type, 'Cache-Control': 'no-cache', 'Access-Control-Allow-Origin': '*' }); res.end(body); };
 
 // ── ARCHIVE CACHE ────────────────────────────────────────────────────────────
@@ -30,10 +35,12 @@ http.createServer((req, res) => {
   let u = (req.url || '/').split('?')[0].replace(/\/+/g,'/');
   if (u.indexOf('/void') === 0) u = u.slice(5) || '/';  // tolerate nginx prefix
   try {
-    if (u === '/' || u === '/index.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
-    // 2026-10-18: the root became the lab's front door (findings as cards + a live open-vocabulary
-    // world). The 24/7 organism — body/dream, gallery — moved to /void/live, unchanged.
-    if (u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    // 2026-10-18 (later the same day): the root is the ORIGINAL living organism again. Jiggy: "I used
+    // to stare and stare at the void page" — the findings landing had replaced it for a few hours and
+    // was "really unpleasing to look at". The organism is the front door; the notebook lives at /lab.
+    if (u === '/' || u === '/index.html' || u === '/live' || u === '/organism' || u === '/organism.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'organism.html')));
+    // /lab — the findings as cards + the live open-vocabulary world (was the root for a few hours).
+    if (u === '/lab' || u === '/lab.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'index.html')));
     if (u === '/dial-sweep.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'dial-sweep.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/grid-scaling.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'grid-scaling.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/ceiling-100k.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'ceiling-100k.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
@@ -53,9 +60,9 @@ http.createServer((req, res) => {
     // Grok's diagnosis (via Jiggy) + birbus's "reuse as an operation". The library panel is
     // the answer to "how do I judge if it's more structured" — you look at the parts it kept.
     if (u === '/compose' || u === '/compose.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'compose.html')));
-    // THE LAB NOTEBOOK — every experiment in one shape: question, expectation, method,
+    // THE OLDER LAB NOTEBOOK (lab.html, now /notebook) — every experiment in one shape: question, expectation, method,
     // result, and the command to reproduce it. Jiggy's framing: a live book, not a results page.
-    if (u === '/lab' || u === '/lab.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'lab.html')));
+    if (u === '/notebook' || u === '/notebook.html') return send(res, 200, 'text/html; charset=utf-8', fs.readFileSync(path.join(__dirname, 'lab.html')));
     // the lab notebook: every experiment in one shape, with live progress.
     if (u === '/api/experiments') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'experiments.json')));
     // /kin — the observer experiment. Every earlier page scored against a fixed ruler;

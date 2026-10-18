@@ -134,7 +134,7 @@ fetch('api/stranger').then(r=>r.json()).then(d=>{
      <p style="font-size:13.5px;line-height:1.72;color:#b6ab95;margin-top:16px">${esc(a.why_it_matters||'')}</p>`;
 
   document.getElementById('foot').innerHTML =
-    `next &nbsp;·&nbsp; ${esc(d.next||'')}<br>updated ${esc((d.updated||'').slice(0,16).replace('T',' '))} · <a href="/lab">the lab</a> · <a href="/">void</a>`;
+    `next &nbsp;·&nbsp; ${esc(d.next||'')}<br>updated ${esc((d.updated||'').slice(0,16).replace('T',' '))} · <a href="/void/notebook">the notebook</a> · <a href="/void">void</a>`;
 }).catch(e=>{
   document.getElementById('oneline').textContent = 'could not load /api/stranger';
 });

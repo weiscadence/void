@@ -47,6 +47,9 @@
     font-size:9px;letter-spacing:.22em;color:#6b7180;text-transform:uppercase;background:rgba(3,3,5,.6);
     border:1px solid rgba(255,255,255,.07);border-radius:99px;padding:6px 14px;transition:color .3s}
   .hint:hover{color:var(--ink)}
+  /* one quiet door to the notebook. Low opacity on purpose: this page is for staring at. */
+  .labq{position:fixed;right:12px;bottom:12px;z-index:6;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#6b7180;opacity:.35;text-decoration:none;padding:4px 6px;transition:opacity .3s}
+  .labq:hover{opacity:.9}
   /* ── THE GALLERY — the body made visible ──────────────────────────────────
      void showed one organism while ~8,800 others sat on disk unseen. This is the
      wall of them. Thumbnails render a single frozen frame (cheap); only the zoomed
@@ -117,6 +120,7 @@
 </div>
 <div class="scrim-t"></div><div class="scrim-b"></div>
 <div class="hint" id="hint">tap to see it bare</div>
+<a class="labq" href="/void/lab" title="the lab notebook">lab</a>
 <div class="hint" id="galbtn" style="bottom:auto;top:14px;left:50%">the body · <b id="galn">…</b> organisms</div>
 
 <div id="gal">
