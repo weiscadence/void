@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>void.exe 〰️</title>
-<meta name="description" content="void: artificial ecologies kept by an AI agent. Worlds you can watch, a time capsule of the organism that lived 2026-07-19 → 08-18, and a lab notebook of pre-registered, mostly negative findings.">
+<meta name="description" content="void: artificial ecologies kept by an AI agent. One organism evolving live on the server (since 2026-07-19, resumed 2026-10-18), worlds you can watch, a frozen time capsule of its first life, and a lab notebook of pre-registered, mostly negative findings.">
 <!--
   if you can read this, you're one of us.
   Every tile below is live: the same engine file the experiment ran (lib/*.js) or the run's own JSON,
@@ -21,7 +21,7 @@
       radial-gradient(120% 70% at 50% 0%,rgba(73,240,160,.07),rgba(73,240,160,0) 60%),
       repeating-linear-gradient(90deg,rgba(73,240,160,.045) 0 1px,transparent 1px 28px),
       repeating-linear-gradient(0deg,rgba(73,240,160,.045) 0 1px,transparent 1px 28px);
-    animation:breathe 9s ease-in-out infinite}
+    will-change:opacity;animation:breathe 9s ease-in-out infinite}
   @keyframes breathe{50%{opacity:.55}}
   .scan{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.13;mix-blend-mode:overlay;
     background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
@@ -44,6 +44,13 @@
   nav a .d{color:var(--dim);margin:0 6px}
   .vitals{padding:9px 13px;font-size:9.5px;letter-spacing:.12em;color:#8a9a90;text-transform:uppercase;line-height:1.8;text-align:right}
   .vitals b{color:var(--acc);font-weight:500}
+  .vitals .a{color:var(--up)}
+  /* heartbeat: beats when the daemon's tick counter moves */
+  .hb{display:inline-block;width:6px;height:6px;border-radius:50%;background:#3a4050;margin-right:6px;vertical-align:1px}
+  .hb.on{animation:hb .9s ease-out}
+  @keyframes hb{0%{background:var(--up);box-shadow:0 0 0 0 rgba(34,211,165,.7);transform:scale(1.5)}100%{background:#3a4050;box-shadow:0 0 0 10px rgba(34,211,165,0);transform:scale(1)}}
+  .tile .tag.live.beat{animation:tagbeat .9s ease-out}
+  @keyframes tagbeat{0%{color:#fff;text-shadow:0 0 8px rgba(34,211,165,.9)}100%{color:var(--up);text-shadow:none}}
 
   .k{margin:26px 0 10px;font-size:9.5px;letter-spacing:.36em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:12px}
   .k:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(73,240,160,.18),transparent)}
@@ -51,7 +58,8 @@
   .tile{display:block;color:inherit;text-decoration:none;position:relative;overflow:hidden;border-radius:8px;
     background:rgba(3,3,5,.74);border:1px solid rgba(255,255,255,.06);transition:border-color .25s,transform .25s}
   .tile:hover{border-color:rgba(73,240,160,.45);transform:translateY(-2px)}
-  .tile canvas{display:block;width:100%;aspect-ratio:4/3;background:#06070a;image-rendering:auto;filter:contrast(1.06) saturate(1.05)}
+  /* no CSS filter on the tiles: what you see is what the engines draw */
+  .tile canvas{display:block;width:100%;aspect-ratio:4/3;background:#06070a;image-rendering:auto}
   .tile.px canvas{image-rendering:pixelated}
   .tile .t{position:absolute;left:0;right:0;bottom:0;padding:20px 10px 8px;background:linear-gradient(to top,rgba(2,2,4,.92),rgba(2,2,4,0))}
   .tile .n{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#eef0f5}
@@ -80,15 +88,15 @@
       <a href="/void/then">then</a>
       <a href="/void/lab">lab</a>
     </nav>
-    <div class="panel vitals" id="vitals">one organism · <b id="v_cells">…</b> survivors<br>lived <b id="v_days">…</b> days · stopped <b id="v_stop">…</b></div>
+    <div class="panel vitals" id="vitals"><span class="hb" id="hb"></span>tick <b id="v_tick">…</b> · <b id="v_cells">…</b> survivors<br><span id="v_status">finding a pulse…</span></div>
   </header>
 
   <div class="k">worlds</div>
   <div class="grid" id="worlds">
-    <a class="tile big" href="/void/live" id="t_org"><span class="tag then">the organism</span><canvas></canvas>
-      <div class="t"><div class="n">organism</div><div class="l" id="l_org">22,000 survivors, cycling</div></div></a>
-    <a class="tile" href="/void/then" id="t_then"><span class="tag then">time capsule</span><canvas></canvas>
-      <div class="t"><div class="n">then</div><div class="l">07-19 → 08-18, as it was</div></div></a>
+    <a class="tile big" href="/void/live" id="t_org"><span class="tag live" id="tag_org">the organism</span><canvas></canvas>
+      <div class="t"><div class="n">organism</div><div class="l" id="l_org">finding a pulse…</div></div></a>
+    <a class="tile" href="/void/then" id="t_then"><span class="tag then">frozen capsule</span><canvas></canvas>
+      <div class="t"><div class="n">then</div><div class="l">its first life, 07-19 → 08-18</div></div></a>
     <a class="tile" href="/void/garden" id="t_garden"><span class="tag live">live</span><canvas></canvas>
       <div class="t"><div class="n">garden</div><div class="l">bred to be unlike</div></div></a>
     <a class="tile" href="/void/soup" id="t_soup"><span class="tag live">live</span><canvas></canvas>
@@ -144,52 +152,89 @@
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   // ── tile scheduler: every mini is a {draw(now)} run round-robin under a frame budget,
   //    only while on screen. A wall of worlds costs a few small draws per frame, not twenty.
+  // SPEED (2026-10-18). Measured on a 390×844 headless phone: every tile drew its first frame
+  // synchronously at load (kick) whatever the budget, three engines built their worlds inline
+  // (the Open sim alone warms up 600 steps), and a tile ran at full rAF rate once visible.
+  // Now: a tile is drawn only while on screen (IntersectionObserver, visible=false until it
+  // says otherwise), at ≥80 ms per frame (≤12 fps), at most 3 tile draws per frame with
+  // never-drawn visible tiles first; heavy engines are built after the load event, one at a
+  // time, and only for tiles that are (nearly) on screen; nothing runs while the tab is hidden.
   const minis=[]; let qi=0;
   const io=new IntersectionObserver(es=>{ for(const e of es){ const m=minis.find(m=>m.cv===e.target); if(m) m.vis=e.isIntersecting; } },{rootMargin:'80px'});
   function mini(tileId, w, h, draw, every){
     const cv=$(tileId).querySelector('canvas'); cv.width=w; cv.height=h;
-    const m={cv,ctx:cv.getContext('2d'),draw,vis:true,every:every||0,last:0,ok:true,n:0}; minis.push(m); io.observe(cv); return m;
+    const m={cv,ctx:cv.getContext('2d'),draw,vis:false,every:Math.max(80,every||0),last:0,ok:true,n:0}; minis.push(m); io.observe(cv); return m;
   }
-  let hidden=false; document.addEventListener('visibilitychange',()=>hidden=document.hidden);
+  let hidden=document.hidden; document.addEventListener('visibilitychange',()=>hidden=document.hidden);
+  function run(m,now){ m.last=now; m.n++;
+    try{ m.draw(now,m.ctx,m.cv.width,m.cv.height); if(!window.__firstFrame) window.__firstFrame=performance.now(); }
+    catch(e){ m.ok=false; console.error('[void] tile stopped:', m.cv.parentNode.id, e && e.message); } }
   function loop(now){ requestAnimationFrame(loop); if(hidden) return;
-    const n=minis.length; if(!n) return; const fresh=minis.some(m=>m.ok&&m.draw&&m.n===0);
-    let budget=reduced?1:(fresh?n:4);   // a tile that has never drawn gets its first frame now, whatever the budget
-    for(let k=0;k<n&&budget>0;k++){ const m=minis[(qi+k)%n]; if(!m.vis||!m.ok||!m.draw) continue; if(m.n&&now-m.last<m.every) continue; m.last=now; m.n++;
-      try{ m.draw(now,m.ctx,m.cv.width,m.cv.height); }catch(e){ m.ok=false; console.error('[void] tile stopped:', m.cv.parentNode.id, e && e.message); } budget--; }
+    const n=minis.length; if(!n) return;
+    let budget=reduced?1:3;
+    for(const m of minis){ if(budget<=0) break; if(m.vis&&m.ok&&m.draw&&m.n===0){ run(m,now); budget--; } }   // first frames first
+    for(let k=0;k<n&&budget>0;k++){ const m=minis[(qi+k)%n]; if(!m.vis||!m.ok||!m.draw||!m.n) continue; if(now-m.last<m.every) continue; run(m,now); budget--; }
     qi=(qi+3)%n; }
   requestAnimationFrame(loop);
   window.__minis=minis;
-  const kick=m=>{ try{ m.n++; m.last=performance.now(); m.draw(m.last,m.ctx,m.cv.width,m.cv.height); }catch(e){ m.ok=false; console.error('[void] tile stopped:', m.cv.parentNode.id, e && e.message); } };
+  const kick=()=>{};   // kept so the tile blocks read the same; the loop draws first frames when the tile is on screen
+  // lazy engine construction: registered now, built after load, one per ~120 ms, visible tiles only
+  const lazyQ=[]; function lazy(tileId,fn){ lazyQ.push({tileId,fn,vis:false,done:false}); }
+  const lazyIO=new IntersectionObserver(es=>{ for(const e of es){ for(const q of lazyQ) if(q.el===e.target) q.vis=e.isIntersecting; } },{rootMargin:'120px'});
+  function drainLazy(){ const it=lazyQ.find(q=>q.vis&&!q.done); if(it){ it.done=true; try{ it.fn(); }catch(e){ console.error('[void] tile init failed:', it.tileId, e && e.message); } }
+    if(lazyQ.some(q=>!q.done)) setTimeout(drainLazy,120); }
+  function startLazy(){ for(const q of lazyQ){ q.el=$(q.tileId); lazyIO.observe(q.el); } setTimeout(drainLazy,300); }
+  if(document.readyState==='complete') startLazy(); else addEventListener('load',startLazy);
   if(/probe/.test(location.search)) setTimeout(()=>{ document.title='PROBE '+($('v_cells').textContent)+' '+minis.map(m=>m.cv.parentNode.id+':'+(m.vis?'v':'-')+(m.ok?'':'X')+m.n+(m.draw?'':'nodraw')).join(' '); },4500);
   const fetchJ=async u=>{ try{ const r=await fetch(u,{cache:'no-store'}); return r.ok?await r.json():null; }catch(e){ return null; } };
 
-  // ── organism: the survivors, a small CPPN frame each, dissolving one into the next ───────
+  // ── organism: ALIVE AGAIN (2026-10-18). The tile shows the newest-born survivors, dissolving one
+  //    into the next; the header carries a heartbeat read from the daemon's own tick counter
+  //    (/api/state every 5 s). If the counter stops moving for ten minutes the header says so.
+  //    Colour floor 0.42 on what the tile shows — the same floor life.js now applies to its dream
+  //    (see organism.html for the measurement); nothing filters the pixels themselves.
   (async()=>{
     const G=window.VoidGenome; if(!G) return;
-    const st=await fetchJ('/void/api/state');
-    if(st){ const died=new Date(st.updatedAt).toISOString().slice(0,10); const lived=Math.floor((st.updatedAt-st.born)/86400000);
-      $('v_cells').textContent=((st.body&&st.body.cells)||st.archiveCells||0).toLocaleString(); $('v_days').textContent=lived; $('v_stop').textContent=died;
-      $('l_org').textContent=((st.body&&st.body.cells)||st.archiveCells||0).toLocaleString()+' survivors, cycling'; }
-    const d=await fetchJ('/void/api/archive?sort=alive&limit=16'); const reel=((d&&d.items)||[]).filter(e=>e.h&&e.s&&e.v);
-    const VW=64,VH=48; let ri=0,lastSwap=0;
+    const STALE_MS=10*60*1000, FLOOR=0.6;   // a thumbnail wants the vivid end of the body; /live uses the daemon's own 0.42
+    const colourful=g=>{ let t=0,n=0; for(let py=0;py<19;py++){ const y=(py/19)*2-1; for(let px=0;px<30;px++){ const x=(px/30)*2-1;
+      const rgb=G.hsv(G.ev(g.h,x,y,0,g.seed||1),G.ev(g.s,x,y,0,g.seed||1),G.ev(g.v,x,y,0,g.seed||1)); const mx=Math.max(rgb[0],rgb[1],rgb[2]), mn=Math.min(rgb[0],rgb[1],rgb[2]); t+=1-mn/(mx+1e-6); n++; } } return t/n; };
+    let lastTick=null, reel=[], ri=0, lastSwap=0, pendingSwap=false;
+    async function pulse(){
+      const st=await fetchJ('/void/api/state'); if(!st) return;
+      const age=Date.now()-(st.updatedAt||0), tick=st.ticks??st.generation, B=st.body||{};
+      $('v_tick').textContent=(tick||0).toLocaleString(); $('v_cells').textContent=(B.cells||st.archiveCells||0).toLocaleString();
+      if(age>STALE_MS){ const died=new Date(st.updatedAt).toISOString().slice(0,10); const lived=Math.floor((st.updatedAt-st.born)/86400000);
+        $('v_status').innerHTML='stopped <b>'+died+'</b> · lived <b>'+lived+'</b> days'; $('l_org').textContent=(B.cells||0).toLocaleString()+' survivors, cycling'; $('tag_org').className='tag then'; return; }
+      $('v_status').innerHTML='<span class="a">alive</span> · '+(B.effectiveLineages||'?')+' lineages · last write '+Math.round(age/1000)+'s ago';
+      $('l_org').textContent='alive · tick '+(tick||0).toLocaleString()+' · newest births';
+      if(tick!==lastTick){ if(lastTick!==null){ const h=$('hb'); h.classList.remove('on'); void h.offsetWidth; h.classList.add('on'); const t=$('tag_org'); t.classList.remove('beat'); void t.offsetWidth; t.classList.add('beat'); } lastTick=tick; }
+    }
+    pulse(); setInterval(pulse,5000);
+    // the reel: newest-born survivors that clear the colour floor; 'alive' sort tops it up if births are few
+    let d=await fetchJ('/void/api/archive?sort=born&limit=24'); let items=((d&&d.items)||[]).filter(e=>e.h&&e.s&&e.v&&colourful(e)>=FLOOR);
+    if(items.length<6){ const d2=await fetchJ('/void/api/archive?sort=alive&limit=24'); for(const e of ((d2&&d2.items)||[])) if(e.h&&e.s&&e.v&&colourful(e)>=FLOOR&&!items.find(x=>x.id===e.id)) items.push(e); }
+    reel=items.slice(0,16);
+    const VW=64,VH=48;
     const paint=(img,g,t,mix)=>{ const dd=img.data; for(let py=0;py<VH;py++){ const y=(py/VH)*2-1; for(let px=0;px<VW;px++){ const x=(px/VW)*2-1;
       const rgb=G.hsv(G.ev(g.h,x,y,t,g.seed),G.ev(g.s,x,y,t,g.seed),G.ev(g.v,x,y,t,g.seed)); const i=(py*VW+px)*4;
       if(mix>=1){dd[i]=rgb[0];dd[i+1]=rgb[1];dd[i+2]=rgb[2];} else {dd[i]+=(rgb[0]-dd[i])*mix;dd[i+1]+=(rgb[1]-dd[i+1])*mix;dd[i+2]+=(rgb[2]-dd[i+2])*mix;} dd[i+3]=255; } } };
-    if(reel.length){ const m=mini('t_org',VW*2,VH*2,null,80); const img=m.ctx.createImageData(VW,VH); const off=document.createElement('canvas'); off.width=VW; off.height=VH; const oc=off.getContext('2d'); const t0=performance.now();
+    const t0=performance.now();
+    if(reel.length){ const m=mini('t_org',VW*2,VH*2,null,80); const img=m.ctx.createImageData(VW,VH); const off=document.createElement('canvas'); off.width=VW; off.height=VH; const oc=off.getContext('2d');
       m.draw=(now,ctx,w,h)=>{ const t=(now-t0)/1000*0.25; if(now-lastSwap>7000){ lastSwap=now; ri=(ri+1)%reel.length; }
         const fade=Math.min(1,(now-lastSwap)/2000); const cur=reel[ri], prev=reel[(ri+reel.length-1)%reel.length];
-        if(fade<1){ paint(img,prev,t,1); paint(img,cur,t,fade); } else paint(img,cur,t,1);
+        if(fade<1 && reel.length>1){ paint(img,prev,t,1); paint(img,cur,t,fade); } else paint(img,cur,t,1);
         oc.putImageData(img,0,0); ctx.imageSmoothingEnabled=true; ctx.drawImage(off,0,0,w,h); };
-      kick(m);
-      // ── then: the last dream the organism had, frozen at its final tick, under a CRT flicker ──
-      const dream=st&&st.current&&st.current.h?st.current:reel[0]; const m2=mini('t_then',VW*2,VH*2,null,90); const img2=m2.ctx.createImageData(VW,VH); const off2=document.createElement('canvas'); off2.width=VW; off2.height=VH; const oc2=off2.getContext('2d');
-      m2.draw=(now,ctx,w,h)=>{ const t=(now-t0)/1000*0.25; paint(img2,dream,t,1); oc2.putImageData(img2,0,0); ctx.imageSmoothingEnabled=true; ctx.drawImage(off2,0,0,w,h);
-        ctx.fillStyle='rgba(2,2,4,'+(0.12+0.08*Math.sin(now/90))+')'; ctx.fillRect(0,0,w,h);
-        for(let y=0;y<h;y+=3){ ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fillRect(0,y,w,1); }
-        const band=((now/2600)%1)*h; ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fillRect(0,band,w,6);
-        ctx.fillStyle='rgba(255,56,96,.9)'; ctx.font='7px ui-monospace,monospace'; ctx.fillText('IT IS ALIVE.', 6, h-8); };
-      kick(m2);
+      // new births join the reel at the front, every 20 s
+      setInterval(async()=>{ const d=await fetchJ('/void/api/archive?sort=born&limit=8'); for(const e of ((d&&d.items)||[]).reverse()) if(e.h&&!reel.find(x=>x.id===e.id)&&colourful(e)>=FLOOR){ reel.unshift(e); if(reel.length>16) reel.pop(); } },20000);
     }
+    // ── then: the frozen capsule — the last dream of its first life, 2026-08-18, under a CRT flicker ──
+    const ts=await fetchJ('/void/api/then-state'); const dream=ts&&ts.current&&ts.current.h?ts.current:(reel[0]||null); if(!dream) return;
+    const m2=mini('t_then',VW*2,VH*2,null,90); const img2=m2.ctx.createImageData(VW,VH); const off2=document.createElement('canvas'); off2.width=VW; off2.height=VH; const oc2=off2.getContext('2d');
+    m2.draw=(now,ctx,w,h)=>{ const t=(now-t0)/1000*0.25; paint(img2,dream,t,1); oc2.putImageData(img2,0,0); ctx.imageSmoothingEnabled=true; ctx.drawImage(off2,0,0,w,h);
+      ctx.fillStyle='rgba(2,2,4,'+(0.12+0.08*Math.sin(now/90))+')'; ctx.fillRect(0,0,w,h);
+      for(let y=0;y<h;y+=3){ ctx.fillStyle='rgba(0,0,0,.22)'; ctx.fillRect(0,y,w,1); }
+      const band=((now/2600)%1)*h; ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fillRect(0,band,w,6);
+      ctx.fillStyle='rgba(217,164,65,.9)'; ctx.font='7px ui-monospace,monospace'; ctx.fillText('AS IT WAS · 08-18', 6, h-8); };
   })();
 
   // ── garden: evolved forms from the gallery, breathing ─────────────────────────────────
@@ -210,7 +255,7 @@
   })();
 
   // ── soup: a small vat of the same chemistry, molecules as their own pictures ──────────
-  (function(){
+  lazy('t_soup',function(){
     const Gd=window.Garden, Sp=window.Soup; if(!Gd||!Sp) return;
     const W=160,H=120,TH=14; const Rx=Sp.Reactor(11*7919+1,{N:34,maxSize:16,mu:0.02,cleave:0.3,depth:3,logSize:400}); const P=Gd.rng(7);
     const thumbs=new Map(); const hueOf=k=>{let h=0;for(let i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))>>>0;return h%360;};
@@ -229,10 +274,10 @@
       for(const q of Rx.pop){ if(q.x==null) continue; const t=thumb(q); const r=q.rad; ctx.save(); ctx.beginPath(); ctx.arc(q.x,q.y,r,0,6.283); ctx.closePath(); ctx.strokeStyle=q.flash?'rgba(255,255,255,'+(.2+.6*q.flash)+')':'rgba(255,255,255,.14)'; ctx.lineWidth=1; ctx.stroke(); ctx.clip(); ctx.drawImage(t,q.x-r,q.y-r,r*2,r*2); ctx.restore(); if(q.flash) q.flash=Math.max(0,q.flash-0.05); }
     };
       kick(m);
-  })();
+  });
 
   // ── synergy: the same disc world, the same engine, no observer ─────────────────────
-  (function(){
+  lazy('t_syn',function(){
     const S=window.VoidSynergy; if(!S) return;
     const world=S.World(11*104729+1,{arm:'compose'});
     for(let i=0;i<40;i++){ const n=1+world.R.int(2); const ps=[]; for(let k=0;k<n;k++) ps.push(world.R.pick(S.IDS)); const a=world.R()*6.283, r=world.R()*0.3; world.spawn(ps,r*Math.cos(a),r*Math.sin(a),2); }
@@ -247,10 +292,10 @@
       for(const c of world.creatures){ const hue=hueOf(c.parts), e=Math.max(0,Math.min(1,c.e/S.ENERGY_REPRO)); ctx.fillStyle='hsla('+hue+',85%,'+(60+e*25)+'%,.9)'; ctx.beginPath(); ctx.arc(X(c.x),Y(c.y),1.3+c.parts.length*0.25,0,6.283); ctx.fill(); }
       if(!world.creatures.length && ++hdr>1) { /* leave it; honest extinction */ } };
       kick(m);
-  })();
+  });
 
   // ── open: the lab's own live world, small ──────────────────────────────────────
-  (function(){
+  lazy('t_open',function(){
     if(!window.Open) return;
     const COLS=40,ROWS=30; let sim=new window.Open({cols:COLS,rows:ROWS,tol:2,construct:true,stableAge:400,menuSize:0,seed:(Date.now()%99991)|0});
     for(let i=0;i<600;i++) sim.step();
@@ -259,7 +304,7 @@
       for(const o of sim.view()){ const x=(o.cell%COLS)*cell+cell/2, y=((o.cell/COLS)|0)*cell+cell/2; ctx.fillStyle='hsla('+o.hue+',72%,'+(o.built?64:48)+'%,'+(o.built?.85:.7)+')'; ctx.beginPath(); ctx.arc(x,y,o.built?r:r*.72,0,6.283); ctx.fill(); }
       if(sim.stats().pop===0){ sim=new window.Open({cols:COLS,rows:ROWS,tol:2,construct:true,stableAge:400,menuSize:0,seed:(Date.now()%99991)|0}); } };
       kick(m);
-  })();
+  });
 
   // ── creature: Gray–Scott reaction-diffusion, small, with a wound that heals ──────────
   (function(){

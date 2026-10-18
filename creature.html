@@ -129,10 +129,14 @@ let clampDebt = 0;   // running total of matter the clamps have created (+) or d
 let growthDebt = 0, sinceSeed = 0;  // matter added by touch that has not yet been integrated
 
 function alloc(){
-  const dpr = Math.min(devicePixelRatio || 1, 2);
+  // SPEED (2026-10-18). Measured on a 390×844 headless phone: 190 cells across × 411 down ×
+  // 10 steps per frame at 60 fps = 6.0 s of script per 6 s of wall clock — the main thread
+  // was pegged and the page "took forever". 128 across (×277 on a phone) at ~20 fps is a
+  // 7× cheaper simulation that looks the same once upscaled; DPR capped at 1.5.
+  const dpr = Math.min(devicePixelRatio || 1, 1.5);
   cv.width = Math.floor(innerWidth * dpr); cv.height = Math.floor(innerHeight * dpr);
   // sim grid is much coarser than the canvas — upscaled on draw
-  const target = 190;                       // cells across the long edge
+  const target = 128;                       // cells across the long edge
   const aspect = cv.height / cv.width;
   W = target; H = Math.max(60, Math.round(target * aspect));
   U = new Float32Array(W*H); V = new Float32Array(W*H);
@@ -145,6 +149,8 @@ function alloc(){
   off.width = W; off.height = H;
   img = octx.createImageData(W, H);
   seed();
+  draw();   // first frame NOW — the founding colonies, before a single step runs
+  if(!window.__firstFrame) window.__firstFrame = performance.now();
 }
 
 function seed(){
@@ -401,8 +407,12 @@ function fillHue(){
 
 function mass(){ let m=0; for(let i=0;i<V.length;i++) m+=V[i]; return m; }
 
-let lastMass = 0;
-function tick(){
+let lastMass = 0, lastTick = 0;
+const FRAME_MS = 50;   // ~20 fps; the sim steps 10× per rendered frame, so this is the real budget
+function tick(now){
+  requestAnimationFrame(tick);
+  if(document.hidden || (now||0) - lastTick < FRAME_MS) return;   // nothing stepped while hidden
+  lastTick = now||0;
   if(drift){
     // walk the loop of living regimes, easing between neighbours. Never leaves the
     // viable region, so the creature metamorphoses instead of dying.
@@ -457,7 +467,6 @@ function tick(){
       // off the books, and that number used to be invisible. Now it is on the wall.
       `<span style="opacity:.45">clamp debt ${clampDebt>=0?'+':''}${clampDebt.toFixed(1)}</span>`;
   }
-  requestAnimationFrame(tick);
 }
 function fmt(s){ s=Math.floor(s); const m=Math.floor(s/60); return m<60?`${m}m ${s%60}s`:`${Math.floor(m/60)}h ${m%60}m`; }
 
@@ -481,7 +490,7 @@ document.getElementById('b-drift').onclick = e => {
 };
 
 addEventListener('resize', () => { const a=touches,b=settled; alloc(); touches=a; settled=b; });
-alloc(); tick();
+alloc(); requestAnimationFrame(tick);
 </script>
 </body>
 </html>

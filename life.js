@@ -301,9 +301,18 @@ function cell(desc){
 // at. So it gets its own, separate, frankly aesthetic test. This is the one place
 // in the system where "does it look good" is allowed to be the criterion, and it
 // should be, because a person is watching.
+// DREAM_COLOUR_FLOOR raised 0.18 → 0.42 (2026-10-18). Measured on the restarted daemon: 14
+// consecutive dreams had median rendered saturation 0.20 (0.12, 0.12, 0.12, 0.29, 0.22, 0.01, ...)
+// while the archive's colour axis is FLAT across all 12 bins (median 0.50). At the 22,000-cell
+// ceiling the most-novel child is reliably the one in the sparse grey corner, and 0.18 is itself
+// a grey picture — the floor was set below the thing it was meant to stop. Jiggy: "I've only
+// seen grayscale stuff". 0.42 is just under the archive median, so roughly half of all viable
+// children still qualify and novelty still picks among them; it is a display floor, not a
+// selection pressure (nothing in the archive reads it). Takes effect at the next daemon start.
+const DREAM_COLOUR_FLOOR = 0.42;
 function showable(desc, q){
   if(q < DREAM_FLOOR) return false;
-  if(desc.colorful < 0.18) return false;      // not a greyscale corner case
+  if(desc.colorful < DREAM_COLOUR_FLOOR) return false;   // not a greyscale corner case
   if(desc.varL < 900 || desc.varL > 12000) return false;  // not flat, not screaming
   if((desc.flux||0) < 0.02) return false;     // not frozen — it is an animated piece
   return true;
@@ -632,7 +641,10 @@ function tick(){
     //
     // It stays the weirdest thing we found — but only among things worth showing.
     if(nov > bestNov && showable(desc, q)){ bestNov = nov; bestNovel = child; }
-    if(!bestNovel && nov > bestNovFallback){ bestNovFallback = nov; fallbackNovel = child; }
+    // The fallback had NO floor at all — it is where the sat-0.008 dreams came from. When
+    // nothing clears showable() this tick, prefer the most colourful viable child rather than
+    // the most novel one: a tick with no showable dream should fail toward colour, not grey.
+    if(!bestNovel && desc.colorful > bestNovFallback){ bestNovFallback = desc.colorful; fallbackNovel = child; }
   }
   recentPlaced.push(placed); if(recentPlaced.length > 12) recentPlaced.shift();
   recentNew.push(discovered); if(recentNew.length > 12) recentNew.shift();

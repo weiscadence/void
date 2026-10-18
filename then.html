@@ -9,7 +9,7 @@
   *{margin:0;box-sizing:border-box}
   html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
     font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;overscroll-behavior:none}
-  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block;filter:contrast(1.07) saturate(1.06)}
+  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block}
   .scan{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.16;mix-blend-mode:overlay;
     background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
   .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
@@ -88,7 +88,7 @@
     flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
   #zoom.on{display:flex}
   #zoom canvas{width:min(88vw,620px);aspect-ratio:4/3;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-    background:#08080c;filter:contrast(1.07) saturate(1.06)}
+    background:#08080c}
   .zmeta{font-size:10px;letter-spacing:.1em;color:#8a90a2;text-transform:uppercase;text-align:center;line-height:1.9}
   .zmeta b{color:var(--acc);font-weight:500}
   .zgene{max-width:min(90vw,620px);max-height:22vh;overflow:auto;font-size:9.5px;line-height:1.6;
@@ -114,7 +114,7 @@
 <body>
 <canvas id="art"></canvas>
 <div class="scan"></div><div class="grain"></div>
-<div class="cap" id="cap"><b>void.exe as it was, 2026-07-19 → 2026-08-18</b> · recovered from git <a href="https://github.com/weiscadence/void">8cfde2f</a> (server, 08-13) + <a href="https://github.com/weiscadence/void/blob/main/lib/genome.js">9e12f9c</a> (genome engine, 07-26, unchanged since) · read-only, the daemon is not running · <span class="more" id="capmore">what is and is not real ▾</span>
+<div class="cap" id="cap"><b>void.exe as it was, 2026-07-19 → 2026-08-18</b> · recovered from git <a href="https://github.com/weiscadence/void">8cfde2f</a> (server, 08-13) + <a href="https://github.com/weiscadence/void/blob/main/lib/genome.js">9e12f9c</a> (genome engine, 07-26, unchanged since) · <b>frozen time capsule</b> · the daemon runs again since 2026-10-18 — watch it at <a href="/void/live">/void/live</a> · <span class="more" id="capmore">what is and is not real ▾</span>
   <span class="x"><br>the page file itself was never committed before the daemon stopped (checked: monorepo and public repo both first track it 2026-10-18) — this is the surviving page with its memorial branch removed, which restores the strings and panels it showed while alive · the numbers are life.js's own last write, 2026-08-18 23:27 UTC, so "tick" and "age" are frozen at that moment · the picture is the last dream it had (#621862309, a stranger, never accepted), animating as it did, never replaced — while alive a new dream arrived every few seconds; that stream is gone · the gallery is real: all 22,000 survivors from archive.json, with the sorts the server had on 08-13 (no "alive" sort — that was added 09-06) · the Wayback Machine has no capture of drainfun.xyz/void (CDX checked 2026-10-18; only the site root, Feb 2026), so git and disk are the only record · <a href="/void">back to void</a></span></div>
 <div class="hud" id="hud" style="padding-top:44px">
   <div class="top">
@@ -165,14 +165,18 @@
 const G = window.VoidGenome;
 const cv = document.getElementById('art'), ctx = cv.getContext('2d');
 let W,H,img,VW,VH;
+// SPEED (2026-10-18): same budget as /live — 96 px across (48 for the first frame), ~15 fps, DPR 1,
+// nothing drawn while hidden. 190×411 at 60 fps pegged a phone's main thread.
+let LEVEL=0; const LEVELS=[48,96]; const off=document.createElement('canvas'), oc=off.getContext('2d');
 function resize(){
-  const DPR=Math.min(devicePixelRatio||1,2);
+  const DPR=1;
   W=cv.width=Math.floor(innerWidth*DPR); H=cv.height=Math.floor(innerHeight*DPR);
   cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
-  VW=190; VH=Math.max(90, Math.round(VW/(innerWidth/innerHeight)));
-  img=ctx.createImageData(VW,VH);
+  VW=LEVELS[LEVEL]; VH=Math.max(48, Math.round(VW/(innerWidth/innerHeight)));
+  img=ctx.createImageData(VW,VH); off.width=VW; off.height=VH;
 }
 addEventListener('resize',resize); resize();
+setTimeout(()=>{ LEVEL=1; resize(); },1200);
 
 let body=null, seed=1, meta=null, t0=performance.now();
 
@@ -186,7 +190,9 @@ const stopped=false, reel=[], ri=0, prev=null, fade=1;
 
 async function pull(){
   try{
-    const r=await fetch('/void/api/state',{cache:'no-store'}); const d=await r.json();
+    // /api/then-state, not /api/state: the daemon is alive again (2026-10-18) and the live state
+    // moves every 5 s. The capsule reads its own fossil of the 08-18 write.
+    const r=await fetch('/void/api/then-state',{cache:'no-store'}); const d=await r.json();
     meta=d;
     // THE TRUTH CHECK. d.updatedAt is life.js's own last write — not our uptime, not the
     // web server's. If the daemon dies the number simply stops moving, which is exactly
@@ -252,16 +258,16 @@ function paint(d, g, sd, t, mix){
   }
 }
 
+let lastFrame=0;
 function frame(now){
-  if(body){
-    const t=(now-t0)/1000*0.25;
-    const d=img.data;
-    paint(d, body, seed, t, 1);
-    frame._t=frame._t||(()=>{const c=document.createElement('canvas');c.width=VW;c.height=VH;return c;})();
-    frame._t.getContext('2d').putImageData(img,0,0);
-    ctx.imageSmoothingEnabled=true; ctx.drawImage(frame._t,0,0,W,H);
-  }
   requestAnimationFrame(frame);
+  if(!body || document.hidden || now-lastFrame<66) return;
+  lastFrame=now;
+  const t=(now-t0)/1000*0.25;
+  paint(img.data, body, seed, t, 1);
+  oc.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(off,0,0,W,H);
+  if(!window.__firstFrame) window.__firstFrame=performance.now();
 }
 requestAnimationFrame(frame);
 
@@ -346,10 +352,11 @@ function openZoom(i){
   zt0=performance.now();
   if(!zanim) zanim=requestAnimationFrame(ztick);
 }
-function ztick(){
+let zlast=0;
+function ztick(now){
   if($('zoom').classList.contains('on')){
     const e=gal.items[gal.zi];
-    if(e) drawGenome($('zcv'),e,(performance.now()-zt0)/1000,220,165);
+    if(e && !document.hidden && now-zlast>66){ zlast=now; drawGenome($('zcv'),e,(performance.now()-zt0)/1000,220,165); }
     zanim=requestAnimationFrame(ztick);
   } else { zanim=null; }
 }

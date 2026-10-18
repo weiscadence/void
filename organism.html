@@ -9,7 +9,17 @@
   *{margin:0;box-sizing:border-box}
   html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden;
     font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;overscroll-behavior:none}
-  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block;filter:contrast(1.07) saturate(1.06)}
+  /* no CSS filter on the art: the colour on screen is hsv() in lib/genome.js and nothing else */
+  #art{position:fixed;inset:0;width:100vw;height:100vh;display:block}
+  /* the heartbeat: a dot that beats when the daemon's own tick counter moves (every ~5s),
+     and flares green when a new survivor is born into the archive */
+  .beat{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3a4050;margin-right:7px;vertical-align:1px;
+    box-shadow:0 0 0 0 rgba(34,211,165,0)}
+  .beat.beat-tick{animation:beat .9s ease-out}
+  .beat.beat-born{animation:born 1.8s ease-out}
+  @keyframes beat{0%{background:var(--up);box-shadow:0 0 0 0 rgba(34,211,165,.7);transform:scale(1.5)}100%{background:#3a4050;box-shadow:0 0 0 12px rgba(34,211,165,0);transform:scale(1)}}
+  @keyframes born{0%{background:#fff;box-shadow:0 0 0 0 rgba(125,249,255,.9);transform:scale(2.2)}100%{background:#3a4050;box-shadow:0 0 0 22px rgba(125,249,255,0);transform:scale(1)}}
+  @media(prefers-reduced-motion:reduce){.beat.beat-tick,.beat.beat-born{animation:none;background:var(--up)}}
   .scan{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.16;mix-blend-mode:overlay;
     background:repeating-linear-gradient(0deg,rgba(255,255,255,.06) 0 1px,transparent 1px 3px)}
   .grain{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
@@ -81,7 +91,7 @@
     flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px}
   #zoom.on{display:flex}
   #zoom canvas{width:min(88vw,620px);aspect-ratio:4/3;border-radius:8px;border:1px solid rgba(255,255,255,.1);
-    background:#08080c;filter:contrast(1.07) saturate(1.06)}
+    background:#08080c}
   .zmeta{font-size:10px;letter-spacing:.1em;color:#8a90a2;text-transform:uppercase;text-align:center;line-height:1.9}
   .zmeta b{color:var(--acc);font-weight:500}
   .zgene{max-width:min(90vw,620px);max-height:22vh;overflow:auto;font-size:9.5px;line-height:1.6;
@@ -95,7 +105,9 @@
     .chip{padding:4px 8px}
   }
   @media(max-width:640px){
-    .hud{padding:12px 12px 46px}
+    /* the gallery button sat at top-centre and collided with the vitals panel on a phone */
+    #galbtn{top:auto!important;bottom:46px}
+    .hud{padding:12px 12px 78px}
     .gene{font-size:8.5px;line-height:1.55;max-height:15vh;padding:9px 11px}
     .title{font-size:11px;letter-spacing:.24em}
     .sub{display:none}
@@ -155,48 +167,91 @@
 <script>
 const G = window.VoidGenome;
 const cv = document.getElementById('art'), ctx = cv.getContext('2d');
-let W,H,img,VW,VH;
+// ══ SPEED (2026-10-18) ═══════════════════════════════════════════════════════════
+// Jiggy: "the page took forever to load". Measured on a 390×844 headless phone: this page
+// spent 10.6 s of main-thread script in its first 6 s — 190×411 pixels × three expression
+// trees, every rAF frame, into a 2×-DPR backing store. The organism is a blurry upscaled
+// field anyway, so: internal resolution 96 across (48 for the very first frame, upgraded
+// after a second), ~15 fps, nothing drawn while the tab is hidden, DPR capped at 1.
+let W,H,img,VW,VH,LEVEL=0;
+const LEVELS=[48,80];
 function resize(){
-  const DPR=Math.min(devicePixelRatio||1,2);
+  const DPR=1;
   W=cv.width=Math.floor(innerWidth*DPR); H=cv.height=Math.floor(innerHeight*DPR);
   cv.style.width=innerWidth+'px'; cv.style.height=innerHeight+'px';
-  VW=190; VH=Math.max(90, Math.round(VW/(innerWidth/innerHeight)));
-  img=ctx.createImageData(VW,VH);
+  VW=LEVELS[LEVEL]; VH=Math.max(48, Math.round(VW/(innerWidth/innerHeight)));
+  img=ctx.createImageData(VW,VH); off.width=VW; off.height=VH;
 }
+const off=document.createElement('canvas'), oc=off.getContext('2d');
 addEventListener('resize',resize); resize();
+setTimeout(()=>{ LEVEL=1; resize(); }, 1200);   // first frame cheap, then the real picture
 
 let body=null, seed=1, meta=null, t0=performance.now();
 
-// ══ THE FOSSIL CYCLE ═════════════════════════════════════════════════════════
-// void-life stopped 2026-08-18. The body-server kept serving, so this page went on
-// saying "alive / breathing / evolving" over a frozen Aug-18 snapshot for eight days.
-// A page that reports a heartbeat it cannot hear is the worst failure this project
-// could have — the whole point was measuring what's real.
+// ══ ALIVE AGAIN (2026-10-18) ════════════════════════════════════════════════════
+// void-life stopped 2026-08-18 and this page spent two months as a memorial reel. The
+// daemon runs again, so the page is a window on a living thing once more. Two honest
+// signals, both read from the daemon's own writes, never from this page's clock:
+//   · the HEARTBEAT: /api/state every 5 s; when `ticks` moves, the dot beats. If it
+//     stops moving for STALE_MS the page says so (the memorial branch is kept for that).
+//   · BIRTHS: /api/archive?sort=born — newest accepted survivors. A new id at the head
+//     of that list is a placement the daemon just made; the page pulses and morphs to it.
 //
-// So: when the organism is stopped, we say so, and the page becomes what it honestly
-// is — a record. It cycles the forms that actually survived (the archive is the BODY:
-// what the search kept, not what it dreamed). Zero server CPU; every frame is real
-// evolved genome, just no longer being added to.
-//
-// STALE_MS is deliberately generous. life.js wrote state every ~5s; ten minutes of
-// silence is unambiguous death, not a slow tick or a restart blip.
-const STALE_MS = 10*60*1000, SWAP_MS = 9000, FADE_MS = 2400;
+// WHAT IS ON SCREEN. The daemon's "dream" (its most-novel child each tick) is grey most
+// of the time right now: at the 22,000-cell ceiling the most novel corner is the
+// desaturated one, and the daemon's colour floor (0.18) sat below grey. Measured 14
+// dreams: median rendered saturation 0.20. life.js now carries a 0.42 floor, which takes
+// effect when it next starts; until then this page applies the SAME floor client-side
+// and, when the dream fails it, shows the newest-born survivor instead — a real evolved
+// organism from the body, labelled as such. No filter touches the pixels: hsv() in
+// lib/genome.js is the only colour mapping, and it is unchanged.
+const STALE_MS = 10*60*1000, SWAP_MS = 9000, FADE_MS = 2400, COLOUR_FLOOR = 0.42;
 let stopped=false, stoppedAt=null, reel=[], ri=0, prev=null, prevSeed=1, fade=1, lastSwap=0;
+let births=[], shownId=null, shownKind='', lastTick=null, lastTickAt=0, beatN=0;
+const beatEl=()=>document.getElementById('beat');
+
+// the daemon's colourfulness measure (life.js describe(): mean per-pixel HSV saturation at
+// t=T0=0), at 30×19 — 570 pixels, well under a millisecond.
+function colourful(g){ let s=0,n=0; for(let py=0;py<19;py++){ const y=(py/19)*2-1; for(let px=0;px<30;px++){ const x=(px/30)*2-1;
+  const rgb=G.hsv(G.ev(g.h,x,y,0,g.seed||1),G.ev(g.s,x,y,0,g.seed||1),G.ev(g.v,x,y,0,g.seed||1));
+  const mx=Math.max(rgb[0],rgb[1],rgb[2]), mn=Math.min(rgb[0],rgb[1],rgb[2]); s+=1-mn/(mx+1e-6); n++; } } return s/n; }
+
+// switch the displayed organism, dissolving from the previous one rather than cutting
+function show(g, kind){
+  if(!g || !g.h || g.id===shownId) return;
+  if(body){ prev=body; prevSeed=seed; fade=0; }
+  body=g; seed=g.seed||1; shownId=g.id; shownKind=kind; lastSwap=performance.now();
+}
 
 async function loadReel(){
   if(reel.length) return;
   try{
-    // 'alive' (added 2026-09-06) — quality-weighted but biased toward motion, so the
-    // reel opens on organisms that actually move rather than the stillest slice of the
-    // archive. Plain 'quality' sort was anti-correlated with motion (measured: top-20
-    // mean motion 0.217 vs 0.492 archive-wide) which is exactly what read as "flashy
-    // rainbow shit that doesn't move". 240 is the server's per-page cap — plenty for a
-    // slow crossfading reel.
     const r=await fetch('/void/api/archive?sort=alive&limit=240',{cache:'no-store'});
     const d=await r.json();
     reel=(d.items||[]).filter(e=>e&&e.h&&e.s&&e.v);
-    if(reel.length){ body=reel[0]; seed=reel[0].seed||1; ri=0; lastSwap=performance.now(); fade=1; }
+    if(reel.length){ show(reel[0],'survivor'); ri=0; }
   }catch(e){}
+}
+
+async function pullBirths(){
+  try{
+    const r=await fetch('/void/api/archive?sort=born&limit=24',{cache:'no-store'}); const d=await r.json();
+    const items=(d.items||[]).filter(e=>e&&e.h&&e.s&&e.v);
+    const known=new Set(births.map(e=>e.id));
+    const fresh=births.length ? items.filter(e=>!known.has(e.id)) : [];
+    const first=!births.length; births=items;
+    if(first && body && shownKind==='dream' && colourful(body)<COLOUR_FLOOR){ const c=births.find(e=>colourful(e)>=COLOUR_FLOOR); if(c) show(c,'born'); }
+    if(fresh.length){ // a real placement since we last looked: pulse, and morph to it if it is colourful
+      pulse('born');
+      const c=fresh.find(e=>colourful(e)>=COLOUR_FLOOR); if(c) show(c,'born');
+      const b=document.getElementById('births'); if(b) b.textContent=`born #${fresh[0].id} · ${new Date(fresh[0].born).toISOString().slice(11,19)} utc`;
+    }
+  }catch(e){}
+}
+
+function pulse(kind){
+  const el=beatEl(); if(!el) return;
+  el.classList.remove('beat-'+kind); void el.offsetWidth; el.classList.add('beat-'+kind);
 }
 
 async function pull(){
@@ -209,32 +264,31 @@ async function pull(){
     const age = Date.now() - (d.updatedAt||0);
     stopped = age > STALE_MS;
     if(stopped){ stoppedAt = d.updatedAt; await loadReel(); renderDead(d); return; }
-    reel=[]; prev=null; fade=1;
-    body=d.current; seed=body.seed||1;
-    // BODY = the archive (what survives). DREAM = what you're looking at (most novel
-    // child of the tick, almost never accepted). They are different populations — never
-    // print the dream's numbers as the body's. `rate` is the honest health metric:
-    // coverage sits at 100% whether the archive is thriving or sealed; rate tells them
-    // apart. Sustained 0 = sealed = the experiment is over and we should say so.
+    reel=[];
+    const tick = d.ticks ?? d.generation;
+    if(tick!==lastTick){ if(lastTick!==null) pulse('tick'); lastTick=tick; lastTickAt=Date.now(); beatN++; }
+    // the dream, if it clears the colour floor; otherwise the newest colourful birth
+    const dream=d.current;
+    if(dream && dream.h && colourful(dream)>=COLOUR_FLOOR) show(dream,'dream');
+    else if(!body || shownKind==='dream' || shownKind==='survivor'){ const c=births.find(e=>colourful(e)>=COLOUR_FLOOR); if(c) show(c,'born'); else if(dream && dream.h && !body) show(dream,'dream'); }
     const B = d.body || {}, D = d.dream || {};
-    // VERDICT READS DISCOVERY, NOT PLACEMENT. Placement counts improvements to cells the
-    // archive already owns, so it stays busy long after the last new behaviour was found —
-    // it would print "discovering" over a sealed organism. Discovery is the honest one.
-    // "full" is a distinct, legitimate state: bounded on purpose by the host's memory,
-    // still improving. It is not the same as SEALED, which is failure.
     const rate = (B.discoveryRate ?? B.placementRate ?? 0);
     const pol  = (B.placementRate ?? 0);
-    const verdict = B.atCeiling ? `full · refining ${pol.toFixed(0)}/tick`
+    const verdict = B.atCeiling ? `full · refining ${pol.toFixed(1)}/tick`
                   : rate > 0.5  ? `discovering ${rate.toFixed(1)}/tick`
                   : rate > 0    ? 'crawling' : 'SEALED';
     document.getElementById('vitals').innerHTML =
-      `tick <b>${(d.ticks ?? d.generation).toLocaleString()}</b> · age <b>${fmtAge(d.ageSec)}</b><br>`+
+      `<span id="beat" class="beat"></span>tick <b>${tick.toLocaleString()}</b> · age <b>${fmtAge(d.ageSec)}</b><br>`+
       `body <b>${B.cells ?? d.archiveCells}</b> · depth <b>${B.lineageDepth ?? '?'}</b> · lineages <b>${B.effectiveLineages ?? B.distinctSeeds ?? '?'}</b> · size ${B.meanComplexity ?? d.complexity}<br>`+
       `<span class="a">${verdict}</span><br>`+
-      `<span style="opacity:.55">dream ${D.inBody ? 'accepted' : '— a stranger'}</span>`;
-    document.getElementById('gene').innerHTML =
-      `<span class="k">organism</span> #${body.id} <span class="f">tick ${(d.ticks ?? d.generation).toLocaleString()}</span> {<br>`+
+      `<span style="opacity:.55">dream ${D.inBody ? 'accepted' : '— a stranger'}${shownKind==='born'?' · showing newest birth':''}</span><br>`+
+      `<span id="births" style="opacity:.55">last write ${Math.round(age/1000)}s ago</span>`;
+    const label = shownKind==='born' ? 'newest survivor' : 'dream';
+    if(body) document.getElementById('gene').innerHTML =
+      `<span class="k">${label}</span> #${body.id} <span class="f">tick ${tick.toLocaleString()}</span> {<br>`+
       `&nbsp;hue: ${col(G.fmt(body.h))}<br>&nbsp;sat: ${col(G.fmt(body.s))}<br>&nbsp;val: ${col(G.fmt(body.v))} }`;
+    document.getElementById('sub').textContent='one organism. it lives on the server and evolves whether or not you watch. you and everyone else see the same body at the same moment of its life.';
+    document.getElementById('footm').textContent='it is not being drawn. it is alive.';
     document.getElementById('tag').textContent = `born ${new Date(d.born).toISOString().slice(0,10)} · evolving live`;
     const gn = document.getElementById('galn'); if(gn) gn.textContent = (B.cells ?? 0).toLocaleString();
   }catch(e){}
@@ -267,7 +321,10 @@ function renderDead(d){
 }
 function fmtAge(s){ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60); return h?`${h}h ${m}m`:`${m}m ${s%60}s`; }
 function col(str){ return str.replace(/([a-z]+)\(/g,'<span class="f">$1</span>('); }
-pull(); setInterval(pull, 5000);   // phase-lock: re-sync to the shared body
+// state and births in parallel: the first frame must not wait on the archive sort (~0.6 s cold).
+// If the dream is grey and births have not arrived, the dream is shown and the page morphs to
+// the newest colourful birth as soon as the list lands.
+pull(); pullBirths(); setInterval(pull, 5000); setInterval(pullBirths, 15000);   // phase-lock: re-sync to the shared body
 
 // bare mode: let the organism be seen with nothing on top of it
 const hud=document.getElementById('hud'), hint=document.getElementById('hint');
@@ -293,31 +350,29 @@ function paint(d, g, sd, t, mix){
   }
 }
 
+const FRAME_MS = 80;   // ~12 fps: the organism drifts at t*0.25, it does not need 60
+let lastFrame = 0;
 function frame(now){
-  if(body){
-    const t=(now-t0)/1000*0.25;
-    const d=img.data;
-    // ── the reel: advance to the next survivor, dissolving rather than cutting ──
-    if(stopped && reel.length>1){
-      if(now-lastSwap > SWAP_MS){
-        prev=body; prevSeed=seed;
-        ri=(ri+1)%reel.length; body=reel[ri]; seed=body.seed||1;
-        lastSwap=now; fade=0;
-        if(meta) renderDead(meta);
-      }
-      if(fade<1) fade=Math.min(1,(now-lastSwap)/FADE_MS);
-    }
-    if(stopped && prev && fade<1){
-      paint(d, prev, prevSeed, t, 1);      // outgoing form
-      paint(d, body, seed, t, fade);       // incoming, blended over it
-    } else {
-      paint(d, body, seed, t, 1);
-    }
-    frame._t=frame._t||(()=>{const c=document.createElement('canvas');c.width=VW;c.height=VH;return c;})();
-    frame._t.getContext('2d').putImageData(img,0,0);
-    ctx.imageSmoothingEnabled=true; ctx.drawImage(frame._t,0,0,W,H);
-  }
   requestAnimationFrame(frame);
+  if(document.hidden || now-lastFrame < FRAME_MS || !body) return;
+  lastFrame = now;
+  const t=(now-t0)/1000*0.25;
+  const d=img.data;
+  // ── the memorial reel: advance to the next survivor, dissolving rather than cutting ──
+  if(stopped && reel.length>1 && now-lastSwap > SWAP_MS){
+    ri=(ri+1)%reel.length; show(reel[ri],'survivor');
+    if(meta) renderDead(meta);
+  }
+  if(fade<1) fade=Math.min(1,(now-lastSwap)/FADE_MS);
+  if(prev && fade<1){
+    paint(d, prev, prevSeed, t, 1);      // outgoing form
+    paint(d, body, seed, t, fade);       // incoming, blended over it
+  } else {
+    prev=null; paint(d, body, seed, t, 1);
+  }
+  oc.putImageData(img,0,0);
+  ctx.imageSmoothingEnabled=true; ctx.drawImage(off,0,0,W,H);
+  if(!window.__firstFrame) window.__firstFrame=performance.now();
 }
 requestAnimationFrame(frame);
 
@@ -402,10 +457,11 @@ function openZoom(i){
   zt0=performance.now();
   if(!zanim) zanim=requestAnimationFrame(ztick);
 }
-function ztick(){
+let zlast=0;
+function ztick(now){
   if($('zoom').classList.contains('on')){
     const e=gal.items[gal.zi];
-    if(e) drawGenome($('zcv'),e,(performance.now()-zt0)/1000,220,165);
+    if(e && !document.hidden && now-zlast>66){ zlast=now; drawGenome($('zcv'),e,(performance.now()-zt0)/1000,220,165); }
     zanim=requestAnimationFrame(ztick);
   } else { zanim=null; }
 }

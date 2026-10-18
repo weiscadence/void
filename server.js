@@ -142,6 +142,10 @@ http.createServer((req, res) => {
     if (u === '/synergy.json') { try { return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'synergy.json'))); } catch (e) { return send(res, 404, 'application/json', '{"error":"not yet generated"}'); } }
     if (u === '/lib/silica.js') return send(res, 200, 'application/javascript', fs.readFileSync(path.join(__dirname, 'lib', 'silica.js')));
     if (u === '/api/state') return send(res, 200, 'application/json', fs.readFileSync(path.join(DIR, 'state.json')));
+    // /api/then-state — the FROZEN 2026-08-18 state for /void/then. Until 2026-10-18 /then read the
+    // live /api/state, which was fine only because the daemon was stopped; now that it runs again
+    // the capsule needs its own fossil. See data/then-state.json._capsule for provenance.
+    if (u === '/api/then-state') return send(res, 200, 'application/json', fs.readFileSync(path.join(__dirname, 'data', 'then-state.json')));
     if (u === '/api/lineage') { // last 200 fossils
       const lines = fs.readFileSync(path.join(DIR, 'lineage.jsonl'), 'utf8').trim().split('\n');
       return send(res, 200, 'application/json', '[' + lines.slice(-200).join(',') + ']');
@@ -165,6 +169,7 @@ http.createServer((req, res) => {
         cell: +cell, quality: e.quality, gen: e.gen, desc: e.desc,
         seed: e.genome && e.genome.seed, id: e.genome && e.genome.id,
         h: e.genome && e.genome.h, s: e.genome && e.genome.s, v: e.genome && e.genome.v,
+        born: (e.genome && e.genome.born) || 0,
       })).filter(e => e.h);
       const total = all.length;
       // lineage sort is grouped-then-ranked: biggest families first, best member first
@@ -175,6 +180,10 @@ http.createServer((req, res) => {
         for (const e of all) size[e.seed] = (size[e.seed] || 0) + 1;
         all.sort((a, b) => (size[b.seed] - size[a.seed]) || (a.seed - b.seed) || (b.quality - a.quality));
       } else if (sort === 'recent') all.sort((a, b) => b.gen - a.gen);
+      // 'born' (2026-10-18) — newest ACCEPTED survivors by birth timestamp. 'recent' sorts by
+      // lineage depth, which is not time. This is the births feed /live pulses on: a new id at
+      // the head of this list is a real placement the daemon just made.
+      else if (sort === 'born') all.sort((a, b) => (b.born - a.born) || (b.quality - a.quality));
       else if (sort === 'colour') all.sort((a, b) => b.desc[1] - a.desc[1]);
       else if (sort === 'symmetry') all.sort((a, b) => b.desc[2] - a.desc[2]);
       // motion sort exists so the fourth axis is inspectable: sorting ascending puts the
