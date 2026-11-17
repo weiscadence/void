@@ -46,7 +46,7 @@ let GRID = 12;                   // MAP-Elites resolution per axis (12³ = 1,728
 // next. Counterexample at 12→16: desc 0.1666 bins to cell 1 and 0.1668 to cell 2 at
 // GRID=12, but BOTH land in cell 2 at GRID=16 — different rooms merging into one, so one
 // elite silently evicts the other. Multiples make each rung a strict refinement of the
-// last: every old cell splits into exactly (r³) new ones and no two can ever merge.
+// last: every old cell splits into exactly r^DIMS (r⁴) new ones and no two can ever merge.
 // LADDER TOPS OUT AT 24, AND THE REASON IS THE HOST, NOT THE BIOLOGY.
 // I first wrote [12,24,48]. Measured trajectory: elites cost ~1.4 KB each, discovery runs
 // at ~265 new cells/min, so grid-24 fills in ~35 min and grid-48's 110,592 rooms would be
@@ -124,8 +124,13 @@ const QUALITY_VERSION = 5;
 function log(m){ const l=`[${new Date().toISOString()}] ${m}`; console.log(l); try{fs.appendFileSync(LOG,l+'\n');}catch{} }
 function loadJson(f,d){ try{return JSON.parse(fs.readFileSync(f,'utf8'));}catch{return d;} }
 
-// deterministic rng (seedable so the daemon is reproducible from a seed)
-let SEED = (Date.now() ^ 0x9e3779b9) >>> 0;
+// deterministic rng. Seeded from the clock unless VOID_SEED is set; the starting seed is
+// logged at boot so a run can be replayed from a fresh state with VOID_SEED=<that value>.
+// (The rng state itself is not persisted, so a restart mid-life draws a new seed.)
+const SEED0 = process.env.VOID_SEED !== undefined && /^\d+$/.test(process.env.VOID_SEED)
+  ? Number(process.env.VOID_SEED) >>> 0
+  : (Date.now() ^ 0x9e3779b9) >>> 0;
+let SEED = SEED0;
 function rng(){ SEED = (SEED*1664525 + 1013904223) >>> 0; return SEED/4294967296; }
 
 // ── render a genome to the tiny buffer and extract its BEHAVIOR DESCRIPTOR ──
@@ -690,7 +695,7 @@ function tick(){
       + ` · effLin ${v.effectiveLineages} · top ${v.topFamilyPct}%`); }
 }
 
-log(`void awakened — resuming life. gen ${generation}, archive ${Object.keys(archive).length}, assembly ${Math.round(ASSEMBLY)}`);
+log(`void awakened — resuming life. gen ${generation}, archive ${Object.keys(archive).length}, assembly ${Math.round(ASSEMBLY)}, rng seed ${SEED0}${process.env.VOID_SEED !== undefined ? ' (VOID_SEED)' : ''}`);
 persist(); saveArchive();
 tick();
 setInterval(tick, TICK_MS);
