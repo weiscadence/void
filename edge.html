@@ -87,6 +87,11 @@
   <div class="box honesty">
     <div class="lbl">HONESTY BOX</div>
     <ul>
+      <li><b style="color:#ff9a3c">SUPERSEDED.</b> The proper test named in the last bullet has since
+      been run (Clauset MLE, <code>lib/clauset.js</code>): <b>0 of 8</b> runs favour a power law over an
+      exponential, even under the Bak slow-drive protocol (notebook finding 6, <code>RESULT-soc-bak.md</code>).
+      The bullets below are kept as written and should be read as the earlier, weaker analysis. The
+      "log-log fit" label on the panel is a straight-line R² comparison, not a test for criticality.</li>
       <li><b>The critical window is real (measured, 8 seeds/drive).</b> Crashes go power-law in <b>5 of 8</b>
       seeds in the middle band, exponential on both sides — the textbook subcritical→critical→supercritical
       shape. Much stronger than the first flickering 1-in-3 test.</li>
@@ -181,7 +186,7 @@
     dx.moveTo(X(0), Y(b0)); dx.lineTo(X(lxMax), Y(slope*lxMax+b0)); dx.stroke(); dx.setLineDash([]);
     // data dots
     for(let i=0;i<a.xs.length;i++){ dx.fillStyle='#00ff88'; dx.beginPath(); dx.arc(X(Math.log(a.xs[i])),Y(Math.log(a.ys[i])),2.6,0,7); dx.fill(); }
-    const verdict = a.delta>0.03 ? ['POWER-LAW (critical)','#00ff88'] : a.delta<-0.03 ? ['exponential (not critical)','#ff9a3c'] : ['ambiguous','#8b90a0'];
+    const verdict = a.delta>0.03 ? ['log-log fit favours power law (not a test)','#00ff88'] : a.delta<-0.03 ? ['log-log fit favours exponential','#ff9a3c'] : ['ambiguous','#8b90a0'];
     const el=document.getElementById('fit'); el.textContent=verdict[0]; el.style.color=verdict[1];
   }
 
